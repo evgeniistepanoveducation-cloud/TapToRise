@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TapToRise</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    .bg {
+      position: fixed;
+      inset: 0;
+      background-image: url('https://picsum.photos/1200/2400'); /* Replace with your picture later */
+      background-size: cover;
+      background-position: center;
+    }
+    .wrap {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .tap {
+      font-size: 32px;
+      padding: 20px 40px;
+      border: none;
+      border-radius: 16px;
+      background-color: #2ea6ff;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+    }
+    .counter {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="wrap">
+    <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
+  </div>
+  <div class="counter" id="counter">Taps: 0</div>
+
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let taps = 0;
+    const tapBtn = document.getElementById('tapBtn');
+    const counter = document.getElementById('counter');
+
+    tapBtn.addEventListener('click', () => {
+      taps += 1;
+      counter.textContent = `Taps: ${taps}`;
+      // Send tap event to your bot
+      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+    });
+  </script>
+</body>
+</html>

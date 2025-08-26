@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TapToRise</title>
   <style>
     html, body {
@@ -34,6 +34,12 @@
       color: #fff;
       cursor: pointer;
       box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+
+      /* prevent text selection across browsers */
+      -webkit-user-select: none; /* Safari */
+      -moz-user-select: none;    /* Firefox */
+      -ms-user-select: none;     /* old IE/Edge */
+        user-select: none;         /* Standard */
     }
     .counter {
       position: fixed;
@@ -69,6 +75,11 @@
       // Send tap event to your bot
       tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
     });
+
+    // 🚫 Block double-tap zoom
+    document.addEventListener('dblclick', function(e) {
+      e.preventDefault();
+    }, { passive: false });
   </script>
 </body>
 </html>

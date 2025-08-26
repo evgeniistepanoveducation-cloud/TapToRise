@@ -31,8 +31,8 @@
     
     .tap {
       font-size: 48px;
-      width: 250px;
-      height: 250px;
+      width: 300px;
+      height: 300px;
       border: none;
       border-radius: 50%;
       background-color: #2ea6ff;
@@ -66,9 +66,10 @@
       left: 20px;
       background: rgba(0,0,0,0.4);
       color: #fff;
-      padding: 8px 12px;
-      border-radius: 12px;
+      padding: 16px 20px;    /* increased padding */
+      border-radius: 16px;
       font-weight: bold;
+      font-size: 32px;       /* larger font */
     }
 
     .xp-bar-container {
@@ -101,7 +102,7 @@
   <div class="wrap">
     <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
   </div>
-  <div class="counter" id="counter">Taps: 0</div>
+
   <div class="xp-counter" id="xpCounter">XP: 0</div>
 
   <!-- JS -->
@@ -115,7 +116,7 @@
 
     let taps = 0;
     let xp = 0;
-    const xpPerLevel = 150; // XP needed to level up
+    const xpPerLevel = 200; // XP needed to level up
 
     const tapBtn = document.getElementById('tapBtn');
     const counter = document.getElementById('counter');
@@ -126,10 +127,9 @@
     // Event listener
     // -------------------------
     tapBtn.addEventListener('click', () => {
-      taps += 1;
+    
       xp += 10;
 
-      counter.textContent = `Taps: ${taps}`;
       xpCounter.textContent = `XP: ${xp}`;
 
       // Update progress bar

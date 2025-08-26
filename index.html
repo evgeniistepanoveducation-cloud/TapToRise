@@ -4,6 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TapToRise</title>
+  
   <style>
     html, body {
       margin: 0; padding: 0;
@@ -11,6 +12,7 @@
       overflow: hidden;
       font-family: Arial, sans-serif;
     }
+    
     .bg {
       position: fixed;
       inset: 0;
@@ -18,6 +20,7 @@
       background-size: cover;
       background-position: center;
     }
+    
     .wrap {
       position: fixed;
       inset: 0;
@@ -25,27 +28,27 @@
       justify-content: center;
       align-items: center;
     }
+    
     .tap {
-       font-size: 48px;
-        width: 250px;        /* fixed width */
-        height: 250px;       /* fixed height */
-        border: none;
-        border-radius: 50%;  /* now it’s a perfect circle */
-        background-color: #2ea6ff;
-        color: #fff;
-        cursor: pointer;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.3);
-
-        display: flex;           /* center text */
-        justify-content: center; 
-        align-items: center; 
-
-      /* prevent text selection across browsers */
-      -webkit-user-select: none; /* Safari */
-      -moz-user-select: none;    /* Firefox */
-      -ms-user-select: none;     /* old IE/Edge */
-        user-select: none;         /* Standard */
+      font-size: 48px;
+      width: 250px;
+      height: 250px;
+      border: none;
+      border-radius: 50%;
+      background-color: #2ea6ff;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.3);
+      display: flex;
+      justify-content: center; 
+      align-items: center; 
+      touch-action: manipulation;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
     }
+    
     .counter {
       position: fixed;
       top: 20px;
@@ -66,7 +69,7 @@
       padding: 8px 12px;
       border-radius: 12px;
       font-weight: bold;
-}
+    }
 
     .xp-bar-container {
       position: fixed;
@@ -78,86 +81,86 @@
       border-radius: 8px;
       overflow: hidden;
       z-index: 100;
-}
+    }
 
     .xp-bar {
       height: 100%;
-      width: 0%;               /* start empty */
+      width: 0%;
       background: linear-gradient(90deg, #ffd700, #ff8c00);
       transition: width 0.3s ease-out;
-}
-
-
+    }
   </style>
 </head>
 <body>
+
+  <!-- Divs / DOM elements -->
   <div class="bg"></div>
+  <div class="xp-bar-container">
+    <div class="xp-bar" id="xpBar"></div>
+  </div>
   <div class="wrap">
     <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
   </div>
   <div class="counter" id="counter">Taps: 0</div>
   <div class="xp-counter" id="xpCounter">XP: 0</div>
-  <div class="xp-bar-container">
-  <div class="xp-bar" id="xpBar"></div>
-</div>
 
-
-
+  <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-      const tg = window.Telegram.WebApp;
-tg.expand();
+    // -------------------------
+    // Constants & variables
+    // -------------------------
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-let taps = 0;
-let xp = 0;
+    let taps = 0;
+    let xp = 0;
+    const xpPerLevel = 150; // XP needed to level up
 
-const tapBtn = document.getElementById('tapBtn');
-const counter = document.getElementById('counter');
-const xpCounter = document.getElementById('xpCounter');
-const xpBar = document.getElementById('xpBar');
-const xpPerLevel = 150; // XP required to reach next level
+    const tapBtn = document.getElementById('tapBtn');
+    const counter = document.getElementById('counter');
+    const xpCounter = document.getElementById('xpCounter');
+    const xpBar = document.getElementById('xpBar');
 
+    // -------------------------
+    // Event listener
+    // -------------------------
+    tapBtn.addEventListener('click', () => {
+      taps += 1;
+      xp += 10;
 
+      counter.textContent = `Taps: ${taps}`;
+      xpCounter.textContent = `XP: ${xp}`;
 
-tapBtn.addEventListener('click', () => {
-  taps += 1;
-  xp += 10;
-  counter.textContent = `Taps: ${taps}`;
-  xpCounter.textContent = `XP: ${xp}`;
+      // Update progress bar
+      let progress = Math.min((xp / xpPerLevel) * 100, 100);
+      xpBar.style.width = progress + '%';
 
-  // update progress bar
-let progress = Math.min((xp / xpPerLevel) * 100, 100);
-xpBar.style.width = progress + '%';
+      // Send tap event to your bot
+      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
 
+      // Create floating +10 XP sign
+      const xpSign = document.createElement('div');
+      xpSign.textContent = '+10 XP';
+      xpSign.style.position = 'fixed';
+      xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+      xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+      xpSign.style.color = 'yellow';
+      xpSign.style.fontWeight = 'bold';
+      xpSign.style.fontSize = '24px';
+      xpSign.style.pointerEvents = 'none';
+      document.body.appendChild(xpSign);
 
-  // Send tap event to your bot
-  tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+      xpSign.animate([
+        { opacity: 1, transform: 'translateY(0px)' },
+        { opacity: 0, transform: 'translateY(-50px)' }
+      ], { duration: 1000, easing: 'ease-out' });
 
-  // Create +10 XP floating sign
-  const xpSign = document.createElement('div');
-  xpSign.textContent = '+10 XP';
-  xpSign.style.position = 'fixed';
-  xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-  xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-  xpSign.style.color = 'yellow';
-  xpSign.style.fontWeight = 'bold';
-  xpSign.style.fontSize = '24px';
-  xpSign.style.pointerEvents = 'none';
-  document.body.appendChild(xpSign);
+      setTimeout(() => xpSign.remove(), 1000);
+    });
 
-  xpSign.animate([
-    { opacity: 1, transform: 'translateY(0px)' },
-    { opacity: 0, transform: 'translateY(-50px)' }
-  ], { duration: 1000, easing: 'ease-out' });
-
-  setTimeout(() => xpSign.remove(), 1000);
-});
-
-// 🚫 Block double-tap zoom
-document.addEventListener('dblclick', function(e) {
-  e.preventDefault();
-}, { passive: false });
-
+    // Block double-tap zoom
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
   </script>
 </body>
 </html>

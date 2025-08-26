@@ -27,8 +27,8 @@
     }
     .tap {
        font-size: 48px;
-        width: 160px;        /* fixed width */
-        height: 160px;       /* fixed height */
+        width: 250px;        /* fixed width */
+        height: 250px;       /* fixed height */
         border: none;
         border-radius: 50%;  /* now it’s a perfect circle */
         background-color: #2ea6ff;
@@ -68,6 +68,26 @@
       font-weight: bold;
 }
 
+    .xp-bar-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 16px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 100;
+}
+
+    .xp-bar {
+      height: 100%;
+      width: 0%;               /* start empty */
+      background: linear-gradient(90deg, #ffd700, #ff8c00);
+      transition: width 0.3s ease-out;
+}
+
+
   </style>
 </head>
 <body>
@@ -77,6 +97,10 @@
   </div>
   <div class="counter" id="counter">Taps: 0</div>
   <div class="xp-counter" id="xpCounter">XP: 0</div>
+  <div class="xp-bar-container">
+  <div class="xp-bar" id="xpBar"></div>
+</div>
+
 
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -90,12 +114,21 @@ let xp = 0;
 const tapBtn = document.getElementById('tapBtn');
 const counter = document.getElementById('counter');
 const xpCounter = document.getElementById('xpCounter');
+const xpBar = document.getElementById('xpBar');
+const xpPerLevel = 150; // XP required to reach next level
+
+
 
 tapBtn.addEventListener('click', () => {
   taps += 1;
   xp += 10;
   counter.textContent = `Taps: ${taps}`;
   xpCounter.textContent = `XP: ${xp}`;
+
+  // update progress bar
+let progress = Math.min((xp / xpPerLevel) * 100, 100);
+xpBar.style.width = progress + '%';
+
 
   // Send tap event to your bot
   tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));

@@ -26,10 +26,10 @@
       align-items: center;
     }
     .tap {
-      font-size: 32px;
-      padding: 20px 40px;
+       font-size: 48px;               /* bigger */
+      padding: 40px 60px;            /* bigger button */
       border: none;
-      border-radius: 16px;
+      border-radius: 50%;            /* makes it round */
       background-color: #2ea6ff;
       color: #fff;
       cursor: pointer;
@@ -51,6 +51,18 @@
       border-radius: 12px;
       font-weight: bold;
     }
+
+    .xp-counter {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      padding: 8px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+}
+
   </style>
 </head>
 <body>
@@ -59,22 +71,47 @@
     <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
   </div>
   <div class="counter" id="counter">Taps: 0</div>
+  <div class="xp-counter" id="xpCounter">XP: 0</div>
+
 
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    let taps = 0;
-    const tapBtn = document.getElementById('tapBtn');
-    const counter = document.getElementById('counter');
+    let xp = 0;
+    const xpCounter = document.getElementById('xpCounter');
 
-    tapBtn.addEventListener('click', () => {
-      taps += 1;
-      counter.textContent = `Taps: ${taps}`;
-      // Send tap event to your bot
-      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
-    });
+  tapBtn.addEventListener('click', () => {
+  taps += 1;
+  xp += 10;  // each tap gives 10 XP
+  counter.textContent = `Taps: ${taps}`;
+  xpCounter.textContent = `XP: ${xp}`;
+
+  // Send tap event to your bot
+  tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+
+  // Create +10 XP floating sign
+  const xpSign = document.createElement('div');
+  xpSign.textContent = '+10 XP';
+  xpSign.style.position = 'fixed';
+  xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;  // random horizontal
+  xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;   // random vertical
+  xpSign.style.color = 'yellow';
+  xpSign.style.fontWeight = 'bold';
+  xpSign.style.fontSize = '24px';
+  xpSign.style.pointerEvents = 'none';
+  document.body.appendChild(xpSign);
+
+  // fade out animation
+  xpSign.animate([
+    { opacity: 1, transform: 'translateY(0px)' },
+    { opacity: 0, transform: 'translateY(-50px)' }
+  ], { duration: 1000, easing: 'ease-out' });
+
+  setTimeout(() => xpSign.remove(), 1000); // remove after animation
+});
+
 
     // 🚫 Block double-tap zoom
     document.addEventListener('dblclick', function(e) {

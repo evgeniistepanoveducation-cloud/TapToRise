@@ -114,15 +114,29 @@
       z-index: 2000;
     }
 
-    #rouletteBox {
+    #rouletteMask {
       width: 80%;
       max-width: 600px;
       height: 200px;
       background: white;
       border-radius: 16px;
-      display: flex;
       overflow: hidden;
       position: relative;
+    }
+
+    #rouletteBox {
+      display: flex;
+      position: absolute;
+      top: 0; left: 0;
+      height: 100%;
+    }
+
+    #rouletteBox div {
+      flex: 0 0 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
     }
   </style>
 </head>
@@ -142,8 +156,8 @@
 
   <!-- Roulette overlay -->
   <div id="rouletteOverlay">
-    <div id="rouletteBox">
-      <!-- Prizes will be inserted here dynamically -->
+    <div id="rouletteMask">
+      <div id="rouletteBox"></div>
     </div>
   </div>
 
@@ -153,12 +167,9 @@
     const tg = window.Telegram.WebApp;
     tg.expand();
 
-    let xp = 0;
-    let level = 1;
+    let xp = 0, level = 1, xpPerLevel = 1000;
     const maxLevel = 10;
-    let xpPerLevel = 1000;      // XP needed for next level
-    let lastRouletteXP = 0;    // track last XP trigger
-    let rouletteTriggered = false;
+    let lastRouletteXP = 0, rouletteTriggered = false;
 
     const tapBtn = document.getElementById('tapBtn');
     const xpCounter = document.getElementById('xpCounter');
@@ -166,103 +177,77 @@
     const levelIndicator = document.getElementById('levelIndicator');
     const message = document.getElementById('message');
     const rouletteOverlay = document.getElementById('rouletteOverlay');
-
-    //roulette design
-
-    const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
     const rouletteBox = document.getElementById('rouletteBox');
+
+    // Prizes
+    const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
+    const prizeWidth = 100;
 
     prizes.forEach(prize => {
       const div = document.createElement('div');
       div.textContent = prize;
-      div.style.flex = '0 0 100px'; // fixed width
-      div.style.display = 'flex';
-      div.style.justifyContent = 'center';
-      div.style.alignItems = 'center';
-      div.style.fontSize = '36px';
       rouletteBox.appendChild(div);
-});
+    });
 
-      let position = 0;
-      const prizeWidth = 100; // must match div width
-      const totalWidth = prizes.length * prizeWidth;
-      let speed = 20; // pixels per frame
+    let position = 0, speed = 20, spinning = false;
 
-      function spinRoulette() {
-        position -= speed;
-        if (position <= -totalWidth) position = 0; // loop continuously
-        rouletteBox.style.transform = `translateX(${position}px)`;
-        requestAnimationFrame(spinRoulette);
-      }
+    function spinRoulette() {
+      if (!spinning) return;
+      position -= speed;
+      if (position <= -prizes.length * prizeWidth) position = 0;
+      rouletteBox.style.transform = `translateX(${position}px)`;
+      requestAnimationFrame(spinRoulette);
+    }
 
-      function stopRoulette() {
-        const prizeIndex = Math.floor(Math.random() * prizes.length);
-        position = -prizeIndex * prizeWidth + (rouletteBox.offsetWidth / 2 - prizeWidth / 2);
-        rouletteBox.style.transition = 'transform 1s ease-out';
-        rouletteBox.style.transform = `translateX(${position}px)`;
+    function stopRoulette() {
+      spinning = false;
+      const prizeIndex = Math.floor(Math.random() * prizes.length);
+      const mask = document.getElementById('rouletteMask');
+      position = -prizeIndex * prizeWidth + (mask.offsetWidth/2 - prizeWidth/2);
+      rouletteBox.style.transition = 'transform 1s ease-out';
+      rouletteBox.style.transform = `translateX(${position}px)`;
 
-        console.log('🎉 Player won:', prizes[prizeIndex]);
+      console.log('🎉 Player won:', prizes[prizeIndex]);
 
-        setTimeout(() => {
-          tapBtn.disabled = false;
-          document.getElementById('rouletteOverlay').style.display = 'none';
-          rouletteBox.style.transition = '';
-          position = 0; // reset for next spin
-        }, 1000);
-      }
-
-// event listener
+      setTimeout(() => {
+        rouletteOverlay.style.display = 'none';
+        tapBtn.disabled = false;
+        rouletteBox.style.transition = '';
+        position = 0;
+      }, 1000);
+    }
 
     tapBtn.addEventListener('click', () => {
       xp += 10;
       xpCounter.textContent = `XP: ${xp}`;
       xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-      // Roulette trigger every 300 XP
+      // Trigger roulette every 300 XP
       if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
         rouletteTriggered = true;
         lastRouletteXP = xp;
         rouletteOverlay.style.display = 'flex';
         tapBtn.disabled = true;
-        console.log("🎰 Roulette triggered!");
-
-        // Placeholder animation duration
-        setTimeout(() => {
-          rouletteOverlay.style.display = 'none';
-          tapBtn.disabled = false;
-          rouletteTriggered = false;
-        }, 3000); // 3s animation
+        spinning = true;
+        spinRoulette();
+        setTimeout(() => stopRoulette(), 3000);
+        setTimeout(() => { rouletteTriggered = false; }, 3500);
       }
-
-          if (xp >= 300 && !rouletteTriggered) {
-          rouletteTriggered = true;
-          const overlay = document.getElementById('rouletteOverlay');
-          overlay.style.display = 'flex';
-          tapBtn.disabled = true;
-
-          spinRoulette(); // start horizontal loop
-          setTimeout(() => stopRoulette(), 3000); // stop after 3 seconds
-        }
-
-
 
       // Level up
       if (xp >= xpPerLevel && level < maxLevel) {
         xp -= xpPerLevel;
         level++;
         xpPerLevel *= 2;
-
         levelIndicator.textContent = `Level: ${level}`;
         xpCounter.textContent = `XP: ${xp}`;
         xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
-
-        // Show congrats message
         message.textContent = "🎉 Congrats, best level achieved!";
         message.style.display = "block";
         setTimeout(() => { message.style.display = "none"; }, 2000);
       }
 
-      // Floating +10 XP sign
+      // Floating +10 XP
       const xpSign = document.createElement('div');
       xpSign.textContent = '+10 XP';
       xpSign.style.position = 'fixed';
@@ -273,7 +258,6 @@
       xpSign.style.fontSize = '24px';
       xpSign.style.pointerEvents = 'none';
       document.body.appendChild(xpSign);
-
       xpSign.animate([
         { opacity: 1, transform: 'translateY(0px)' },
         { opacity: 0, transform: 'translateY(-50px)' }
@@ -284,7 +268,6 @@
       tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
     });
 
-    // Block double-tap zoom
     document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
   </script>
 

@@ -16,7 +16,7 @@
     .bg {
       position: fixed;
       inset: 0;
-      background-image: url('Gradient_Blue.jpg'); /* Replace with your picture later */
+      background-image: url('Gradient_Blue.jpg'); /* Replace with your picture */
       background-size: cover;
       background-position: center;
     }
@@ -49,27 +49,16 @@
       user-select: none;
     }
     
-    .counter {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.4);
-      color: #fff;
-      padding: 8px 12px;
-      border-radius: 12px;
-      font-weight: bold;
-    }
-
     .xp-counter {
       position: fixed;
       top: 20px;
       left: 20px;
       background: rgba(0,0,0,0.4);
       color: #fff;
-      padding: 16px 20px;    /* increased padding */
+      padding: 16px 20px;
       border-radius: 16px;
       font-weight: bold;
-      font-size: 32px;       /* larger font */
+      font-size: 32px;
     }
 
     .level-indicator {
@@ -83,8 +72,6 @@
       font-weight: bold;
       font-size: 20px;
     }
-
-
 
     .xp-bar-container {
       position: fixed;
@@ -104,106 +91,105 @@
       background: linear-gradient(90deg, #ffd700, #ff8c00);
       transition: width 0.3s ease-out;
     }
+
+    #message {
+      display:none;
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      background:black;
+      color:white;
+      padding:20px;
+      border-radius:10px;
+      font-size:20px;
+      z-index:2000;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Divs / DOM elements -->
+  <!-- Background & UI -->
   <div class="bg"></div>
   <div class="xp-bar-container">
-  <div class="xp-bar" id="xpBar"></div>
+    <div class="xp-bar" id="xpBar"></div>
   </div>
   <div class="wrap">
-  <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
+    <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
   </div>
   <div class="level-indicator" id="levelIndicator">Level: 1</div>
-  <div id="message" style="display:none; position:fixed; top:50%; left:50%; 
-     transform:translate(-50%,-50%); background:black; color:white; padding:20px; 
-     border-radius:10px; font-size:20px; z-index:2000;">
-</div>
-
-
-
   <div class="xp-counter" id="xpCounter">XP: 0</div>
+  <div id="message"></div>
 
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-  // -------------------------
-  // Constants & variables
-  // -------------------------
-  const tg = window.Telegram.WebApp;
-  tg.expand();
+    const tg = window.Telegram.WebApp;
+    tg.expand();
 
-  let xp = 0;
-  let level = 1;
-  const maxLevel = 5;
-  let xpPerLevel = 200; // XP needed to reach next level (will double each level)
+    let xp = 0;
+    let level = 1;
+    const maxLevel = 5;
+    let xpPerLevel = 200; // XP needed for next level
 
-  const tapBtn = document.getElementById('tapBtn');
-  const xpCounter = document.getElementById('xpCounter');
-  const xpBar = document.getElementById('xpBar');
-  const levelIndicator = document.getElementById('levelIndicator');
-  const message = document.getElementById('message'); // <-- make sure you add <div id="message"></div> in HTML
+    const tapBtn = document.getElementById('tapBtn');
+    const xpCounter = document.getElementById('xpCounter');
+    const xpBar = document.getElementById('xpBar');
+    const levelIndicator = document.getElementById('levelIndicator');
+    const message = document.getElementById('message');
 
-  // -------------------------
-  // Event listener
-  // -------------------------
-  tapBtn.addEventListener('click', () => {
-    if (level >= maxLevel) return; // stop progression after max level
+    tapBtn.addEventListener('click', () => {
+      if (level >= maxLevel && xp >= xpPerLevel) return; // stop progression after max level
 
-    xp += 10;
-    xpCounter.textContent = `XP: ${xp}`;
+      // Add XP
+      xp += 10;
+      xpCounter.textContent = `XP: ${xp}`;
 
-    // Update progress bar
-    let progress = Math.min((xp / xpPerLevel) * 100, 100);
-    xpBar.style.width = progress + '%';
+      // Update XP bar
+      let progress = Math.min((xp / xpPerLevel) * 100, 100);
+      xpBar.style.width = progress + '%';
 
-    // Send tap event to your bot
-    tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+      // Send tap event to bot
+      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
 
-    // Check for level up
-    if (xp >= xpPerLevel) {
-      level++;
-      xp -= xpPerLevel; // carry over extra XP
-      xpPerLevel *= 2;  // double requirement
+      // Level up logic
+      if (xp >= xpPerLevel && level < maxLevel) {
+        xp -= xpPerLevel;       // subtract current level XP
+        level++;
+        levelIndicator.textContent = `Level: ${level}`;
 
-  levelIndicator.textContent = `Level: ${level}`;
-  xpCounter.textContent = `XP: ${xp}`;
-  xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+        // Show congrats message
+        message.textContent = "🎉 Congrats, best level achieved!";
+        message.style.display = "block";
+        setTimeout(() => { message.style.display = "none"; }, 2000);
 
-      // Show congrats message
-      message.textContent = "🎉 Congrats, best level achieved!";
-      message.style.display = "block";
-      setTimeout(() => { message.style.display = "none"; }, 2000);
-}
+        xpPerLevel *= 2;         // double XP needed for next level
+        xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+        xpCounter.textContent = `XP: ${xp}`;
+      }
 
+      // Floating +10 XP sign
+      const xpSign = document.createElement('div');
+      xpSign.textContent = '+10 XP';
+      xpSign.style.position = 'fixed';
+      xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+      xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+      xpSign.style.color = 'yellow';
+      xpSign.style.fontWeight = 'bold';
+      xpSign.style.fontSize = '24px';
+      xpSign.style.pointerEvents = 'none';
+      document.body.appendChild(xpSign);
 
-    // Create floating +10 XP sign
-    const xpSign = document.createElement('div');
-    xpSign.textContent = '+10 XP';
-    xpSign.style.position = 'fixed';
-    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-    xpSign.style.color = 'yellow';
-    xpSign.style.fontWeight = 'bold';
-    xpSign.style.fontSize = '24px';
-    xpSign.style.pointerEvents = 'none';
-    document.body.appendChild(xpSign);
+      xpSign.animate([
+        { opacity: 1, transform: 'translateY(0px)' },
+        { opacity: 0, transform: 'translateY(-50px)' }
+      ], { duration: 1000, easing: 'ease-out' });
 
-    xpSign.animate([
-      { opacity: 1, transform: 'translateY(0px)' },
-      { opacity: 0, transform: 'translateY(-50px)' }
-    ], { duration: 1000, easing: 'ease-out' });
+      setTimeout(() => xpSign.remove(), 1000);
+    });
 
-    setTimeout(() => xpSign.remove(), 1000);
-  });
-
-  // -------------------------
-  // Block double-tap zoom
-  // -------------------------
-  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-</script>
-
+    // Block double-tap zoom
+    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+  </script>
 </body>
 </html>

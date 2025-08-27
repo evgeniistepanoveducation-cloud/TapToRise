@@ -16,7 +16,7 @@
     .bg {
       position: fixed;
       inset: 0;
-      background-image: url('Gradient_Blue.jpg'); /* Replace with your picture */
+      background-image: url('Gradient_Blue.jpg'); 
       background-size: cover;
       background-position: center;
     }
@@ -43,9 +43,6 @@
       justify-content: center; 
       align-items: center; 
       touch-action: manipulation;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
     }
     
@@ -105,6 +102,28 @@
       font-size:20px;
       z-index:2000;
     }
+
+    /* Roulette overlay */
+    #rouletteOverlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+    }
+
+    #rouletteBox {
+      width: 80%;
+      max-width: 600px;
+      height: 200px;
+      background: white;
+      border-radius: 16px;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
   </style>
 </head>
 <body>
@@ -120,31 +139,13 @@
   <div class="level-indicator" id="levelIndicator">Level: 1</div>
   <div class="xp-counter" id="xpCounter">XP: 0</div>
   <div id="message"></div>
-  <!-- Roulette overlay (hidden by default) -->
-<div id="rouletteOverlay" style="
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.5); /* button visible behind */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 2000;
-">
-    <div id="rouletteBox" style="
-        width: 80%;
-        max-width: 600px;
-        height: 200px;
-        background: white;
-        border-radius: 16px;
-        display: flex;
-        overflow: hidden;
-        position: relative;
-    ">
-        <!-- Prizes will be inserted here dynamically -->
-    </div>
-</div>
 
+  <!-- Roulette overlay -->
+  <div id="rouletteOverlay">
+    <div id="rouletteBox">
+      <!-- Prizes will be inserted here dynamically -->
+    </div>
+  </div>
 
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -155,52 +156,52 @@
     let xp = 0;
     let level = 1;
     const maxLevel = 10;
-    let xpPerLevel = 100; // XP needed for next level
-    let lastRouletteXP = 0; // track last XP when roulette triggered
+    let xpPerLevel = 100;      // XP needed for next level
+    let lastRouletteXP = 0;    // track last XP trigger
+    let rouletteTriggered = false;
 
     const tapBtn = document.getElementById('tapBtn');
     const xpCounter = document.getElementById('xpCounter');
     const xpBar = document.getElementById('xpBar');
     const levelIndicator = document.getElementById('levelIndicator');
     const message = document.getElementById('message');
+    const rouletteOverlay = document.getElementById('rouletteOverlay');
 
     tapBtn.addEventListener('click', () => {
-    // Add XP
-    xp += 10;
-    xpCounter.textContent = `XP: ${xp}`;
+      xp += 10;
+      xpCounter.textContent = `XP: ${xp}`;
+      xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-    // Update XP bar
-    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
-
-    // Roulette trigger every 300 XP, only if XP crossed the threshold
-    if (xp - lastRouletteXP >= 300) {
-        const overlay = document.getElementById('rouletteOverlay');
-        overlay.style.display = 'flex';
-        overlay.classList.add('active');
+      // Roulette trigger every 300 XP
+      if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
+        rouletteTriggered = true;
+        lastRouletteXP = xp;
+        rouletteOverlay.style.display = 'flex';
         tapBtn.disabled = true;
-
-        lastRouletteXP = xp; // mark the last time roulette triggered
         console.log("🎰 Roulette triggered!");
-    }
 
+        // Placeholder animation duration
+        setTimeout(() => {
+          rouletteOverlay.style.display = 'none';
+          tapBtn.disabled = false;
+          rouletteTriggered = false;
+        }, 3000); // 3s animation
+      }
 
-      // Send tap event to bot
-      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
-
-      // Level up logic
+      // Level up
       if (xp >= xpPerLevel && level < maxLevel) {
-        xp -= xpPerLevel;       // subtract current level XP
+        xp -= xpPerLevel;
         level++;
+        xpPerLevel *= 2;
+
         levelIndicator.textContent = `Level: ${level}`;
+        xpCounter.textContent = `XP: ${xp}`;
+        xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
 
         // Show congrats message
         message.textContent = "🎉 Congrats, best level achieved!";
         message.style.display = "block";
         setTimeout(() => { message.style.display = "none"; }, 2000);
-
-        xpPerLevel *= 2;         // double XP needed for next level
-        xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
-        xpCounter.textContent = `XP: ${xp}`;
       }
 
       // Floating +10 XP sign
@@ -219,12 +220,15 @@
         { opacity: 1, transform: 'translateY(0px)' },
         { opacity: 0, transform: 'translateY(-50px)' }
       ], { duration: 1000, easing: 'ease-out' });
-
       setTimeout(() => xpSign.remove(), 1000);
+
+      // Send tap to bot
+      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
     });
 
     // Block double-tap zoom
     document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
   </script>
+
 </body>
 </html>

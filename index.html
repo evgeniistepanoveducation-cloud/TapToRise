@@ -72,6 +72,20 @@
       font-size: 32px;       /* larger font */
     }
 
+    .level-indicator {
+      position: fixed;
+      top: 70px;
+      left: 20px;
+      background: rgba(0,0,0,0.4);
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+
+
     .xp-bar-container {
       position: fixed;
       top: 0;
@@ -97,11 +111,15 @@
   <!-- Divs / DOM elements -->
   <div class="bg"></div>
   <div class="xp-bar-container">
-    <div class="xp-bar" id="xpBar"></div>
+  <div class="xp-bar" id="xpBar"></div>
   </div>
   <div class="wrap">
-    <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
+  <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
   </div>
+  <div class="message" id="message"></div>
+  <div class="level-indicator" id="levelIndicator">Level: 1</div>
+
+
 
   <div class="xp-counter" id="xpCounter">XP: 0</div>
 
@@ -116,12 +134,15 @@
 
     let taps = 0;
     let xp = 0;
+    let level = 1;
+    const maxLevel = 5;
     const xpPerLevel = 200; // XP needed to level up
 
     const tapBtn = document.getElementById('tapBtn');
     const counter = document.getElementById('counter');
     const xpCounter = document.getElementById('xpCounter');
     const xpBar = document.getElementById('xpBar');
+    const levelIndicator = document.getElementById('levelIndicator');
 
     // -------------------------
     // Event listener
@@ -138,6 +159,8 @@
 
       // Send tap event to your bot
       tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+
+      if (level >= maxLevel) return; // stop progression after level 5
 
       // Create floating +10 XP sign
       const xpSign = document.createElement('div');
@@ -158,6 +181,31 @@
 
       setTimeout(() => xpSign.remove(), 1000);
     });
+
+// Level ups
+
+   if (xp >= xpPerLevel) {
+  xp = 0; // reset XP after leveling up
+  level++;
+  
+levelIndicator.textContent = `Level: ${level}`;
+
+
+  // double XP requirement for next level
+  xpPerLevel *= 2;
+
+  xpBar.style.width = '0%';
+  xpCounter.textContent = `XP: ${xp}`;
+
+  // Show message
+  message.textContent = "Congrats, best level achieved!";
+  message.style.display = "block";
+
+  setTimeout(() => {
+    message.style.display = "none";
+  }, 2000);
+}
+
 
     // Block double-tap zoom
     document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });

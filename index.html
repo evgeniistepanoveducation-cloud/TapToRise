@@ -156,7 +156,7 @@
     let xp = 0;
     let level = 1;
     const maxLevel = 10;
-    let xpPerLevel = 100;      // XP needed for next level
+    let xpPerLevel = 1000;      // XP needed for next level
     let lastRouletteXP = 0;    // track last XP trigger
     let rouletteTriggered = false;
 
@@ -166,6 +166,52 @@
     const levelIndicator = document.getElementById('levelIndicator');
     const message = document.getElementById('message');
     const rouletteOverlay = document.getElementById('rouletteOverlay');
+
+    //roulette design
+
+    const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
+    const rouletteBox = document.getElementById('rouletteBox');
+
+    prizes.forEach(prize => {
+      const div = document.createElement('div');
+      div.textContent = prize;
+      div.style.flex = '0 0 100px'; // fixed width
+      div.style.display = 'flex';
+      div.style.justifyContent = 'center';
+      div.style.alignItems = 'center';
+      div.style.fontSize = '36px';
+      rouletteBox.appendChild(div);
+});
+
+      let position = 0;
+      const prizeWidth = 100; // must match div width
+      const totalWidth = prizes.length * prizeWidth;
+      let speed = 20; // pixels per frame
+
+      function spinRoulette() {
+        position -= speed;
+        if (position <= -totalWidth) position = 0; // loop continuously
+        rouletteBox.style.transform = `translateX(${position}px)`;
+        requestAnimationFrame(spinRoulette);
+      }
+
+      function stopRoulette() {
+        const prizeIndex = Math.floor(Math.random() * prizes.length);
+        position = -prizeIndex * prizeWidth + (rouletteBox.offsetWidth / 2 - prizeWidth / 2);
+        rouletteBox.style.transition = 'transform 1s ease-out';
+        rouletteBox.style.transform = `translateX(${position}px)`;
+
+        console.log('🎉 Player won:', prizes[prizeIndex]);
+
+        setTimeout(() => {
+          tapBtn.disabled = false;
+          document.getElementById('rouletteOverlay').style.display = 'none';
+          rouletteBox.style.transition = '';
+          position = 0; // reset for next spin
+        }, 1000);
+      }
+
+// event listener
 
     tapBtn.addEventListener('click', () => {
       xp += 10;
@@ -187,6 +233,18 @@
           rouletteTriggered = false;
         }, 3000); // 3s animation
       }
+
+          if (xp >= 300 && !rouletteTriggered) {
+          rouletteTriggered = true;
+          const overlay = document.getElementById('rouletteOverlay');
+          overlay.style.display = 'flex';
+          tapBtn.disabled = true;
+
+          spinRoulette(); // start horizontal loop
+          setTimeout(() => stopRoulette(), 3000); // stop after 3 seconds
+        }
+
+
 
       // Level up
       if (xp >= xpPerLevel && level < maxLevel) {

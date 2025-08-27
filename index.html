@@ -116,7 +116,6 @@
   <div class="wrap">
   <button class="tap" id="tapBtn">🔥 TAP! 🔥</button>
   </div>
-  <div class="message" id="message"></div>
   <div class="level-indicator" id="levelIndicator">Level: 1</div>
   <div id="message" style="display:none; position:fixed; top:50%; left:50%; 
      transform:translate(-50%,-50%); background:black; color:white; padding:20px; 
@@ -169,15 +168,16 @@
       xp -= xpPerLevel; // carry over extra XP
       xpPerLevel *= 2;  // double requirement
 
-      levelIndicator.textContent = `Level: ${level}`;
-      xpCounter.textContent = `XP: ${xp}`;
-      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+  levelIndicator.textContent = `Level: ${level}`;
+  xpCounter.textContent = `XP: ${xp}`;
+  xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
 
       // Show congrats message
       message.textContent = "🎉 Congrats, best level achieved!";
       message.style.display = "block";
       setTimeout(() => { message.style.display = "none"; }, 2000);
-    }
+}
+
 
     // Create floating +10 XP sign
     const xpSign = document.createElement('div');

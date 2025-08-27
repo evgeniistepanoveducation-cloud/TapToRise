@@ -63,7 +63,7 @@
 
     .level-indicator {
       position: fixed;
-      top: 150px;
+      top: 100px;
       left: 20px;
       background: rgba(0,0,0,0.4);
       color: #fff;
@@ -156,6 +156,7 @@
     let level = 1;
     const maxLevel = 10;
     let xpPerLevel = 100; // XP needed for next level
+    let lastRouletteXP = 0; // track last XP when roulette triggered
 
     const tapBtn = document.getElementById('tapBtn');
     const xpCounter = document.getElementById('xpCounter');
@@ -164,27 +165,23 @@
     const message = document.getElementById('message');
 
     tapBtn.addEventListener('click', () => {
-      if (level >= maxLevel && xp >= xpPerLevel) return; // stop progression after max level
+    // Add XP
+    xp += 10;
+    xpCounter.textContent = `XP: ${xp}`;
 
-      // Add XP
-      xp += 10;
-      xpCounter.textContent = `XP: ${xp}`;
+    // Update XP bar
+    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-      // Update XP bar
-      let progress = Math.min((xp / xpPerLevel) * 100, 100);
-      xpBar.style.width = progress + '%';
+    // Roulette trigger every 300 XP, only if XP crossed the threshold
+    if (xp - lastRouletteXP >= 300) {
+        const overlay = document.getElementById('rouletteOverlay');
+        overlay.style.display = 'flex';
+        overlay.classList.add('active');
+        tapBtn.disabled = true;
 
-        if (xp >= 300 && !document.getElementById('rouletteOverlay').classList.contains('active')) {
-          const overlay = document.getElementById('rouletteOverlay');
-          overlay.style.display = 'flex';
-          overlay.classList.add('active'); // mark it active so it doesn’t retrigger
-
-    // Block taps temporarily
-    tapBtn.disabled = true;
-
-    // Here we will start the animation next
-    console.log("🎰 Roulette triggered!");
-}
+        lastRouletteXP = xp; // mark the last time roulette triggered
+        console.log("🎰 Roulette triggered!");
+    }
 
 
       // Send tap event to bot

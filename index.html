@@ -74,7 +74,7 @@
 
     .level-indicator {
       position: fixed;
-      top: 70px;
+      top: 150px;
       left: 20px;
       background: rgba(0,0,0,0.4);
       color: #fff;
@@ -118,6 +118,10 @@
   </div>
   <div class="message" id="message"></div>
   <div class="level-indicator" id="levelIndicator">Level: 1</div>
+  <div id="message" style="display:none; position:fixed; top:50%; left:50%; 
+     transform:translate(-50%,-50%); background:black; color:white; padding:20px; 
+     border-radius:10px; font-size:20px; z-index:2000;">
+</div>
 
 
 
@@ -126,89 +130,80 @@
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-    // -------------------------
-    // Constants & variables
-    // -------------------------
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+  // -------------------------
+  // Constants & variables
+  // -------------------------
+  const tg = window.Telegram.WebApp;
+  tg.expand();
 
-    let taps = 0;
-    let xp = 0;
-    let level = 1;
-    const maxLevel = 5;
-    const xpPerLevel = 200; // XP needed to level up
+  let xp = 0;
+  let level = 1;
+  const maxLevel = 5;
+  let xpPerLevel = 200; // XP needed to reach next level (will double each level)
 
-    const tapBtn = document.getElementById('tapBtn');
-    const counter = document.getElementById('counter');
-    const xpCounter = document.getElementById('xpCounter');
-    const xpBar = document.getElementById('xpBar');
-    const levelIndicator = document.getElementById('levelIndicator');
+  const tapBtn = document.getElementById('tapBtn');
+  const xpCounter = document.getElementById('xpCounter');
+  const xpBar = document.getElementById('xpBar');
+  const levelIndicator = document.getElementById('levelIndicator');
+  const message = document.getElementById('message'); // <-- make sure you add <div id="message"></div> in HTML
 
-    // -------------------------
-    // Event listener
-    // -------------------------
-    tapBtn.addEventListener('click', () => {
-    
-      xp += 10;
+  // -------------------------
+  // Event listener
+  // -------------------------
+  tapBtn.addEventListener('click', () => {
+    if (level >= maxLevel) return; // stop progression after max level
 
+    xp += 10;
+    xpCounter.textContent = `XP: ${xp}`;
+
+    // Update progress bar
+    let progress = Math.min((xp / xpPerLevel) * 100, 100);
+    xpBar.style.width = progress + '%';
+
+    // Send tap event to your bot
+    tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+
+    // Check for level up
+    if (xp >= xpPerLevel) {
+      level++;
+      xp -= xpPerLevel; // carry over extra XP
+      xpPerLevel *= 2;  // double requirement
+
+      levelIndicator.textContent = `Level: ${level}`;
       xpCounter.textContent = `XP: ${xp}`;
+      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
 
-      // Update progress bar
-      let progress = Math.min((xp / xpPerLevel) * 100, 100);
-      xpBar.style.width = progress + '%';
+      // Show congrats message
+      message.textContent = "🎉 Congrats, best level achieved!";
+      message.style.display = "block";
+      setTimeout(() => { message.style.display = "none"; }, 2000);
+    }
 
-      // Send tap event to your bot
-      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+    // Create floating +10 XP sign
+    const xpSign = document.createElement('div');
+    xpSign.textContent = '+10 XP';
+    xpSign.style.position = 'fixed';
+    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+    xpSign.style.color = 'yellow';
+    xpSign.style.fontWeight = 'bold';
+    xpSign.style.fontSize = '24px';
+    xpSign.style.pointerEvents = 'none';
+    document.body.appendChild(xpSign);
 
-      if (level >= maxLevel) return; // stop progression after level 5
+    xpSign.animate([
+      { opacity: 1, transform: 'translateY(0px)' },
+      { opacity: 0, transform: 'translateY(-50px)' }
+    ], { duration: 1000, easing: 'ease-out' });
 
-      // Create floating +10 XP sign
-      const xpSign = document.createElement('div');
-      xpSign.textContent = '+10 XP';
-      xpSign.style.position = 'fixed';
-      xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-      xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-      xpSign.style.color = 'yellow';
-      xpSign.style.fontWeight = 'bold';
-      xpSign.style.fontSize = '24px';
-      xpSign.style.pointerEvents = 'none';
-      document.body.appendChild(xpSign);
+    setTimeout(() => xpSign.remove(), 1000);
+  });
 
-      xpSign.animate([
-        { opacity: 1, transform: 'translateY(0px)' },
-        { opacity: 0, transform: 'translateY(-50px)' }
-      ], { duration: 1000, easing: 'ease-out' });
+  // -------------------------
+  // Block double-tap zoom
+  // -------------------------
+  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+</script>
 
-      setTimeout(() => xpSign.remove(), 1000);
-    });
-
-// Level ups
-
-   if (xp >= xpPerLevel) {
-  xp = 0; // reset XP after leveling up
-  level++;
-  
-levelIndicator.textContent = `Level: ${level}`;
-
-
-  // double XP requirement for next level
-  xpPerLevel *= 2;
-
-  xpBar.style.width = '0%';
-  xpCounter.textContent = `XP: ${xp}`;
-
-  // Show message
-  message.textContent = "Congrats, best level achieved!";
-  message.style.display = "block";
-
-  setTimeout(() => {
-    message.style.display = "none";
-  }, 2000);
-}
-
-
-    // Block double-tap zoom
-    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-  </script>
 </body>
 </html>

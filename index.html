@@ -120,6 +120,31 @@
   <div class="level-indicator" id="levelIndicator">Level: 1</div>
   <div class="xp-counter" id="xpCounter">XP: 0</div>
   <div id="message"></div>
+  <!-- Roulette overlay (hidden by default) -->
+<div id="rouletteOverlay" style="
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5); /* button visible behind */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+">
+    <div id="rouletteBox" style="
+        width: 80%;
+        max-width: 600px;
+        height: 200px;
+        background: white;
+        border-radius: 16px;
+        display: flex;
+        overflow: hidden;
+        position: relative;
+    ">
+        <!-- Prizes will be inserted here dynamically -->
+    </div>
+</div>
+
 
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -148,6 +173,19 @@
       // Update XP bar
       let progress = Math.min((xp / xpPerLevel) * 100, 100);
       xpBar.style.width = progress + '%';
+
+        if (xp >= 300 && !document.getElementById('rouletteOverlay').classList.contains('active')) {
+          const overlay = document.getElementById('rouletteOverlay');
+          overlay.style.display = 'flex';
+          overlay.classList.add('active'); // mark it active so it doesn’t retrigger
+
+    // Block taps temporarily
+    tapBtn.disabled = true;
+
+    // Here we will start the animation next
+    console.log("🎰 Roulette triggered!");
+}
+
 
       // Send tap event to bot
       tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));

@@ -241,18 +241,21 @@
       const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
       const finalIndex = Math.round((-position + centerOffset) / prizeWidth);
 
-      // remove previous highlights
-      rouletteBox.querySelectorAll('div').forEach(d => d.classList.remove('highlight'));
-
       // highlight final prize
+      rouletteBox.querySelectorAll('div').forEach(d => d.classList.remove('highlight'));
       const prizeDivs = rouletteBox.querySelectorAll('div');
       prizeDivs[finalIndex % prizeDivs.length].classList.add('highlight');
 
       console.log('🎉 Player won:', prizes[finalIndex % prizes.length]);
+
+      // ✅ hide overlay
+      rouletteOverlay.style.display = 'none';
       tapBtn.disabled = false;
       rouletteTriggered = false;
+
       return;
     }
+
   }
 
   requestAnimationFrame(spinRoulette);

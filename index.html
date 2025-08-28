@@ -208,7 +208,7 @@
   
     let position = 0;
     let speed = 50;        // initial high speed
-    let decel = 0.95;      // slowdown factor
+    let decel = 0.98;      // slowdown factor
     let targetPrize = 0;   // where to stop
     let spinning = false;
 
@@ -216,10 +216,11 @@
 
     function spinRoulette() {
   if (!spinning) return;
-  position -= speed;
+  
   rouletteBox.style.transform = `translateX(${position}px)`;
   if (speed > 2) {
-    speed *= decel; // slow down
+    position -= speed;
+    speed *= decel; // slowing down
     requestAnimationFrame(spinRoulette);
   } else {
     stopRoulette();
@@ -230,15 +231,16 @@
     function stopRoulette() {
   spinning = false;
 
-    const prizeIndex = Math.floor(Math.random() * prizes.length);
-    const mask = document.getElementById('rouletteMask');
+  // pick any prize from the duplicated list
+  const prizeIndex = Math.floor(Math.random() * (prizes.length * 2));
+  const mask = document.getElementById('rouletteMask');
 
-  targetPrize = -prizeIndex * prizeWidth + (mask.offsetWidth/2 - prizeWidth/2);
+  const targetPrize = -prizeIndex * prizeWidth + (mask.offsetWidth/2 - prizeWidth/2);
 
-      rouletteBox.style.transition = 'transform 1s ease-out';
-      rouletteBox.style.transform = `translateX(${targetPrize}px)`;
+  rouletteBox.style.transition = 'transform 1s ease-out';
+  rouletteBox.style.transform = `translateX(${targetPrize}px)`;
 
-  console.log('🎉 Player won:', prizes[prizeIndex]);
+  console.log('🎉 Player won:', prizes[prizeIndex % prizes.length]); // map back if needed
 
   setTimeout(() => {
     rouletteOverlay.style.display = 'none';
@@ -247,6 +249,7 @@
     position = 0; // reset for next round
   }, 1000);
 }
+
 
 
     tapBtn.addEventListener('click', () => {
@@ -260,7 +263,7 @@
         lastRouletteXP = xp;
         rouletteOverlay.style.display = 'flex';
         tapBtn.disabled = true;
-        speed = 50;          // initial high speed
+        speed = 80;          // initial high speed
         spinning = true;
         spinRoulette();
 

@@ -205,74 +205,52 @@
   });
 
   let position = 0;
-  let speed = 20;
-  let decel = 0.95;
   let spinning = false;
   let stopping = false;
   const minSpeed = 1.5;
   const cycle = prizes.length * prizeWidth; // width of one set
 
   function spinRoulette() {
-    if (!spinning) return;
+  if (!spinning) return;
 
-    position -= speed;
+  position -= speed;
 
-    // seamless wrap
-    if (position <= -cycle) position += cycle;
+  // seamless wrap
+  if (position <= -cycle) position += cycle;
 
-    rouletteBox.style.transform = `translateX(${position}px)`;
+  rouletteBox.style.transform = `translateX(${position}px)`;
 
-    if (stopping) {
-      if (speed > minSpeed) {
-        speed *= decel;
-        requestAnimationFrame(spinRoulette);
-      } else {
-        stopRoulette();
-      }
-    } else {
-      requestAnimationFrame(spinRoulette);
-    }
-  }
+  if (stopping) {
+    speed *= decel; // slow down gradually
 
-  function stopRoulette() {
-    spinning = false;
-    const mask = document.getElementById('rouletteMask');
-    const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+    if (speed < minSpeed) {
+      spinning = false;
 
-    // pick any column in duplicated strip (0..15)
-    let prizeIndex = Math.floor(Math.random() * (prizes.length * 2));
-
-    // current centered column
-    const currentIndexFloat = (-position + centerOffset) / prizeWidth;
-
-    // ensure final move is forward
-    while (prizeIndex < Math.ceil(currentIndexFloat)) {
-      prizeIndex += prizes.length; // jump to next identical set
-    }
-
-    const targetTranslate = -prizeIndex * prizeWidth + centerOffset;
-
-    rouletteBox.style.transition = 'transform 1s ease-out';
-    rouletteBox.style.transform = `translateX(${targetTranslate}px)`;
-
-    console.log('🎉 Player won:', prizes[prizeIndex % prizes.length]);
-
-    setTimeout(() => {
-      rouletteOverlay.style.display = 'none';
+      // final prize index (nearest item at center)
+      const mask = document.getElementById('rouletteMask');
+      const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+      const finalIndex = Math.round((-position + centerOffset) / prizeWidth);
+      console.log('🎉 Player won:', prizes[finalIndex % prizes.length]);
       tapBtn.disabled = false;
-      rouletteBox.style.transition = '';
-      position = 0;
       rouletteTriggered = false;
-    }, 1000);
+
+      return;
+    }
   }
+
+  requestAnimationFrame(spinRoulette);
+}
+
+
+
 
   tapBtn.addEventListener('click', () => {
     xp += 10;
     xpCounter.textContent = `XP: ${xp}`;
     xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-    // Trigger roulette every 100 XP
-    if (!rouletteTriggered && xp - lastRouletteXP >= 100) {
+    // Trigger roulette every 50 XP
+    if (!rouletteTriggered && xp - lastRouletteXP >= 50) {
       rouletteTriggered = true;
       lastRouletteXP = xp;
       rouletteOverlay.style.display = 'flex';
@@ -280,7 +258,7 @@
       rouletteBox.style.transition = 'none';
       position = 0;
       speed = 50;          // initial high speed
-      decel = 0.95;       // slow decay → many loops
+      decel = 0.9;       // slow decay → many loops
       stopping = false;
       spinning = true;
       spinRoulette();

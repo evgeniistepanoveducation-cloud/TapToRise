@@ -216,16 +216,18 @@
 
     function spinRoulette() {
   if (!spinning) return;
-  
+
+  position -= speed;
   rouletteBox.style.transform = `translateX(${position}px)`;
+
   if (speed > 2) {
-    position -= speed;
-    speed *= decel; // slowing down
+    speed *= decel;
     requestAnimationFrame(spinRoulette);
   } else {
     stopRoulette();
   }
 }
+
 
 
     function stopRoulette() {

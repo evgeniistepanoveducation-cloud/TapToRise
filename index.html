@@ -179,137 +179,151 @@
 
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+<script>
+  const tg = window.Telegram.WebApp;
+  tg.expand();
 
-    let xp = 0, level = 1, xpPerLevel = 1000;
-    const maxLevel = 10;
-    let lastRouletteXP = 0, rouletteTriggered = false;
+  let xp = 0, level = 1, xpPerLevel = 1000;
+  const maxLevel = 10;
+  let lastRouletteXP = 0, rouletteTriggered = false;
 
-    const tapBtn = document.getElementById('tapBtn');
-    const xpCounter = document.getElementById('xpCounter');
-    const xpBar = document.getElementById('xpBar');
-    const levelIndicator = document.getElementById('levelIndicator');
-    const message = document.getElementById('message');
-    const rouletteOverlay = document.getElementById('rouletteOverlay');
-    const rouletteBox = document.getElementById('rouletteBox');
+  const tapBtn = document.getElementById('tapBtn');
+  const xpCounter = document.getElementById('xpCounter');
+  const xpBar = document.getElementById('xpBar');
+  const levelIndicator = document.getElementById('levelIndicator');
+  const message = document.getElementById('message');
+  const rouletteOverlay = document.getElementById('rouletteOverlay');
+  const rouletteBox = document.getElementById('rouletteBox');
 
-    // Roulette js begins here
-    const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
-    const prizeWidth = 100;
+  // Roulette setup
+  const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
+  const prizeWidth = 100;
+  prizes.concat(prizes).forEach(prize => {
+    const div = document.createElement('div');
+    div.textContent = prize;
+    rouletteBox.appendChild(div);
+  });
 
-    prizes.concat(prizes).forEach(prize => {
-      const div = document.createElement('div');
-      div.textContent = prize;
-      rouletteBox.appendChild(div);
-    });
+  let position = 0;
+  let speed = 20;
+  let decel = 0.95;
+  let spinning = false;
+  let stopping = false;
+  const minSpeed = 1.5;
+  const cycle = prizes.length * prizeWidth; // width of one set
 
-  
-    let position = 0;
-    let speed = 20;        // initial high speed
-    let decel = 0.95;      // slowdown factor
-    let targetPrize = 0;   // where to stop
-    let spinning = false;
+  function spinRoulette() {
+    if (!spinning) return;
 
+    position -= speed;
 
+    // seamless wrap
+    if (position <= -cycle) position += cycle;
 
-    function spinRoulette() {
-  if (!spinning) return;
+    rouletteBox.style.transform = `translateX(${position}px)`;
 
-  position -= speed;
-  rouletteBox.style.transform = `translateX(${position}px)`;
-
-  if (speed > 2) {
-    speed *= decel;
-    requestAnimationFrame(spinRoulette);
-  } else {
-    stopRoulette();
+    if (stopping) {
+      if (speed > minSpeed) {
+        speed *= decel;
+        requestAnimationFrame(spinRoulette);
+      } else {
+        stopRoulette();
+      }
+    } else {
+      requestAnimationFrame(spinRoulette);
+    }
   }
-}
 
+  function stopRoulette() {
+    spinning = false;
+    const mask = document.getElementById('rouletteMask');
+    const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
 
+    // pick any column in duplicated strip (0..15)
+    let prizeIndex = Math.floor(Math.random() * (prizes.length * 2));
 
-    function stopRoulette() {
-  spinning = false;
+    // current centered column
+    const currentIndexFloat = (-position + centerOffset) / prizeWidth;
 
-  // pick any prize from the duplicated list
-  const prizeIndex = Math.floor(Math.random() * (prizes.length * 2));
-  const mask = document.getElementById('rouletteMask');
+    // ensure final move is forward
+    while (prizeIndex < Math.ceil(currentIndexFloat)) {
+      prizeIndex += prizes.length; // jump to next identical set
+    }
 
-  const targetPrize = -prizeIndex * prizeWidth + (mask.offsetWidth/2 - prizeWidth/2);
+    const targetTranslate = -prizeIndex * prizeWidth + centerOffset;
 
-  rouletteBox.style.transition = 'transform 1s ease-out';
-  rouletteBox.style.transform = `translateX(${targetPrize}px)`;
+    rouletteBox.style.transition = 'transform 1s ease-out';
+    rouletteBox.style.transform = `translateX(${targetTranslate}px)`;
 
-  console.log('🎉 Player won:', prizes[prizeIndex % prizes.length]); // map back if needed
+    console.log('🎉 Player won:', prizes[prizeIndex % prizes.length]);
 
-  setTimeout(() => {
-    rouletteOverlay.style.display = 'none';
-    tapBtn.disabled = false;
-    rouletteBox.style.transition = '';
-    position = 0; // reset for next round
-  }, 1000);
-}
+    setTimeout(() => {
+      rouletteOverlay.style.display = 'none';
+      tapBtn.disabled = false;
+      rouletteBox.style.transition = '';
+      position = 0;
+      rouletteTriggered = false;
+    }, 1000);
+  }
 
+  tapBtn.addEventListener('click', () => {
+    xp += 10;
+    xpCounter.textContent = `XP: ${xp}`;
+    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
+    // Trigger roulette every 100 XP
+    if (!rouletteTriggered && xp - lastRouletteXP >= 100) {
+      rouletteTriggered = true;
+      lastRouletteXP = xp;
+      rouletteOverlay.style.display = 'flex';
+      tapBtn.disabled = true;
+      rouletteBox.style.transition = 'none';
+      position = 0;
+      speed = 80;          // initial high speed
+      decel = 0.992;       // slow decay → many loops
+      stopping = false;
+      spinning = true;
+      spinRoulette();
+      setTimeout(() => { stopping = true; }, 2500); // run long before decel
+    }
 
-    tapBtn.addEventListener('click', () => {
-      xp += 10;
+    // Level up
+    if (xp >= xpPerLevel && level < maxLevel) {
+      xp -= xpPerLevel;
+      level++;
+      xpPerLevel *= 2;
+      levelIndicator.textContent = `Level: ${level}`;
       xpCounter.textContent = `XP: ${xp}`;
-      xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
+      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+      message.textContent = "🎉 Congrats, best level achieved!";
+      message.style.display = "block";
+      setTimeout(() => { message.style.display = "none"; }, 2000);
+    }
 
-      // Trigger roulette every 100 XP
-      if (!rouletteTriggered && xp - lastRouletteXP >= 100) {
-        rouletteTriggered = true;
-        lastRouletteXP = xp;
-        rouletteOverlay.style.display = 'flex';
-        tapBtn.disabled = true;
-        speed = 80;          // initial high speed
-        spinning = true;
-        spinRoulette();
+    // Floating +10 XP
+    const xpSign = document.createElement('div');
+    xpSign.textContent = '+10 XP';
+    xpSign.style.position = 'fixed';
+    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+    xpSign.style.color = 'yellow';
+    xpSign.style.fontWeight = 'bold';
+    xpSign.style.fontSize = '24px';
+    xpSign.style.pointerEvents = 'none';
+    document.body.appendChild(xpSign);
+    xpSign.animate([
+      { opacity: 1, transform: 'translateY(0px)' },
+      { opacity: 0, transform: 'translateY(-50px)' }
+    ], { duration: 1000, easing: 'ease-out' });
+    setTimeout(() => xpSign.remove(), 1000);
 
-      }
+    // Send tap to bot
+    tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
+  });
 
-      //roulette logic ends here!
+  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+</script>
 
-
-      // Level up
-      if (xp >= xpPerLevel && level < maxLevel) {
-        xp -= xpPerLevel;
-        level++;
-        xpPerLevel *= 2;
-        levelIndicator.textContent = `Level: ${level}`;
-        xpCounter.textContent = `XP: ${xp}`;
-        xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
-        message.textContent = "🎉 Congrats, best level achieved!";
-        message.style.display = "block";
-        setTimeout(() => { message.style.display = "none"; }, 2000);
-      }
-
-      // Floating +10 XP
-      const xpSign = document.createElement('div');
-      xpSign.textContent = '+10 XP';
-      xpSign.style.position = 'fixed';
-      xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-      xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-      xpSign.style.color = 'yellow';
-      xpSign.style.fontWeight = 'bold';
-      xpSign.style.fontSize = '24px';
-      xpSign.style.pointerEvents = 'none';
-      document.body.appendChild(xpSign);
-      xpSign.animate([
-        { opacity: 1, transform: 'translateY(0px)' },
-        { opacity: 0, transform: 'translateY(-50px)' }
-      ], { duration: 1000, easing: 'ease-out' });
-      setTimeout(() => xpSign.remove(), 1000);
-
-      // Send tap to bot
-      tg.sendData(JSON.stringify({ action: 'tap', taps: 1 }));
-    });
-
-    document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
-  </script>
 
 </body>
 </html>

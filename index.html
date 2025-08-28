@@ -260,10 +260,10 @@
         lastRouletteXP = xp;
         rouletteOverlay.style.display = 'flex';
         tapBtn.disabled = true;
+        speed = 50;          // initial high speed
         spinning = true;
         spinRoulette();
-        setTimeout(() => stopRoulette(), 3000);
-        setTimeout(() => { rouletteTriggered = false; }, 3500);
+
       }
 
       //roulette logic ends here!

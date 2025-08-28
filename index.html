@@ -103,7 +103,7 @@
       z-index:2000;
     }
 
-    /* Roulette overlay */
+    /* Roulette overlay CSS begins here */
     #rouletteOverlay {
       display: none;
       position: fixed;
@@ -138,6 +138,8 @@
       align-items: center;
       font-size: 36px;
     }
+
+    /* Roulette overlay CSS ends here */
   </style>
 </head>
 <body>
@@ -154,12 +156,13 @@
   <div class="xp-counter" id="xpCounter">XP: 0</div>
   <div id="message"></div>
 
-  <!-- Roulette overlay -->
+  <!-- Roulette overlay begins here -->
   <div id="rouletteOverlay">
     <div id="rouletteMask">
       <div id="rouletteBox"></div>
     </div>
   </div>
+  <!-- Roulette overlay ends here -->
 
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
@@ -179,11 +182,11 @@
     const rouletteOverlay = document.getElementById('rouletteOverlay');
     const rouletteBox = document.getElementById('rouletteBox');
 
-    // Prizes
+    // Roulette js begins here
     const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
     const prizeWidth = 100;
 
-    prizes.forEach(prize => {
+    prizes.concat(prizes).forEach(prize => {
       const div = document.createElement('div');
       div.textContent = prize;
       rouletteBox.appendChild(div);
@@ -194,7 +197,8 @@
     function spinRoulette() {
       if (!spinning) return;
       position -= speed;
-      if (position <= -prizes.length * prizeWidth) position = 0;
+      speed *= 0.98; // deceleration
+      if (position <= -(prizes.length * prizeWidth)) position = 0;
       rouletteBox.style.transform = `translateX(${position}px)`;
       requestAnimationFrame(spinRoulette);
     }
@@ -222,8 +226,8 @@
       xpCounter.textContent = `XP: ${xp}`;
       xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-      // Trigger roulette every 300 XP
-      if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
+      // Trigger roulette every 100 XP
+      if (!rouletteTriggered && xp - lastRouletteXP >= 100) {
         rouletteTriggered = true;
         lastRouletteXP = xp;
         rouletteOverlay.style.display = 'flex';
@@ -233,6 +237,9 @@
         setTimeout(() => stopRoulette(), 3000);
         setTimeout(() => { rouletteTriggered = false; }, 3500);
       }
+
+      //roulette logic ends here!
+
 
       // Level up
       if (xp >= xpPerLevel && level < maxLevel) {

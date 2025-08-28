@@ -240,20 +240,32 @@ function spinRoulette() {
   spinning = false;
 
   const mask = document.getElementById('rouletteMask');
-  const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
-  
-  const finalIndex = parseInt(rouletteOverlay.dataset.finalPrizeIndex);
+  const centerOffset = mask.offsetWidth / 2;
+
+  // Find the element visually in the center
+  const prizeDivs = rouletteBox.querySelectorAll('div');
+  let closestIndex = 0;
+  let closestDist = Infinity;
+
+  prizeDivs.forEach((div, idx) => {
+    const divLeft = position + idx * prizeWidth;
+    const divCenter = divLeft + prizeWidth / 2;
+    const dist = Math.abs(divCenter + centerOffset); // distance to mask center
+    if (dist < closestDist) {
+      closestDist = dist;
+      closestIndex = idx;
+    }
+  });
 
   // center the selected prize
-  position = -(finalIndex * prizeWidth) + centerOffset;
+  position = -(closestIndex * prizeWidth) + (mask.offsetWidth / 2 - prizeWidth / 2);
   rouletteBox.style.transform = `translateX(${position}px)`;
 
-  // highlight final prize
-  rouletteBox.querySelectorAll('div').forEach(d => d.classList.remove('highlight'));
-  const prizeDivs = rouletteBox.querySelectorAll('div');
-  prizeDivs[finalIndex % prizeDivs.length].classList.add('highlight');
+  // highlight the prize
+  prizeDivs.forEach(d => d.classList.remove('highlight'));
+  prizeDivs[closestIndex].classList.add('highlight');
 
-  const wonPrize = prizes[finalIndex % prizes.length];
+  const wonPrize = prizes[closestIndex % prizes.length];
 
   setTimeout(() => {
     message.textContent = `🎉 You won ${wonPrize}!`;
@@ -267,6 +279,7 @@ function spinRoulette() {
 
   return;
 }
+
 
 
   }

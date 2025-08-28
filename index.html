@@ -237,37 +237,36 @@ function spinRoulette() {
     speed *= decel;
 
     if (speed < minSpeed) {
-      spinning = false;
+  spinning = false;
 
-      const mask = document.getElementById('rouletteMask');
-      const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
-      const finalIndex = Math.round((-position + centerOffset) / prizeWidth);
+  const mask = document.getElementById('rouletteMask');
+  const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+  const finalIndex = Math.round((-position + centerOffset) / prizeWidth);
 
-      // highlight final prize
-      rouletteBox.querySelectorAll('div').forEach(d => d.classList.remove('highlight'));
-      const prizeDivs = rouletteBox.querySelectorAll('div');
-      prizeDivs[finalIndex % prizeDivs.length].classList.add('highlight');
+  // center the final prize smoothly
+  position = -(finalIndex * prizeWidth) + centerOffset;
+  rouletteBox.style.transform = `translateX(${position}px)`;
 
-      const wonPrize = prizes[finalIndex % prizes.length];
+  // highlight final prize
+  rouletteBox.querySelectorAll('div').forEach(d => d.classList.remove('highlight'));
+  const prizeDivs = rouletteBox.querySelectorAll('div');
+  prizeDivs[finalIndex % prizeDivs.length].classList.add('highlight');
 
-      console.log('🎉 Player won:', wonPrize);
+  const wonPrize = prizes[finalIndex % prizes.length];
 
-      // show message
-      message.textContent = `🎉 You won ${wonPrize}!`;
-      message.style.display = 'block';
-      setTimeout(() => { message.style.display = 'none'; }, 2000);
+  // ✅ delay the message so player sees the highlight first
+  setTimeout(() => {
+    message.textContent = `🎉 You won ${wonPrize}!`;
+    message.style.display = 'block';
+    setTimeout(() => { message.style.display = 'none'; }, 2000);
 
-      // hide overlay and reset state
-      rouletteOverlay.style.display = 'none';
-      tapBtn.disabled = false;
-      rouletteTriggered = false;
+    rouletteOverlay.style.display = 'none';
+    tapBtn.disabled = false;
+    rouletteTriggered = false;
+  }, 1000);  // 1.0s delay
+  return;
+}
 
-      // center the final prize
-      position = -(finalIndex * prizeWidth) + centerOffset;
-      rouletteBox.style.transform = `translateX(${position}px)`;
-
-      return;
-    }
   }
 
   requestAnimationFrame(spinRoulette);

@@ -209,14 +209,16 @@ const rouletteBox = document.getElementById('rouletteBox');
 // Roulette setup
 const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
 const prizeWidth = 100;
-prizes.concat(prizes).forEach(prize => {
+prizes.forEach(prize => {
   const div = document.createElement('div');
   div.textContent = prize;
   rouletteBox.appendChild(div);
 });
 
-// 🎲 probabilities for each prize (sum = 1)
-const probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
+// 🎲 probabilities for each prize (not required to sum = 1, we normalize)
+let probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
+const sum = probabilities.reduce((a, b) => a + b, 0);
+probabilities = probabilities.map(p => p / sum);
 
 // weighted random selector
 function choosePrizeByProbability() {
@@ -229,58 +231,55 @@ function choosePrizeByProbability() {
   return probabilities.length - 1;
 }
 
+// spin state
+let chosenIndex = 0;
+let targetPosition = 0;
+let travel = 0;
 let position = 0;
 let spinning = false;
-let stopping = false;
 let speed = 0;
 let decel = 0;
 const minSpeed = 1.5;
-const cycle = prizes.length * prizeWidth; // width of one set
+const cycle = prizes.length * prizeWidth;
 
 function spinRoulette() {
   if (!spinning) return;
 
-  position -= speed;
+  // decay speed every frame
+  speed = Math.max(minSpeed, speed * decel);
 
-  // seamless wrap
-  if (position <= -cycle) position += cycle;
+  // reduce remaining travel
+  travel -= speed;
 
+  // seamless looping
+  const offset = - (Math.floor(travel) % cycle);
+  position = targetPosition + offset;
   rouletteBox.style.transform = `translateX(${position}px)`;
 
-  if (stopping) {
-    speed *= decel;
+  if (travel <= minSpeed) {
+    // final align
+    position = targetPosition;
+    rouletteBox.style.transform = `translateX(${position}px)`;
 
-    if (speed < minSpeed) {
-      spinning = false;
+    // highlight chosen
+    const prizeDivs = rouletteBox.querySelectorAll('div');
+    prizeDivs.forEach(d => d.classList.remove('highlight'));
+    if (prizeDivs[chosenIndex]) prizeDivs[chosenIndex].classList.add('highlight');
 
-      const mask = document.getElementById('rouletteMask');
-      const centerOffset = mask.offsetWidth / 2;
+    const wonPrize = prizes[chosenIndex];
 
-      // ✅ enforce chosen prize from probabilities
-      const chosenIndex = parseInt(rouletteOverlay.dataset.finalPrizeIndex, 10);
+    setTimeout(() => {
+      message.textContent = `🎉 You won ${wonPrize}!`;
+      message.style.display = 'block';
+      setTimeout(() => { message.style.display = 'none'; }, 2000);
 
-      // align so chosen prize is centered
-      position = -(chosenIndex * prizeWidth) + (mask.offsetWidth / 2 - prizeWidth / 2);
-      rouletteBox.style.transform = `translateX(${position}px)`;
+      rouletteOverlay.style.display = 'none';
+      tapBtn.disabled = false;
+      rouletteTriggered = false;
+    }, 400);
 
-      const prizeDivs = rouletteBox.querySelectorAll('div');
-      prizeDivs.forEach(d => d.classList.remove('highlight'));
-      prizeDivs[chosenIndex].classList.add('highlight');
-
-      const wonPrize = prizes[chosenIndex % prizes.length];
-
-      setTimeout(() => {
-        message.textContent = `🎉 You won ${wonPrize}!`;
-        message.style.display = 'block';
-        setTimeout(() => { message.style.display = 'none'; }, 2000);
-
-        rouletteOverlay.style.display = 'none';
-        tapBtn.disabled = false;
-        rouletteTriggered = false;
-      }, 500);
-
-      return;
-    }
+    spinning = false;
+    return;
   }
 
   requestAnimationFrame(spinRoulette);
@@ -298,19 +297,27 @@ tapBtn.addEventListener('click', () => {
     rouletteOverlay.style.display = 'flex';
     tapBtn.disabled = true;
     rouletteBox.style.transition = 'none';
-    position = 0;
-    speed = 50;          
-    decel = 0.95;        
-    stopping = false;
+
+    // 🎯 choose prize before spin
+    chosenIndex = choosePrizeByProbability();
+
+    // compute exact centered target position
+    const mask = document.getElementById('rouletteMask');
+    const centerOffsetPx = (mask.offsetWidth / 2 - prizeWidth / 2);
+    targetPosition = -(chosenIndex * prizeWidth) + centerOffsetPx;
+
+    // spin travel
+    const loops = 6 + Math.floor(Math.random() * 8);   // 6..13 cycles
+    const extra = Math.random() * (cycle - 1) + 1;
+    travel = loops * cycle + extra;
+
+    position = targetPosition - (travel % cycle);
+    speed = 60 + Math.random() * 40;
+    decel = 0.985;
     spinning = true;
 
-    // 🎲 choose prize once via weighted random
-    const finalPrizeIndex = choosePrizeByProbability();
-    rouletteOverlay.dataset.finalPrizeIndex = finalPrizeIndex;
-
     spinRoulette();
-    setTimeout(() => { stopping = true; }, 3000); 
-  }
+  } // ✅ properly closed roulette if-block
 
   // Level up
   if (xp >= xpPerLevel && level < maxLevel) {
@@ -348,6 +355,7 @@ tapBtn.addEventListener('click', () => {
 
 document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 
 

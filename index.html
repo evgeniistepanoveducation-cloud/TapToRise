@@ -215,6 +215,20 @@ prizes.concat(prizes).forEach(prize => {
   rouletteBox.appendChild(div);
 });
 
+// 🎲 probabilities for each prize (sum = 1)
+const probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
+
+// weighted random selector
+function choosePrizeByProbability() {
+  let r = Math.random();
+  let cumulative = 0;
+  for (let i = 0; i < probabilities.length; i++) {
+    cumulative += probabilities[i];
+    if (r <= cumulative) return i;
+  }
+  return probabilities.length - 1;
+}
+
 let position = 0;
 let spinning = false;
 let stopping = false;
@@ -236,52 +250,37 @@ function spinRoulette() {
   if (stopping) {
     speed *= decel;
 
-  if (speed < minSpeed) {
-  spinning = false;
+    if (speed < minSpeed) {
+      spinning = false;
 
-  const mask = document.getElementById('rouletteMask');
-  const centerOffset = mask.offsetWidth / 2;
+      const mask = document.getElementById('rouletteMask');
+      const centerOffset = mask.offsetWidth / 2;
 
-  // Find the element visually in the center
-  const prizeDivs = rouletteBox.querySelectorAll('div');
-  let closestIndex = 0;
-  let closestDist = Infinity;
+      // ✅ enforce chosen prize from probabilities
+      const chosenIndex = parseInt(rouletteOverlay.dataset.finalPrizeIndex, 10);
 
-  prizeDivs.forEach((div, idx) => {
-    const divLeft = position + idx * prizeWidth;
-    const divCenter = divLeft + prizeWidth / 2;
-    const dist = Math.abs(divCenter + centerOffset); // distance to mask center
-    if (dist < closestDist) {
-      closestDist = dist;
-      closestIndex = idx;
+      // align so chosen prize is centered
+      position = -(chosenIndex * prizeWidth) + (mask.offsetWidth / 2 - prizeWidth / 2);
+      rouletteBox.style.transform = `translateX(${position}px)`;
+
+      const prizeDivs = rouletteBox.querySelectorAll('div');
+      prizeDivs.forEach(d => d.classList.remove('highlight'));
+      prizeDivs[chosenIndex].classList.add('highlight');
+
+      const wonPrize = prizes[chosenIndex % prizes.length];
+
+      setTimeout(() => {
+        message.textContent = `🎉 You won ${wonPrize}!`;
+        message.style.display = 'block';
+        setTimeout(() => { message.style.display = 'none'; }, 2000);
+
+        rouletteOverlay.style.display = 'none';
+        tapBtn.disabled = false;
+        rouletteTriggered = false;
+      }, 500);
+
+      return;
     }
-  });
-
-  // center the selected prize
-  position = -(closestIndex * prizeWidth) + (mask.offsetWidth / 2 - prizeWidth / 2);
-  rouletteBox.style.transform = `translateX(${position}px)`;
-
-  // highlight the prize
-  prizeDivs.forEach(d => d.classList.remove('highlight'));
-  prizeDivs[closestIndex].classList.add('highlight');
-
-  const wonPrize = prizes[closestIndex % prizes.length];
-
-  setTimeout(() => {
-    message.textContent = `🎉 You won ${wonPrize}!`;
-    message.style.display = 'block';
-    setTimeout(() => { message.style.display = 'none'; }, 2000);
-
-    rouletteOverlay.style.display = 'none';
-    tapBtn.disabled = false;
-    rouletteTriggered = false;
-  }, 500);
-
-  return;
-}
-
-
-
   }
 
   requestAnimationFrame(spinRoulette);
@@ -292,11 +291,6 @@ tapBtn.addEventListener('click', () => {
   xpCounter.textContent = `XP: ${xp}`;
   xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-  // pick random prize to stop at
-    const finalPrizeIndex = Math.floor(Math.random() * prizes.length);
-    rouletteOverlay.dataset.finalPrizeIndex = finalPrizeIndex; // store it for spinRoulette
-
-
   // Trigger roulette every 50 XP
   if (!rouletteTriggered && xp - lastRouletteXP >= 50) {
     rouletteTriggered = true;
@@ -305,12 +299,17 @@ tapBtn.addEventListener('click', () => {
     tapBtn.disabled = true;
     rouletteBox.style.transition = 'none';
     position = 0;
-    speed = 50;          // initial high speed
-    decel = 0.95;        // slow decay → many loops
+    speed = 50;          
+    decel = 0.95;        
     stopping = false;
     spinning = true;
+
+    // 🎲 choose prize once via weighted random
+    const finalPrizeIndex = choosePrizeByProbability();
+    rouletteOverlay.dataset.finalPrizeIndex = finalPrizeIndex;
+
     spinRoulette();
-    setTimeout(() => { stopping = true; }, 3000); // run long before decel
+    setTimeout(() => { stopping = true; }, 3000); 
   }
 
   // Level up
@@ -349,6 +348,7 @@ tapBtn.addEventListener('click', () => {
 
 document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 
 

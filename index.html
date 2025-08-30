@@ -307,7 +307,8 @@ function findClosestDivIndex(){
   rouletteBox.offsetHeight;
 
   // animate to the computed end translation (duration LONG in debug)
-  const duration = DEBUG ? DEBUG_DURATION : 3000;
+  // const duration = DEBUG ? DEBUG_DURATION : 1000;
+  const duration = 3000;
   rouletteBox.style.transition = `transform ${duration}ms cubic-bezier(0.33, 1, 0.68, 1)`; 
   rouletteBox.style.transform = `translateX(${endTranslate}px)`;
 

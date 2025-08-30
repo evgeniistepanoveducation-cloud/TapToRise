@@ -285,18 +285,6 @@ function findClosestDivIndex(){
   const endIndex = startIndex + prizeCount * loops + chosenIndex - OddEvenCheck;
   const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
-    const centerMarker = document.createElement('div');
-      centerMarker.style.position = 'fixed';
-      centerMarker.style.top = '50%';
-      centerMarker.style.left = '50%';
-      centerMarker.style.width = '100px';
-      centerMarker.style.height = '100px';
-      centerMarker.style.backgroundColor = 'red';
-      centerMarker.style.transform = 'translate(-50%, -50%)';
-      centerMarker.style.pointerEvents = 'none';
-      centerMarker.style.zIndex = '2100';
-      document.body.appendChild(centerMarker);
-
   // set initial position (centered on chosen prize)
   position = startTranslate;
   rouletteBox.style.transition = 'none';

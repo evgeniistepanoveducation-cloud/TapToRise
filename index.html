@@ -351,10 +351,11 @@ function startSpin() {
   const mask = document.getElementById('rouletteMask');
   const maskWidth = mask.offsetWidth;
 
-  // loops + margin so we have plenty of DOM elements and avoid edge-cases
-  const loops = 6 + Math.floor(Math.random() * 8); // 6..13
-  const neededMargin = Math.ceil(maskWidth / prizeWidth) + 8; // ensure room for centering
-  duplicatesCount = loops + neededMargin;
+  // loops
+const loops = 100; // build 100 full strips of prizes
+const neededMargin = Math.ceil(maskWidth / prizeWidth) + 8;
+duplicatesCount = loops + neededMargin;
+
 
   buildStrip(duplicatesCount);
   totalDivCount = duplicatesCount * prizes.length;

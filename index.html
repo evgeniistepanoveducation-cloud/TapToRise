@@ -352,24 +352,25 @@ function findClosestDivIndex(){
 function finalizeAfterSpin(chosenIndex) {
 
   // visually find center and highlight
-
   const centered = findClosestDivIndex();
   const prizeDivs = Array.from(rouletteBox.children);
   prizeDivs.forEach(d => d.classList.remove('highlight'));
   if (centered.element) centered.element.classList.add('highlight');
 
-  // show message using the **preselected** prize (chosenIndex)
-  message.textContent = `🎉 You won ${prizes[chosenIndex]}!`;
-  message.style.display = 'block';
-  setTimeout(() => { message.style.display = 'none'; }, 2000);
+  // wait 1 second before showing message
+  setTimeout(() => {
+    message.textContent = `🎉 You won ${prizes[chosenIndex]}!`;
+    message.style.display = 'block';
+    setTimeout(() => { message.style.display = 'none'; }, 2000);
 
-  // cleanup
-  // rouletteOverlay.style.display = 'none';
-  tapBtn.disabled = false;
-  rouletteTriggered = false;
-  rouletteBox.style.transition = 'none';
-  updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
+    // cleanup
+    tapBtn.disabled = false;
+    rouletteTriggered = false;
+    rouletteBox.style.transition = 'none';
+    updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
+  }, 1000); // 1000ms = 1 second
 }
+
 
   rouletteBox.addEventListener('transitionend', onEnd);
 }

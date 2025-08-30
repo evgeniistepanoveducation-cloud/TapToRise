@@ -160,151 +160,180 @@
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
-const tg = window.Telegram?.WebApp;
-if (tg && tg.expand) try { tg.expand(); } catch(e){}
+  // --- core UI & TG init
+  const tg = window.Telegram?.WebApp;
+  if (tg && tg.expand) try { tg.expand(); } catch(e){/* ignore */ }
 
-let xp = 0, level = 1, xpPerLevel = 1000;
-const maxLevel = 10;
-let lastRouletteXP = 0, rouletteTriggered = false;
+  let xp = 0, level = 1, xpPerLevel = 1000;
+  const maxLevel = 10;
+  let lastRouletteXP = 0, rouletteTriggered = false;
 
-const tapBtn = document.getElementById('tapBtn');
-const xpCounter = document.getElementById('xpCounter');
-const xpBar = document.getElementById('xpBar');
-const levelIndicator = document.getElementById('levelIndicator');
-const message = document.getElementById('message');
-const rouletteOverlay = document.getElementById('rouletteOverlay');
-const rouletteBox = document.getElementById('rouletteBox');
+  const tapBtn = document.getElementById('tapBtn');
+  const xpCounter = document.getElementById('xpCounter');
+  const xpBar = document.getElementById('xpBar');
+  const levelIndicator = document.getElementById('levelIndicator');
+  const message = document.getElementById('message');
+  const rouletteOverlay = document.getElementById('rouletteOverlay');
+  const rouletteBox = document.getElementById('rouletteBox');
 
-const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
-const prizeCount = prizes.length;
-const prizeWidth = 100;
+  // --- prizes & probabilities
+  const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
+  const prizeCount = prizes.length;
+  const prizeWidth = 100;
 
-let probabilities = [0.45,0.45,0.1,0,0,0,0,0];
-(function normalize() {
-  const s = probabilities.reduce((a,b)=>a+b,0)||1;
-  probabilities = probabilities.map(p=>p/s);
-})();
+  let probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
+  (function normalize() {
+    const s = probabilities.reduce((a,b)=>a+b,0) || 1;
+    probabilities = probabilities.map(p => p / s);
+  })();
 
-function choosePrizeByProbability() {
-  let r = Math.random(), cumulative = 0;
-  for (let i=0;i<probabilities.length;i++){
-    cumulative += probabilities[i];
-    if (r <= cumulative) return i;
-  }
-  return probabilities.length-1;
-}
-
-let duplicatesCount = 0;
-let totalDivCount = 0;
-let position = 0;
-
-function buildStrip(duplicates){
-  rouletteBox.innerHTML = '';
-  for (let d=0; d<duplicates; d++){
-    for (let i=0; i<prizes.length; i++){
-      const div = document.createElement('div');
-      div.textContent = prizes[i];
-      rouletteBox.appendChild(div);
+  function choosePrizeByProbability() {
+    let r = Math.random();
+    let cumulative = 0;
+    for (let i = 0; i < probabilities.length; i++) {
+      cumulative += probabilities[i];
+      if (r <= cumulative) return i;
     }
+    return probabilities.length - 1;
   }
-  totalDivCount = duplicates * prizes.length;
-}
 
-function startSpin(){
-  const chosenIndex = choosePrizeByProbability();
-  const mask = document.getElementById('rouletteMask');
-  const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+  // --- spin helpers
+  let duplicatesCount = 0;
+  let totalDivCount = 0;
+  let position = 0;
 
-  duplicatesCount = 20; // enough for loops
-  buildStrip(duplicatesCount);
+  function buildStrip(duplicates) {
+    rouletteBox.innerHTML = '';
+    for (let d = 0; d < duplicates; d++) {
+      for (let i = 0; i < prizeCount; i++) {
+        const div = document.createElement('div');
+        div.textContent = prizes[i];
+        rouletteBox.appendChild(div);
+      }
+    }
+    totalDivCount = duplicates * prizeCount;
+  }
 
-  const baseCenter = Math.floor(totalDivCount/2);
-  const mod = ((baseCenter - chosenIndex)%prizes.length + prizes.length)%prizes.length;
-  const startIndex = baseCenter - mod;
-  const startTranslate = -(startIndex * prizeWidth) + centerOffset;
+  function startSpin() {
+    const chosenIndex = choosePrizeByProbability(); // preselected prize
+    const mask = document.getElementById('rouletteMask');
+    const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
 
-  const loops = 5;
-  const endIndex = startIndex + loops * prizes.length;
-  const endTranslate = -(endIndex * prizeWidth) + centerOffset;
+    // --- build strip
+    duplicatesCount = 50;
+    buildStrip(duplicatesCount);
 
-  position = startTranslate;
-  rouletteBox.style.transition = 'none';
-  rouletteBox.style.transform = `translateX(${position}px)`;
+    // --- compute startIndex (centered on chosen prize)
+    const baseCenter = Math.floor(totalDivCount / 2);
+    const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
+    const startIndex = baseCenter - mod;
+    const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
-  tapBtn.disabled = true;
-  rouletteOverlay.style.display = 'flex';
+    // --- compute endIndex after N loops
+    const loops = 5;
+    const endIndex = startIndex + prizeCount * loops;
+    const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
-  // force reflow
-  rouletteBox.offsetHeight;
-
-  // animate to end
-  rouletteBox.style.transition = 'transform 1000ms cubic-bezier(0.22,0.8,0.2,1)';
-  rouletteBox.style.transform = `translateX(${endTranslate}px)`;
-
-  const onEnd = () => {
-    rouletteBox.removeEventListener('transitionend', onEnd);
-
-    // compute actual center index
-    const centerIndex = Math.round((-endTranslate + centerOffset)/prizeWidth);
-    const prizeDivs = rouletteBox.querySelectorAll('div');
-    prizeDivs.forEach(d=>d.classList.remove('highlight'));
-    if (prizeDivs[centerIndex]) prizeDivs[centerIndex].classList.add('highlight');
-
-    const wonPrize = prizes[centerIndex % prizeCount];
-    message.textContent = `🎉 You won ${wonPrize}!`;
-    message.style.display = 'block';
-    setTimeout(()=>message.style.display='none',2000);
-
-    rouletteOverlay.style.display = 'none';
-    tapBtn.disabled = false;
-    rouletteTriggered = false;
+    // --- set initial position
+    position = startTranslate;
     rouletteBox.style.transition = 'none';
-  };
-  rouletteBox.addEventListener('transitionend', onEnd);
-}
+    rouletteBox.style.transform = `translateX(${position}px)`;
 
-tapBtn.addEventListener('click',()=>{
-  xp += 10;
-  xpCounter.textContent = `XP: ${xp}`;
-  xpBar.style.width = Math.min((xp/xpPerLevel)*100,100)+'%';
+    // --- enable overlay and disable tap
+    tapBtn.disabled = true;
+    rouletteOverlay.style.display = 'flex';
 
-  if(!rouletteTriggered && xp - lastRouletteXP >= 50){
-    rouletteTriggered = true;
-    lastRouletteXP = xp;
-    startSpin();
+    // --- force reflow to allow transition
+    rouletteBox.offsetHeight;
+
+    // --- animate to end position
+    rouletteBox.style.transition = 'transform 1000ms cubic-bezier(0.22,0.8,0.2,1)';
+    rouletteBox.style.transform = `translateX(${endTranslate}px)`;
+
+    // --- finalize after transition
+    const onEnd = () => {
+      rouletteBox.removeEventListener('transitionend', onEnd);
+
+      // find the div visually at the center of mask
+      const maskRect = mask.getBoundingClientRect();
+      const maskCenterX = maskRect.left + maskRect.width / 2;
+
+      const prizeDivs = Array.from(rouletteBox.children);
+      let closest = prizeDivs[0];
+      let closestDist = Infinity;
+      prizeDivs.forEach(div => {
+        const rect = div.getBoundingClientRect();
+        const divCenter = rect.left + rect.width / 2;
+        const dist = Math.abs(divCenter - maskCenterX);
+        if (dist < closestDist) {
+          closestDist = dist;
+          closest = div;
+        }
+      });
+      closest.classList.add('highlight');
+
+      // show the actual centered prize
+      const wonPrize = closest.textContent;
+      message.textContent = `🎉 You won ${wonPrize}!`;
+      message.style.display = 'block';
+      setTimeout(() => { message.style.display = 'none'; }, 2000);
+
+      // cleanup
+      rouletteOverlay.style.display = 'none';
+      tapBtn.disabled = false;
+      rouletteTriggered = false;
+      rouletteBox.style.transition = 'none';
+    };
+    rouletteBox.addEventListener('transitionend', onEnd);
   }
 
-  if(xp>=xpPerLevel && level<maxLevel){
-    xp-=xpPerLevel;
-    level++;
-    xpPerLevel*=2;
-    levelIndicator.textContent=`Level: ${level}`;
-    xpCounter.textContent=`XP: ${xp}`;
-    xpBar.style.width=(xp/xpPerLevel)*100+'%';
-    message.textContent="🎉 Congrats, best level achieved!";
-    message.style.display="block";
-    setTimeout(()=>message.style.display="none",2000);
-  }
+  // --- tap handler
+  tapBtn.addEventListener('click', () => {
+    xp += 10;
+    xpCounter.textContent = `XP: ${xp}`;
+    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-  const xpSign = document.createElement('div');
-  xpSign.textContent = '+10 XP';
-  xpSign.style.position='fixed';
-  xpSign.style.left=`${Math.random()*(window.innerWidth-100)}px`;
-  xpSign.style.top=`${Math.random()*(window.innerHeight-50)}px`;
-  xpSign.style.color='yellow';
-  xpSign.style.fontWeight='bold';
-  xpSign.style.fontSize='24px';
-  xpSign.style.pointerEvents='none';
-  document.body.appendChild(xpSign);
-  xpSign.animate([{opacity:1,transform:'translateY(0px)'},{opacity:0,transform:'translateY(-50px)'}],
-                 {duration:1000,easing:'ease-out'});
-  setTimeout(()=>xpSign.remove(),1000);
+    if (!rouletteTriggered && xp - lastRouletteXP >= 50) {
+      rouletteTriggered = true;
+      lastRouletteXP = xp;
+      startSpin();
+    }
 
-  try{tg.sendData(JSON.stringify({action:'tap',taps:1}));}catch(e){}
-});
+    if (xp >= xpPerLevel && level < maxLevel) {
+      xp -= xpPerLevel;
+      level++;
+      xpPerLevel *= 2;
+      levelIndicator.textContent = `Level: ${level}`;
+      xpCounter.textContent = `XP: ${xp}`;
+      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+      message.textContent = "🎉 Congrats, best level achieved!";
+      message.style.display = "block";
+      setTimeout(() => { message.style.display = "none"; }, 2000);
+    }
 
-document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+    // Floating XP +10
+    const xpSign = document.createElement('div');
+    xpSign.textContent = '+10 XP';
+    xpSign.style.position = 'fixed';
+    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+    xpSign.style.color = 'yellow';
+    xpSign.style.fontWeight = 'bold';
+    xpSign.style.fontSize = '24px';
+    xpSign.style.pointerEvents = 'none';
+    document.body.appendChild(xpSign);
+    xpSign.animate([
+      { opacity: 1, transform: 'translateY(0px)' },
+      { opacity: 0, transform: 'translateY(-50px)' }
+    ], { duration: 1000, easing: 'ease-out' });
+    setTimeout(() => xpSign.remove(), 1000);
+
+    try { tg.sendData(JSON.stringify({ action: 'tap', taps: 1 })); } catch(e){/* ignore */ }
+  });
+
+  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 
 

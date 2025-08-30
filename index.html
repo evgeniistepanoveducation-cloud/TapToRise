@@ -236,13 +236,57 @@
     step();
   }
 
-  function finalizePrize(targetIdx) {
+
+  function startSpin() {
+  // 1) pre-select prize
+  chosenIndex = choosePrizeByProbability();
+
+  const mask = document.getElementById('rouletteMask');
+  const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+
+  // 2) build strip
+  duplicatesCount = 50;
+  buildStrip(duplicatesCount);
+
+  // 3) compute start & end positions
+  const baseCenter = Math.floor(totalDivCount / 2);
+  const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
+  const startIndex = baseCenter - mod;
+  const startTranslate = -(startIndex * prizeWidth) + centerOffset;
+
+  const loops = 5; 
+  const endIndex = startIndex + prizeCount * loops;
+  const endTranslate = -(endIndex * prizeWidth) + centerOffset;
+
+  // 4) set initial position
+  position = startTranslate;
+  rouletteBox.style.transition = 'none';
+  rouletteBox.style.transform = `translateX(${position}px)`;
+
+  // 5) enable overlay & lock tap
+  tapBtn.disabled = true;
+  rouletteOverlay.style.display = 'flex';
+
+  // 6) spin: RAF moves instantly to simulate loops
+  position = endTranslate;
+  rouletteBox.style.transform = `translateX(${position}px)`;
+
+  // 7) apply smooth final transition to exact stop (no jerk)
+  rouletteBox.style.transition = 'transform 800ms cubic-bezier(0.22,0.8,0.2,1)';
+  requestAnimationFrame(() => {
+    rouletteBox.style.transform = `translateX(${endTranslate}px)`;
+  });
+
+  // 8) show message only after transition ends
+  const onEnd = () => {
+    rouletteBox.removeEventListener('transitionend', onEnd);
+
     const prizeDivs = rouletteBox.querySelectorAll('div');
     prizeDivs.forEach(d => d.classList.remove('highlight'));
-    const targetDiv = prizeDivs[targetIdx];
+    const targetDiv = prizeDivs[endIndex];
     if (targetDiv) targetDiv.classList.add('highlight');
 
-    const wonPrize = prizes[targetIdx % prizeCount];
+    const wonPrize = prizes[endIndex % prizeCount];
     message.textContent = `🎉 You won ${wonPrize}!`;
     message.style.display = 'block';
     setTimeout(() => { message.style.display = 'none'; }, 2000);
@@ -250,48 +294,11 @@
     rouletteOverlay.style.display = 'none';
     tapBtn.disabled = false;
     rouletteTriggered = false;
-  }
-
-  function startSpin() {
-    // 1) pre-select prize
-    chosenIndex = choosePrizeByProbability();
-
-    const mask = document.getElementById('rouletteMask');
-    const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
-
-    // 2) build strip large enough
-    duplicatesCount = 50;
-    buildStrip(duplicatesCount);
-
-    // 3) compute start index aligned with chosen prize near center
-    const baseCenter = Math.floor(totalDivCount / 2);
-    const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
-    const startIndex = baseCenter - mod;
-
-    // 4) compute positions
-    const startTranslate = -(startIndex * prizeWidth) + centerOffset;
-    const loops = 5; // fixed loops
-    const endIndex = startIndex + prizeCount * loops;
-    const endTranslate = -(endIndex * prizeWidth) + centerOffset;
-
-    // 5) set initial position
-    position = startTranslate;
     rouletteBox.style.transition = 'none';
-    rouletteBox.style.transform = `translateX(${position}px)`;
+  };
+  rouletteBox.addEventListener('transitionend', onEnd);
+}
 
-    // 6) lock and spin
-    tapBtn.disabled = true;
-    rouletteOverlay.style.display = 'flex';
-
-    speed = 20; // px per frame
-    spinning = true;
-
-    new Promise(resolve => {
-      spinLoop(endTranslate, resolve);
-    }).then(() => {
-      finalizePrize(endIndex);
-    });
-  }
 
   /* ------------------- tap handler & rest ------------------- */
   tapBtn.addEventListener('click', () => {

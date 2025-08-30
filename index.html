@@ -229,10 +229,11 @@
     const startIndex = baseCenter - mod;
     const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
-    // --- compute endIndex after N loops
+    // --- compute endIndex after N loops so chosen prize lands in center
     const loops = 5;
-    const endIndex = startIndex + prizeCount * loops;
-    const endTranslate = -(endIndex * prizeWidth) + centerOffset;
+    const endIndex = startIndex + prizeCount * loops; // forward loops
+    const centerIndex = endIndex + (chosenIndex - (endIndex % prizeCount)); // ensures chosenIndex is centered
+    const endTranslate = -(centerIndex * prizeWidth) + centerOffset;
 
     // --- set initial position
     position = startTranslate;
@@ -254,26 +255,13 @@
     const onEnd = () => {
       rouletteBox.removeEventListener('transitionend', onEnd);
 
-      // find the div visually at the center of mask
-      const maskRect = mask.getBoundingClientRect();
-      const maskCenterX = maskRect.left + maskRect.width / 2;
-
+      // highlight the centered prize
       const prizeDivs = Array.from(rouletteBox.children);
-      let closest = prizeDivs[0];
-      let closestDist = Infinity;
-      prizeDivs.forEach(div => {
-        const rect = div.getBoundingClientRect();
-        const divCenter = rect.left + rect.width / 2;
-        const dist = Math.abs(divCenter - maskCenterX);
-        if (dist < closestDist) {
-          closestDist = dist;
-          closest = div;
-        }
-      });
-      closest.classList.add('highlight');
+      prizeDivs.forEach(d => d.classList.remove('highlight'));
+      if (prizeDivs[centerIndex]) prizeDivs[centerIndex].classList.add('highlight');
 
-      // show the actual centered prize
-      const wonPrize = closest.textContent;
+      // show the correct prize based on probabilities
+      const wonPrize = prizes[chosenIndex];
       message.textContent = `🎉 You won ${wonPrize}!`;
       message.style.display = 'block';
       setTimeout(() => { message.style.display = 'none'; }, 2000);
@@ -333,6 +321,7 @@
 
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 
 

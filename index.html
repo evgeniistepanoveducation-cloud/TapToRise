@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>TapToRise</title>
-  
   <style>
     html, body {
       margin: 0; padding: 0;
@@ -12,15 +11,13 @@
       overflow: hidden;
       font-family: Arial, sans-serif;
     }
-    
     .bg {
       position: fixed;
       inset: 0;
-      background-image: url('Gradient_Blue.jpg'); 
+      background-image: url('Gradient_Blue.jpg');
       background-size: cover;
       background-position: center;
     }
-    
     .wrap {
       position: fixed;
       inset: 0;
@@ -28,7 +25,6 @@
       justify-content: center;
       align-items: center;
     }
-    
     .tap {
       font-size: 48px;
       width: 300px;
@@ -40,12 +36,11 @@
       cursor: pointer;
       box-shadow: 0 10px 24px rgba(0,0,0,0.3);
       display: flex;
-      justify-content: center; 
-      align-items: center; 
+      justify-content: center;
+      align-items: center;
       touch-action: manipulation;
       user-select: none;
     }
-    
     .xp-counter {
       position: fixed;
       top: 20px;
@@ -57,7 +52,6 @@
       font-weight: bold;
       font-size: 32px;
     }
-
     .level-indicator {
       position: fixed;
       top: 100px;
@@ -69,7 +63,6 @@
       font-weight: bold;
       font-size: 20px;
     }
-
     .xp-bar-container {
       position: fixed;
       top: 0;
@@ -81,14 +74,12 @@
       overflow: hidden;
       z-index: 100;
     }
-
     .xp-bar {
       height: 100%;
       width: 0%;
       background: linear-gradient(90deg, #ffd700, #ff8c00);
       transition: width 0.3s ease-out;
     }
-
     #message {
       display:none;
       position:fixed;
@@ -102,7 +93,6 @@
       font-size:20px;
       z-index:2000;
     }
-
     /* Roulette overlay CSS begins here */
     #rouletteOverlay {
       display: none;
@@ -113,53 +103,40 @@
       align-items: center;
       z-index: 2000;
     }
-
     #rouletteMask {
-  width: 80%;
-  max-width: 600px;
-  height: 200px;
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  position: relative;
-  border: 4px solid gold; /* highlight border */
-}
-
-#rouletteBox div {
-  flex: 0 0 100px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 36px;
-  transition: transform 0.2s;
-}
-
-#rouletteBox div.highlight {
-  transform: scale(1.5);
-  color: orange;
-}
-
-#rouletteBox {
-  display: flex;
-  flex-direction: row;
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-}
-
-
-
+      width: 80%;
+      max-width: 600px;
+      height: 200px;
+      background: white;
+      border-radius: 16px;
+      overflow: hidden;
+      position: relative;
+      border: 4px solid gold;
+    }
+    #rouletteBox div {
+      flex: 0 0 100px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 36px;
+      transition: transform 0.2s;
+    }
+    #rouletteBox div.highlight {
+      transform: scale(1.5);
+      color: orange;
+    }
+    #rouletteBox {
+      display: flex;
+      flex-direction: row;
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+    }
     /* Roulette overlay CSS ends here */
   </style>
 </head>
 <body>
-
-
-
-
-
-
   <!-- Background & UI -->
   <div class="bg"></div>
   <div class="xp-bar-container">
@@ -180,166 +157,228 @@
   </div>
   <!-- Roulette overlay ends here -->
 
-
-
-
-
-
-
-
-
   <!-- JS -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<!-- REPLACE current spin-related code with this block -->
-<script>
-/* ---------- spin state & helpers ---------- */
-let chosenIndex = 0;
-let duplicatesCount = 0;
-let totalDivCount = 0;
-let position = 0;         // transform X in px (negative moves left)
-let speed = 0;
-let rafId = null;
-let spinning = false;
-const prizeCount = prizes.length;
-const prizeWidthPx = prizeWidth; // keep name local
+  <script>
+  // --- core UI & TG init
+  const tg = window.Telegram?.WebApp;
+  if (tg && tg.expand) try { tg.expand(); } catch(e){/* ignore */ }
 
-function buildStrip(duplicates) {
-  rouletteBox.innerHTML = '';
-  for (let d = 0; d < duplicates; d++) {
-    for (let i = 0; i < prizes.length; i++) {
-      const div = document.createElement('div');
-      div.textContent = prizes[i];
-      rouletteBox.appendChild(div);
+  let xp = 0, level = 1, xpPerLevel = 1000;
+  const maxLevel = 10;
+  let lastRouletteXP = 0, rouletteTriggered = false;
+
+  const tapBtn = document.getElementById('tapBtn');
+  const xpCounter = document.getElementById('xpCounter');
+  const xpBar = document.getElementById('xpBar');
+  const levelIndicator = document.getElementById('levelIndicator');
+  const message = document.getElementById('message');
+  const rouletteOverlay = document.getElementById('rouletteOverlay');
+  const rouletteBox = document.getElementById('rouletteBox');
+
+  // --- prizes & probabilities
+  const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
+  const prizeCount = prizes.length;
+  const prizeWidth = 100; // matches CSS
+
+  // probabilities (can be non-normalized); edit as needed
+  let probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
+  (function normalize() {
+    const s = probabilities.reduce((a,b)=>a+b, 0) || 1;
+    probabilities = probabilities.map(p => p / s);
+  })();
+
+  function choosePrizeByProbability() {
+    let r = Math.random();
+    let cumulative = 0;
+    for (let i=0;i<probabilities.length;i++) {
+      cumulative += probabilities[i];
+      if (r <= cumulative) return i;
     }
+    return probabilities.length - 1;
   }
-  totalDivCount = duplicates * prizes.length;
-}
 
-/* RAF spin: constant speed (px/frame) */
-function spinLoop() {
-  if (!spinning) return;
-  position -= speed;
-  rouletteBox.style.transform = `translateX(${position}px)`;
-  rafId = requestAnimationFrame(spinLoop);
-}
+  // --- spin-related state & helpers
+  let chosenIndex = 0;
+  let duplicatesCount = 0;
+  let totalDivCount = 0;
+  let position = 0;   // transform X in px (negative moves left)
+  let speed = 0;      // px per RAF frame
+  let rafId = null;
+  let spinning = false;
 
-/* Finalize: forward-only smooth move to the next occurrence of chosenIndex */
-function finalizeToChosen() {
-  // stop RAF
-  if (rafId) cancelAnimationFrame(rafId);
-  rafId = null;
-  spinning = false;
+  function buildStrip(duplicates) {
+    rouletteBox.innerHTML = '';
+    for (let d=0; d<duplicates; d++) {
+      for (let i=0; i<prizeCount; i++) {
+        const div = document.createElement('div');
+        div.textContent = prizes[i];
+        rouletteBox.appendChild(div);
+      }
+    }
+    totalDivCount = duplicates * prizeCount;
+  }
 
-  const mask = document.getElementById('rouletteMask');
-  const centerOffset = (mask.offsetWidth / 2 - prizeWidthPx / 2);
-  const maskWidth = mask.offsetWidth;
+  function spinLoop() {
+    if (!spinning) return;
+    position -= speed;
+    rouletteBox.style.transform = `translateX(${position}px)`;
+    rafId = requestAnimationFrame(spinLoop);
+  }
 
-  // current floating column at center (may be fractional)
-  const currentIndexFloat = (-position + centerOffset) / prizeWidthPx;
+  function finalizeToChosen() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+    spinning = false;
 
-  // compute smallest forward targetIdx > currentIndexFloat that matches chosenIndex mod prizeCount
-  let k = Math.floor((currentIndexFloat - chosenIndex) / prizeCount) + 1;
-  let targetIdx = chosenIndex + k * prizeCount;
+    const mask = document.getElementById('rouletteMask');
+    const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+    const maskWidth = mask.offsetWidth;
 
-  // ensure enough duplicates to reach targetIdx; extend if necessary
-  const rightMargin = Math.ceil(maskWidth / prizeWidthPx) + 4;
-  if (targetIdx >= totalDivCount - rightMargin) {
-    const need = Math.ceil((targetIdx - (totalDivCount - rightMargin) + 1) / prizeCount) + 4;
-    duplicatesCount += need;
+    const currentIndexFloat = (-position + centerOffset) / prizeWidth;
+
+    // find smallest forward targetIdx > currentIndexFloat where targetIdx % prizeCount === chosenIndex
+    let k = Math.floor((currentIndexFloat - chosenIndex) / prizeCount) + 1;
+    let targetIdx = chosenIndex + k * prizeCount;
+
+    // extend strip if targetIdx too close to end
+    const rightMargin = Math.ceil(maskWidth / prizeWidth) + 4;
+    if (targetIdx >= totalDivCount - rightMargin) {
+      const need = Math.ceil((targetIdx - (totalDivCount - rightMargin) + 1) / prizeCount) + 4;
+      duplicatesCount += need;
+      buildStrip(duplicatesCount);
+      // recompute k & targetIdx (position unchanged)
+      const newCurrent = (-position + centerOffset) / prizeWidth;
+      const newK = Math.floor((newCurrent - chosenIndex) / prizeCount) + 1;
+      targetIdx = chosenIndex + newK * prizeCount;
+    }
+
+    const targetTranslate = -targetIdx * prizeWidth + centerOffset;
+
+    // forward-only smooth move
+    rouletteBox.style.transition = 'transform 600ms cubic-bezier(0.22,0.8,0.2,1)';
+    requestAnimationFrame(() => {
+      rouletteBox.style.transform = `translateX(${targetTranslate}px)`;
+    });
+
+    const onEnd = () => {
+      rouletteBox.removeEventListener('transitionend', onEnd);
+
+      // highlight exact DOM element
+      const prizeDivs = rouletteBox.querySelectorAll('div');
+      prizeDivs.forEach(d => d.classList.remove('highlight'));
+      const targetDiv = prizeDivs[targetIdx];
+      if (targetDiv) targetDiv.classList.add('highlight');
+
+      const wonPrize = prizes[targetIdx % prizeCount];
+      message.textContent = `🎉 You won ${wonPrize}!`;
+      message.style.display = 'block';
+      setTimeout(() => { message.style.display = 'none'; }, 2000);
+
+      // cleanup
+      rouletteOverlay.style.display = 'none';
+      tapBtn.disabled = false;
+      rouletteTriggered = false;
+      rouletteBox.style.transition = 'none';
+    };
+
+    rouletteBox.addEventListener('transitionend', onEnd);
+
+    // safety fallback (in case transitionend doesn't fire)
+    setTimeout(() => {
+      if (rouletteOverlay.style.display === 'flex') {
+        rouletteBox.dispatchEvent(new Event('transitionend'));
+      }
+    }, 900);
+  }
+
+  function startSpin() {
+    // 1) pick result BEFORE spin
+    chosenIndex = choosePrizeByProbability();
+
+    const mask = document.getElementById('rouletteMask');
+    const maskWidth = mask.offsetWidth;
+    const centerOffset = (maskWidth / 2 - prizeWidth / 2);
+
+    // 2) build large strip to be safe
+    const loops = 100; // lots of loops to avoid empty area
+    const neededMargin = Math.ceil(maskWidth / prizeWidth) + 8;
+    duplicatesCount = loops + neededMargin;
     buildStrip(duplicatesCount);
-    // position visual content unchanged — recompute targetIdx relative to same position
-    // currentIndexFloat stays valid; recompute k & targetIdx
-    const newCurrent = (-position + centerOffset) / prizeWidthPx;
-    const newK = Math.floor((newCurrent - chosenIndex) / prizeCount) + 1;
-    targetIdx = chosenIndex + newK * prizeCount;
+
+    // 3) compute startIndex so the chosenIndex is centered at start
+    const baseCenter = Math.floor(totalDivCount / 2);
+    const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
+    const startIndex = baseCenter - mod; // ensures startIndex % prizeCount == chosenIndex
+
+    // 4) set position so chosenIndex at startIndex is centered
+    position = -(startIndex * prizeWidth) + centerOffset;
+    rouletteBox.style.transition = 'none';
+    rouletteBox.style.transform = `translateX(${position}px)`;
+
+    // 5) spin: constant speed
+    speed = 6; // px/frame - adjust for feel (lower = slower)
+    spinning = true;
+    rafId = requestAnimationFrame(spinLoop);
+
+    // 6) constant spin duration: always the same
+    const spinDurationMs = 3000; // constant; change if needed
+    setTimeout(() => {
+      finalizeToChosen();
+    }, spinDurationMs);
   }
 
-  const targetTranslate = -targetIdx * prizeWidthPx + centerOffset;
+  /* ------------------- tap handler & rest ------------------- */
+  tapBtn.addEventListener('click', () => {
+    xp += 10;
+    xpCounter.textContent = `XP: ${xp}`;
+    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-  // forward-only final move (no backward)
-  rouletteBox.style.transition = 'transform 600ms cubic-bezier(0.22,0.8,0.2,1)';
-  requestAnimationFrame(() => {
-    rouletteBox.style.transform = `translateX(${targetTranslate}px)`;
+    // Trigger roulette every 50 XP
+    if (!rouletteTriggered && xp - lastRouletteXP >= 50) {
+      rouletteTriggered = true;
+      lastRouletteXP = xp;
+      rouletteOverlay.style.display = 'flex';
+      tapBtn.disabled = true;
+      startSpin();
+    }
+
+    // Level up
+    if (xp >= xpPerLevel && level < maxLevel) {
+      xp -= xpPerLevel;
+      level++;
+      xpPerLevel *= 2;
+      levelIndicator.textContent = `Level: ${level}`;
+      xpCounter.textContent = `XP: ${xp}`;
+      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+      message.textContent = "🎉 Congrats, best level achieved!";
+      message.style.display = "block";
+      setTimeout(() => { message.style.display = "none"; }, 2000);
+    }
+
+    // Floating +10 XP
+    const xpSign = document.createElement('div');
+    xpSign.textContent = '+10 XP';
+    xpSign.style.position = 'fixed';
+    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+    xpSign.style.color = 'yellow';
+    xpSign.style.fontWeight = 'bold';
+    xpSign.style.fontSize = '24px';
+    xpSign.style.pointerEvents = 'none';
+    document.body.appendChild(xpSign);
+    xpSign.animate([
+      { opacity: 1, transform: 'translateY(0px)' },
+      { opacity: 0, transform: 'translateY(-50px)' }
+    ], { duration: 1000, easing: 'ease-out' });
+    setTimeout(() => xpSign.remove(), 1000);
+
+    // Send tap to bot if available
+    try { tg.sendData(JSON.stringify({ action: 'tap', taps: 1 })); } catch(e){/* ignore */ }
   });
 
-  // finalize after transition
-  const onEnd = () => {
-    rouletteBox.removeEventListener('transitionend', onEnd);
-
-    // highlight the exact DOM element
-    const prizeDivs = rouletteBox.querySelectorAll('div');
-    prizeDivs.forEach(d => d.classList.remove('highlight'));
-    const targetDiv = prizeDivs[targetIdx];
-    if (targetDiv) targetDiv.classList.add('highlight');
-
-    const wonPrize = prizes[targetIdx % prizeCount];
-    message.textContent = `🎉 You won ${wonPrize}!`;
-    message.style.display = 'block';
-    setTimeout(() => { message.style.display = 'none'; }, 2000);
-
-    // cleanup
-    rouletteOverlay.style.display = 'none';
-    tapBtn.disabled = false;
-    rouletteTriggered = false;
-    rouletteBox.style.transition = 'none';
-  };
-
-  rouletteBox.addEventListener('transitionend', onEnd);
-
-  // safety fallback
-  setTimeout(() => {
-    if (rouletteOverlay.style.display === 'flex') {
-      rouletteBox.dispatchEvent(new Event('transitionend'));
-    }
-  }, 800);
-}
-
-/* ---------- startSpin: pre-choose prize, center it, run constant-time spin ---------- */
-function startSpin() {
-  // 1) choose result BEFORE spin
-  chosenIndex = choosePrizeByProbability();
-
-  const mask = document.getElementById('rouletteMask');
-  const maskWidth = mask.offsetWidth;
-  const centerOffset = (maskWidth / 2 - prizeWidthPx / 2);
-
-  // 2) build a large strip (fixed large loops to avoid running out)
-  const loops = 100; // large buffer
-  const neededMargin = Math.ceil(maskWidth / prizeWidthPx) + 8;
-  duplicatesCount = loops + neededMargin;
-  buildStrip(duplicatesCount);
-
-  // 3) compute a startIndex such that the center initially shows the chosenIndex
-  // base center index
-  const baseCenter = Math.floor(totalDivCount / 2);
-  // adjust so baseCenter % prizeCount === chosenIndex
-  const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
-  const startIndex = baseCenter - mod; // now startIndex % prizeCount == chosenIndex
-
-  // 4) set position so chosenIndex (at startIndex) is centered
-  position = -(startIndex * prizeWidthPx) + centerOffset;
-  rouletteBox.style.transition = 'none';
-  rouletteBox.style.transform = `translateX(${position}px)`;
-
-  // 5) spin params: constant speed, you can tweak these
-  speed = 6;        // px per frame — lower for slower debug, raise for faster
-  spinning = true;
-  rafId = requestAnimationFrame(spinLoop);
-
-  // 6) fixed spin duration (constant)
-  const spinDurationMs = 3000; // <- ALWAYS constant spin time (change as needed)
-  setTimeout(() => {
-    // stop RAF and perform forward-only final move to chosenIndex
-    finalizeToChosen();
-  }, spinDurationMs);
-}
-</script>
-
-
-
-
-
-
-
+  // prevent double-click selection
+  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+  </script>
 </body>
 </html>

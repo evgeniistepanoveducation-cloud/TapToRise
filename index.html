@@ -361,6 +361,10 @@ function finalizeAfterSpin(chosenIndex) {
   setTimeout(() => {
     message.textContent = `🎉 You won ${prizes[chosenIndex]}!`;
     message.style.display = 'block';
+
+    // hide roulette overlay immediately
+    rouletteOverlay.style.display = 'none';
+
     setTimeout(() => { message.style.display = 'none'; }, 2000);
 
     // cleanup
@@ -368,8 +372,9 @@ function finalizeAfterSpin(chosenIndex) {
     rouletteTriggered = false;
     rouletteBox.style.transition = 'none';
     updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
-  }, 1000); // 1000ms = 1 second
+  }, 1000); // 1 second delay
 }
+
 
 
   rouletteBox.addEventListener('transitionend', onEnd);

@@ -179,7 +179,10 @@
   // --- prizes & probabilities
   const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
   const prizeCount = prizes.length;
-  const prizeWidth = 100;
+  // const prizeWidth = 100;
+  const firstPrize = rouletteBox.querySelector('div');
+  const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+
 
   let probabilities = [0.2, 0.2, 0.2, 0.4, 0, 0, 0, 0];
   (function normalize() {

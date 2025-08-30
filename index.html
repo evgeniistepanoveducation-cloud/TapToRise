@@ -181,7 +181,6 @@
   const prizeCount = prizes.length;
   const prizeWidth = 100; // matches CSS
 
-  // probabilities (can be non-normalized); edit as needed
   let probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
   (function normalize() {
     const s = probabilities.reduce((a,b)=>a+b, 0) || 1;
@@ -198,14 +197,10 @@
     return probabilities.length - 1;
   }
 
-  // --- spin-related state & helpers
-  let chosenIndex = 0;
+  // --- spin helpers
   let duplicatesCount = 0;
   let totalDivCount = 0;
-  let position = 0;   // transform X in px
-  let speed = 0;      // px per frame
-  let rafId = null;
-  let spinning = false;
+  let position = 0;
 
   function buildStrip(duplicates) {
     rouletteBox.innerHTML = '';
@@ -219,103 +214,75 @@
     totalDivCount = duplicates * prizeCount;
   }
 
-  function spinLoop(endTranslate, resolve) {
-    const step = () => {
-      if (!spinning) return;
-      position -= speed;
-      rouletteBox.style.transform = `translateX(${position}px)`;
+  function startSpin() {
+    // pre-select prize
+    const chosenIndex = choosePrizeByProbability();
+    const mask = document.getElementById('rouletteMask');
+    const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
 
-      if (position <= endTranslate) {
-        spinning = false;
-        rouletteBox.style.transform = `translateX(${endTranslate}px)`;
-        resolve();
-        return;
-      }
-      rafId = requestAnimationFrame(step);
+    duplicatesCount = 50;
+    buildStrip(duplicatesCount);
+
+    // compute start & end positions
+    const baseCenter = Math.floor(totalDivCount / 2);
+    const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
+    const startIndex = baseCenter - mod;
+    const startTranslate = -(startIndex * prizeWidth) + centerOffset;
+
+    const loops = 5; 
+    const endIndex = startIndex + prizeCount * loops;
+    const endTranslate = -(endIndex * prizeWidth) + centerOffset;
+
+    // initial position
+    position = startTranslate;
+    rouletteBox.style.transition = 'none';
+    rouletteBox.style.transform = `translateX(${position}px)`;
+
+    // overlay & lock
+    tapBtn.disabled = true;
+    rouletteOverlay.style.display = 'flex';
+
+    // force reflow to allow transition to trigger
+    rouletteBox.offsetHeight; 
+
+    // apply smooth transition to final position
+    rouletteBox.style.transition = 'transform 1000ms cubic-bezier(0.22,0.8,0.2,1)';
+    rouletteBox.style.transform = `translateX(${endTranslate}px)`;
+
+    // show message after transition
+    const onEnd = () => {
+      rouletteBox.removeEventListener('transitionend', onEnd);
+
+      const prizeDivs = rouletteBox.querySelectorAll('div');
+      prizeDivs.forEach(d => d.classList.remove('highlight'));
+      const targetDiv = prizeDivs[endIndex];
+      if (targetDiv) targetDiv.classList.add('highlight');
+
+      const wonPrize = prizes[endIndex % prizeCount];
+      message.textContent = `🎉 You won ${wonPrize}!`;
+      message.style.display = 'block';
+      setTimeout(() => { message.style.display = 'none'; }, 2000);
+
+      rouletteOverlay.style.display = 'none';
+      tapBtn.disabled = false;
+      rouletteTriggered = false;
+      rouletteBox.style.transition = 'none';
     };
-    step();
+    rouletteBox.addEventListener('transitionend', onEnd);
   }
 
-
-  function startSpin() {
-  // 1) pre-select prize
-  chosenIndex = choosePrizeByProbability();
-
-  const mask = document.getElementById('rouletteMask');
-  const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
-
-  // 2) build strip
-  duplicatesCount = 50;
-  buildStrip(duplicatesCount);
-
-  // 3) compute start & end positions
-  const baseCenter = Math.floor(totalDivCount / 2);
-  const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
-  const startIndex = baseCenter - mod;
-  const startTranslate = -(startIndex * prizeWidth) + centerOffset;
-
-  const loops = 5; 
-  const endIndex = startIndex + prizeCount * loops;
-  const endTranslate = -(endIndex * prizeWidth) + centerOffset;
-
-  // 4) set initial position
-  position = startTranslate;
-  rouletteBox.style.transition = 'none';
-  rouletteBox.style.transform = `translateX(${position}px)`;
-
-  // 5) enable overlay & lock tap
-  tapBtn.disabled = true;
-  rouletteOverlay.style.display = 'flex';
-
-  // 6) spin: RAF moves instantly to simulate loops
-  position = endTranslate;
-  rouletteBox.style.transform = `translateX(${position}px)`;
-
-  // 7) apply smooth final transition to exact stop (no jerk)
-  rouletteBox.style.transition = 'transform 800ms cubic-bezier(0.22,0.8,0.2,1)';
-  requestAnimationFrame(() => {
-    rouletteBox.style.transform = `translateX(${endTranslate}px)`;
-  });
-
-  // 8) show message only after transition ends
-  const onEnd = () => {
-    rouletteBox.removeEventListener('transitionend', onEnd);
-
-    const prizeDivs = rouletteBox.querySelectorAll('div');
-    prizeDivs.forEach(d => d.classList.remove('highlight'));
-    const targetDiv = prizeDivs[endIndex];
-    if (targetDiv) targetDiv.classList.add('highlight');
-
-    const wonPrize = prizes[endIndex % prizeCount];
-    message.textContent = `🎉 You won ${wonPrize}!`;
-    message.style.display = 'block';
-    setTimeout(() => { message.style.display = 'none'; }, 2000);
-
-    rouletteOverlay.style.display = 'none';
-    tapBtn.disabled = false;
-    rouletteTriggered = false;
-    rouletteBox.style.transition = 'none';
-  };
-  rouletteBox.addEventListener('transitionend', onEnd);
-}
-
-
-  /* ------------------- tap handler & rest ------------------- */
+  // --- tap handler
   tapBtn.addEventListener('click', () => {
     xp += 10;
     xpCounter.textContent = `XP: ${xp}`;
     xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-    // Trigger roulette every 50 XP
     if (!rouletteTriggered && xp - lastRouletteXP >= 50) {
       rouletteTriggered = true;
       lastRouletteXP = xp;
-      rouletteOverlay.style.display = 'flex';
-      tapBtn.disabled = true;
       startSpin();
     }
 
-    // Level up
     if (xp >= xpPerLevel && level < maxLevel) {
       xp -= xpPerLevel;
       level++;
@@ -328,7 +295,7 @@
       setTimeout(() => { message.style.display = "none"; }, 2000);
     }
 
-    // Floating +10 XP
+    // Floating XP +10
     const xpSign = document.createElement('div');
     xpSign.textContent = '+10 XP';
     xpSign.style.position = 'fixed';
@@ -345,13 +312,12 @@
     ], { duration: 1000, easing: 'ease-out' });
     setTimeout(() => xpSign.remove(), 1000);
 
-    // Send tap to bot if available
     try { tg.sendData(JSON.stringify({ action: 'tap', taps: 1 })); } catch(e){/* ignore */ }
   });
 
-  // prevent double-click selection
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 </body>
 </html>

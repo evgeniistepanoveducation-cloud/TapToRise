@@ -282,7 +282,7 @@ function findClosestDivIndex(){
   // let OddEvenCheck;
   // if ((prizeCount / 2) % 2 === 0) OddEvenCheck = prizeCount / 2 + 1; 
   // else OddEvenCheck = prizeCount / 2 + 1.5;
-  const endIndex = startIndex + prizeCount * loops - 3;
+  const endIndex = startIndex + prizeCount * loops - prizeCount / 2 + 1;
   const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
   // set initial position (centered on chosen prize)

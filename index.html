@@ -181,7 +181,7 @@
   const prizeCount = prizes.length;
   const prizeWidth = 100;
 
-  let probabilities = [0.45, 0.45, 0.1, 0, 0, 0, 0, 0];
+  let probabilities = [0.2, 0.2, 0.2, 0.2, 0.2, 0, 0, 0];
   (function normalize() {
     const s = probabilities.reduce((a,b)=>a+b,0) || 1;
     probabilities = probabilities.map(p => p / s);

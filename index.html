@@ -280,9 +280,9 @@ function findClosestDivIndex(){
   // compute end index after fixed loops (DEBUG uses DEBUG_SPIN_LOOPS)
   const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
   let OddEvenCheck;
-
-  
-  const endIndex = startIndex + prizeCount * loops + chosenIndex-prizeCount/2+1;
+  if ((prizeCount / 2) % 2 === 0) OddEvenCheck = prizeCount / 2 + 1; 
+  else OddEvenCheck = prizeCount / 2 + 1.5;
+  const endIndex = startIndex + prizeCount * loops - OddEvenCheck;
   const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
   // set initial position (centered on chosen prize)

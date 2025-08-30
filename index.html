@@ -250,26 +250,20 @@ let speed = 0;
 let decel = 0.985;
 const minSpeed = 0.4;
 let spinning = false;
-let decelWindow = 0;      // when remaining distance < decelWindow we start reducing speed
 let rafId = null;
 
-// spin loop (const speed until decel window, then slow, then final forward easing)
+// spin loop
 function spinLoop() {
   if (!spinning) return;
 
-  // move
   position -= speed;
   rouletteBox.style.transform = `translateX(${position}px)`;
 
-  // if we've scrolled so far that we exceed bounds, keep position within large negative range
-  // (we built enough duplicates so we shouldn't reach empty area)
-  // next frame
   rafId = requestAnimationFrame(spinLoop);
 }
 
-// trigger final settle: forward-only easing to the chosen target index (within built strip)
+// finalize to chosen prize
 function finalizeToChosen() {
-  // stop the RAF loop
   if (rafId) {
     cancelAnimationFrame(rafId);
     rafId = null;
@@ -280,32 +274,24 @@ function finalizeToChosen() {
   const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
   const maskWidth = mask.offsetWidth;
 
-  // current floating center column (may be fractional)
   const currentIndexFloat = (-position + centerOffset) / prizeWidth;
 
-  // compute smallest targetIdx > currentIndexFloat such that targetIdx % prizes.length === chosenIndex
   const k = Math.floor((currentIndexFloat - chosenIndex) / prizes.length) + 1;
   let targetIdx = chosenIndex + k * prizes.length;
 
-  // safety: if targetIdx near the end, increase duplicates so we have space
   const rightMargin = Math.ceil(maskWidth / prizeWidth) + 4;
   if (targetIdx >= totalDivCount - rightMargin) {
     const need = Math.ceil((targetIdx - (totalDivCount - rightMargin) + 1) / prizes.length) + 4;
     duplicatesCount += need;
     buildStrip(duplicatesCount);
     totalDivCount = duplicatesCount * prizes.length;
-    // recompute currentIndexFloat relative to unchanged position
-    // (position already corresponds to same visual content)
-    // recompute k & targetIdx again safely
     const newCurrent = (-position + centerOffset) / prizeWidth;
     const newK = Math.floor((newCurrent - chosenIndex) / prizes.length) + 1;
     targetIdx = chosenIndex + newK * prizes.length;
   }
 
-  // final translate to center targetIdx
   const targetTranslate = -targetIdx * prizeWidth + centerOffset;
 
-  // forward-only smooth move (no backward snap)
   rouletteBox.style.transition = 'transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1)';
   requestAnimationFrame(() => {
     rouletteBox.style.transform = `translateX(${targetTranslate}px)`;
@@ -313,7 +299,6 @@ function finalizeToChosen() {
     const onEnd = () => {
       rouletteBox.removeEventListener('transitionend', onEnd);
 
-      // highlight final DOM element
       const prizeDivs = rouletteBox.querySelectorAll('div');
       prizeDivs.forEach(d => d.classList.remove('highlight'));
       const targetDiv = prizeDivs[targetIdx];
@@ -324,7 +309,6 @@ function finalizeToChosen() {
       message.style.display = 'block';
       setTimeout(() => { message.style.display = 'none'; }, 2000);
 
-      // cleanup
       rouletteOverlay.style.display = 'none';
       tapBtn.disabled = false;
       rouletteTriggered = false;
@@ -333,7 +317,6 @@ function finalizeToChosen() {
 
     rouletteBox.addEventListener('transitionend', onEnd);
 
-    // safety fallback
     setTimeout(() => {
       if (rouletteOverlay.style.display === 'flex') {
         rouletteBox.dispatchEvent(new Event('transitionend'));
@@ -342,44 +325,33 @@ function finalizeToChosen() {
   });
 }
 
-
-// start spin: builds strip, sets speed & decel logic and starts RAF; after some time we trigger finalizeToChosen()
+// start spin
 function startSpin() {
-  // choose prize BEFORE spin
   chosenIndex = choosePrizeByProbability();
 
   const mask = document.getElementById('rouletteMask');
   const maskWidth = mask.offsetWidth;
 
-  // loops
-const loops = 100; // build 100 full strips of prizes
-const neededMargin = Math.ceil(maskWidth / prizeWidth) + 8;
-duplicatesCount = loops + neededMargin;
-
+  const loops = 100; 
+  const neededMargin = Math.ceil(maskWidth / prizeWidth) + 8;
+  duplicatesCount = loops + neededMargin;
 
   buildStrip(duplicatesCount);
   totalDivCount = duplicatesCount * prizes.length;
 
-  // centerOffset for exact centering math
   const centerOffset = (maskWidth / 2 - prizeWidth / 2);
-
-  // start positioned in the middle of the strip so there's items on both sides
   const startIndex = Math.floor(totalDivCount / 2);
   position = -(startIndex * prizeWidth) + centerOffset;
   rouletteBox.style.transition = 'none';
   rouletteBox.style.transform = `translateX(${position}px)`;
 
-  // initial spin parameters
-  // speed = 60 + Math.random() * 60;
-
-  speed = 10;
-  decel = 0.98;
+  speed = 20;   // higher = faster start
+  decel = 0.98; // closer to 1 = longer spin
   spinning = true;
   rafId = requestAnimationFrame(spinLoop);
 
-  // approximate delay before gentle decel → then finalize
-  const avgSpeed = Math.max(8, speed * 0.6);
-  const approxMs = Math.max(1600, Math.min(8000, (loops * cycle) / avgSpeed * 16));
+  // stop trigger based on time, no undefined vars
+  const spinDuration = 3000 + Math.random() * 2000; // 3–5 seconds
   setTimeout(() => {
     const decInterval = setInterval(() => {
       speed *= decel;
@@ -388,8 +360,9 @@ duplicatesCount = loops + neededMargin;
         finalizeToChosen();
       }
     }, 16);
-  }, approxMs);
+  }, spinDuration);
 }
+
 
 
 /* ------------------- event handlers ------------------- */

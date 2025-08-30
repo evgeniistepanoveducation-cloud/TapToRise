@@ -268,7 +268,7 @@ function findClosestDivIndex(){
   const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
 
   // build strip (smaller in debug)
-  duplicatesCount = DEBUG ? 20 : 50;
+  duplicatesCount = 50;
   buildStrip(duplicatesCount);
 
   // compute startIndex so chosen prize is centered at start
@@ -348,8 +348,10 @@ function findClosestDivIndex(){
     finalizeAfterSpin(chosenIndex);
   };
 
-    function finalizeAfterSpin(chosenIndex) {
+function finalizeAfterSpin(chosenIndex) {
+
   // visually find center and highlight
+
   const centered = findClosestDivIndex();
   const prizeDivs = Array.from(rouletteBox.children);
   prizeDivs.forEach(d => d.classList.remove('highlight'));
@@ -367,10 +369,6 @@ function findClosestDivIndex(){
   rouletteBox.style.transition = 'none';
   updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
 }
-
-
-
-
 
   rouletteBox.addEventListener('transitionend', onEnd);
 }

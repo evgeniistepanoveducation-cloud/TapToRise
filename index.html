@@ -369,8 +369,10 @@ function startSpin() {
   rouletteBox.style.transform = `translateX(${position}px)`;
 
   // initial spin parameters
-  speed = 60 + Math.random() * 60;
-  decel = 0.985;
+  // speed = 60 + Math.random() * 60;
+
+  speed = 10;
+  decel = 0.9;
   spinning = true;
   rafId = requestAnimationFrame(spinLoop);
 

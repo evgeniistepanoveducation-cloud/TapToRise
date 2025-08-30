@@ -215,54 +215,58 @@
   }
 
   function startSpin() {
-    // pre-select prize
-    const chosenIndex = choosePrizeByProbability();
+    const chosenIndex = choosePrizeByProbability(); // preselected prize
     const mask = document.getElementById('rouletteMask');
     const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
 
+    // --- build strip
     duplicatesCount = 50;
     buildStrip(duplicatesCount);
 
-    // compute start & end positions
+    // --- compute startIndex (centered on chosen prize)
     const baseCenter = Math.floor(totalDivCount / 2);
     const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
     const startIndex = baseCenter - mod;
     const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
-    const loops = 5; 
-    const endIndex = startIndex + prizeCount * loops;
+    // --- compute endIndex after N loops
+    const loops = 5;
+    const endIndex = startIndex + prizeCount * loops; // forward loops
     const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
-    // initial position
+    // --- set initial position
     position = startTranslate;
     rouletteBox.style.transition = 'none';
     rouletteBox.style.transform = `translateX(${position}px)`;
 
-    // overlay & lock
+    // --- enable overlay and disable tap
     tapBtn.disabled = true;
     rouletteOverlay.style.display = 'flex';
 
-    // force reflow to allow transition to trigger
-    rouletteBox.offsetHeight; 
+    // --- force reflow to allow transition
+    rouletteBox.offsetHeight;
 
-    // apply smooth transition to final position
+    // --- animate to end position
     rouletteBox.style.transition = 'transform 1000ms cubic-bezier(0.22,0.8,0.2,1)';
     rouletteBox.style.transform = `translateX(${endTranslate}px)`;
 
-    // show message after transition
+    // --- finalize
     const onEnd = () => {
       rouletteBox.removeEventListener('transitionend', onEnd);
 
+      // highlight centered prize
       const prizeDivs = rouletteBox.querySelectorAll('div');
       prizeDivs.forEach(d => d.classList.remove('highlight'));
-      const targetDiv = prizeDivs[endIndex];
-      if (targetDiv) targetDiv.classList.add('highlight');
+      const centerIndex = endIndex; // by design, preselected prize is centered
+      if (prizeDivs[centerIndex]) prizeDivs[centerIndex].classList.add('highlight');
 
-      const wonPrize = prizes[endIndex % prizeCount];
+      // show correct prize
+      const wonPrize = prizes[chosenIndex];
       message.textContent = `🎉 You won ${wonPrize}!`;
       message.style.display = 'block';
       setTimeout(() => { message.style.display = 'none'; }, 2000);
 
+      // cleanup
       rouletteOverlay.style.display = 'none';
       tapBtn.disabled = false;
       rouletteTriggered = false;
@@ -317,6 +321,7 @@
 
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 
 </body>

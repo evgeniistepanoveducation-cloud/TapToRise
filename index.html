@@ -279,7 +279,7 @@ function findClosestDivIndex(){
 
   // compute end index after fixed loops (DEBUG uses DEBUG_SPIN_LOOPS)
   const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
-  const endIndex = startIndex + prizeCount * loops + chosenIndex-3;
+  const endIndex = startIndex + prizeCount * loops + chosenIndex-prizeCount/2+1;
   const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
   // set initial position (centered on chosen prize)

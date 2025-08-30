@@ -309,7 +309,7 @@ function findClosestDivIndex(){
   // animate to the computed end translation (duration LONG in debug)
   const duration = DEBUG ? DEBUG_DURATION : 3000;
   // const duration = 3000;
-  rouletteBox.style.transition = `transform ${duration}ms cubic-bezier(0.33, 1, 0.68, 1)`; 
+  rouletteBox.style.transition = `transform ${duration}ms cubic-bezier(0.3, 1, 0.68, 1)`; 
   rouletteBox.style.transform = `translateX(${endTranslate}px)`;
 
   // handle end of the visual animation
@@ -362,7 +362,7 @@ function finalizeAfterSpin(chosenIndex) {
 
   // wait 1 second before showing message
   setTimeout(() => {
-    message.textContent = `🎉 You won ${prizes[chosenIndex]}!`;
+    message.textContent = `You won ${prizes[chosenIndex]}!`;
     message.style.display = 'block';
 
     // hide roulette overlay immediately

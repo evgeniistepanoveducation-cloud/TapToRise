@@ -274,13 +274,12 @@ function findClosestDivIndex(){
   // compute startIndex so chosen prize is centered at start
   const baseCenter = Math.floor(totalDivCount / 2);
   const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
-  const startIndex = chosenIndex;
+  const startIndex = Math.floor(totalDivCount / 2) - Math.floor(prizeCount / 2);
   const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
   // compute end index after fixed loops (DEBUG uses DEBUG_SPIN_LOOPS)
   const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
-  const divsToCenter = Math.floor(mask.offsetWidth / prizeWidth / 2);
-  const endIndex = startIndex + prizeCount * loops - divsToCenter;
+  const endIndex = startIndex + prizeCount * loops + chosenIndex;
   const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
   // set initial position (centered on chosen prize)

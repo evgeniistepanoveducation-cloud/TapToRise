@@ -324,7 +324,7 @@
       xpCounter.textContent = `XP: ${xp}`;
       xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-      if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
+      if (!rouletteTriggered && xp - lastRouletteXP >= 20) {
           rouletteTriggered = true;
           lastRouletteXP = xp;
           startSpin();

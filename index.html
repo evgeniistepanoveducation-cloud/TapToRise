@@ -191,11 +191,11 @@ let centerOffset = 0; // new global so startSpin can use it
 
 window.addEventListener('load', () => {
   const firstPrize = rouletteBox.querySelector('div');
-  prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+  // prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
 
   const mask = document.getElementById('rouletteMask');
   const maskRect = mask.getBoundingClientRect();
-  centerOffset = maskRect.width / 2 - prizeWidth / 2;
+  // centerOffset = maskRect.width / 2 - prizeWidth / 2;
 });
 
 
@@ -289,6 +289,13 @@ function findClosestDivIndex(){
   // build strip (smaller in debug)
   duplicatesCount = 50;
   buildStrip(duplicatesCount);
+
+  // compute prize width dynamically now
+  const firstPrize = rouletteBox.querySelector('div');
+  const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+  const maskRect = mask.getBoundingClientRect();
+  const centerOffset = maskRect.width / 2 - prizeWidth / 2;
+  
 
   // compute startIndex so chosen prize is centered at start
   const baseCenter = Math.floor(totalDivCount / 2);

@@ -186,214 +186,184 @@
   probabilities = probabilities.map(p => p / probabilities.reduce((a,b)=>a+b,0));
 
   function choosePrizeByProbability() {
-    let r = Math.random();
-    let cumulative = 0;
-    for (let i = 0; i < probabilities.length; i++) {
-      cumulative += probabilities[i];
-      if (r <= cumulative) return i;
-    }
-    return probabilities.length - 1;
+      let r = Math.random(), cum = 0;
+      for (let i = 0; i < probabilities.length; i++) {
+          cum += probabilities[i];
+          if (r <= cum) return i;
+      }
+      return probabilities.length - 1;
   }
 
   let duplicatesCount = 50;
-  let totalDivCount = 0;
   let position = 0;
 
   const DEBUG = true;
-  const DEBUG_AUTOCORRECT = false;
-  const DEBUG_SPIN_LOOPS = 1;
   const DEBUG_DURATION = 5000;
+  const DEBUG_SPIN_LOOPS = 1;
 
   (function createDebugPanel(){
-    const p = document.createElement('div');
-    p.id = 'debugPanel';
-    p.style.position = 'fixed';
-    p.style.right = '12px';
-    p.style.top = '12px';
-    p.style.background = 'rgba(0,0,0,0.7)';
-    p.style.color = 'white';
-    p.style.fontSize = '12px';
-    p.style.padding = '8px';
-    p.style.borderRadius = '8px';
-    p.style.zIndex = 9999;
-    p.style.whiteSpace = 'pre';
-    p.style.maxWidth = '220px';
-    p.innerText = 'debug panel';
-    document.body.appendChild(p);
+      const p = document.createElement('div');
+      p.id = 'debugPanel';
+      p.style.position = 'fixed';
+      p.style.right = '12px';
+      p.style.top = '12px';
+      p.style.background = 'rgba(0,0,0,0.7)';
+      p.style.color = 'white';
+      p.style.fontSize = '12px';
+      p.style.padding = '8px';
+      p.style.borderRadius = '8px';
+      p.style.zIndex = 9999;
+      p.style.whiteSpace = 'pre';
+      p.style.maxWidth = '220px';
+      p.innerText = 'debug panel';
+      document.body.appendChild(p);
   })();
 
   function updateDebug(lines){
-    if (!DEBUG) return;
-    const p = document.getElementById('debugPanel');
-    if (!p) return;
-    p.innerText = Array.isArray(lines) ? lines.join('\n') : String(lines);
+      if (!DEBUG) return;
+      const p = document.getElementById('debugPanel');
+      if (!p) return;
+      p.innerText = Array.isArray(lines) ? lines.join('\n') : String(lines);
   }
 
   function findClosestDivIndex(){
-    const mask = document.getElementById('rouletteMask');
-    const maskRect = mask.getBoundingClientRect();
-    const maskCenterX = maskRect.left + maskRect.width/2;
-    const prizeDivs = Array.from(rouletteBox.children);
-    let closestIndex = -1, closestDist = Infinity;
-    prizeDivs.forEach((div,i) => {
-      const r = div.getBoundingClientRect();
-      const divCenter = r.left + r.width/2;
-      const dist = Math.abs(divCenter - maskCenterX);
-      if (dist < closestDist) { closestDist = dist; closestIndex = i; }
-    });
-    return { index: closestIndex, element: prizeDivs[closestIndex] };
+      const mask = document.getElementById('rouletteMask');
+      const maskRect = mask.getBoundingClientRect();
+      const maskCenterX = maskRect.left + maskRect.width/2;
+      const divs = Array.from(rouletteBox.children);
+      let closestIdx=-1, closestDist=Infinity;
+      divs.forEach((div,i)=>{
+          const r = div.getBoundingClientRect();
+          const c = r.left + r.width/2;
+          const dist = Math.abs(maskCenterX-c);
+          if(dist < closestDist){ closestDist = dist; closestIdx = i; }
+      });
+      return {index:closestIdx, element:divs[closestIdx]};
   }
 
-  function buildStrip(duplicates) {
-    rouletteBox.innerHTML = '';
-    for (let d = 0; d < duplicates; d++) {
-      for (let i = 0; i < prizeCount; i++) {
-        const div = document.createElement('div');
-        div.textContent = prizes[i];
-        rouletteBox.appendChild(div);
+  function buildStrip() {
+      rouletteBox.innerHTML='';
+      for(let d=0; d<duplicatesCount; d++){
+          prizes.forEach(p=>{
+              const div = document.createElement('div');
+              div.textContent = p;
+              rouletteBox.appendChild(div);
+          });
       }
-    }
-    totalDivCount = duplicates * prizeCount;
   }
 
   function startSpin() {
-    rouletteOverlay.style.display = 'flex';
-    buildStrip(duplicatesCount);
+      rouletteOverlay.style.display='flex';
+      buildStrip();
 
-    const firstPrize = rouletteBox.querySelector('div');
-    const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
-    const mask = document.getElementById('rouletteMask');
-    const maskRect = mask.getBoundingClientRect();
-    const centerOffset = maskRect.width / 2 - prizeWidth / 2;
+      const firstPrize = rouletteBox.querySelector('div');
+      const prizeWidth = firstPrize.offsetWidth;
 
-    const chosenIndex = choosePrizeByProbability();
+      const mask = document.getElementById('rouletteMask');
+      const maskRect = mask.getBoundingClientRect();
+      const centerOffset = maskRect.width/2 - prizeWidth/2;
 
-    const baseCenter = Math.floor(totalDivCount / 2);
-    const startIndex = Math.floor(baseCenter / prizeCount) * prizeCount;
-    const startTranslate = -(startIndex * prizeWidth) + centerOffset;
+      const chosenIndex = choosePrizeByProbability();
 
-    const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
-    let OddEvenCheck;
-    if ((prizeCount / 2) % 2 === 0) OddEvenCheck = prizeCount / 2 - 1;
-    else OddEvenCheck = prizeCount / 2 - 1.5;
-    const endIndex = startIndex + prizeCount * loops + chosenIndex - OddEvenCheck;
-    const endTranslate = -(endIndex * prizeWidth) + centerOffset;
+      const totalDivs = duplicatesCount * prizeCount;
+      const startIndex = Math.floor(totalDivs/2 - chosenIndex);
+      const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
-    position = startTranslate;
-    rouletteBox.style.transition = 'none';
-    rouletteBox.style.transform = `translateX(${position}px)`;
+      const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
+      const endIndex = startIndex + prizeCount*loops;
+      const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
-    tapBtn.disabled = true;
+      position = startTranslate;
+      rouletteBox.style.transition='none';
+      rouletteBox.style.transform=`translateX(${position}px)`;
 
-    updateDebug([
-      `chosenIndex: ${chosenIndex}`,
-      `startIndex: ${startIndex}`,
-      `endIndex: ${endIndex}`,
-      `loops: ${loops}`,
-      `duplicates: ${duplicatesCount}`
-    ]);
-
-    rouletteBox.offsetHeight;
-
-    const duration = DEBUG ? DEBUG_DURATION : 3000;
-    rouletteBox.style.transition = `transform ${duration}ms cubic-bezier(0.3, 1, 0.68, 1)`; 
-    rouletteBox.style.transform = `translateX(${endTranslate}px)`;
-
-    const onEnd = () => {
-      rouletteBox.removeEventListener('transitionend', onEnd);
-      const centered = findClosestDivIndex();
+      tapBtn.disabled = true;
 
       updateDebug([
-        `chosenIndex: ${chosenIndex}`,
-        `centeredIndex: ${centered.index}`,
-        `centeredPrize: ${centered.element ? centered.element.textContent : 'N/A'}`,
-        `expectedPrize: ${prizes[chosenIndex]}`
+          `chosenIndex: ${chosenIndex}`,
+          `startIndex: ${startIndex}`,
+          `endIndex: ${endIndex}`,
+          `loops: ${loops}`,
+          `duplicates: ${duplicatesCount}`
       ]);
 
-      const centeredMod = centered.index % prizeCount;
-      if (centeredMod !== chosenIndex && DEBUG_AUTOCORRECT) {
-        const delta = ((chosenIndex - centeredMod) + prizeCount) % prizeCount;
-        const correctionIdx = centered.index + delta;
-        const correctionTranslate = -(correctionIdx * prizeWidth) + centerOffset;
-        rouletteBox.style.transition = 'transform 400ms ease-out';
-        requestAnimationFrame(() => {
-          rouletteBox.style.transform = `translateX(${correctionTranslate}px)`;
-        });
-        const onCorr = () => {
-          rouletteBox.removeEventListener('transitionend', onCorr);
+      // force reflow
+      rouletteBox.offsetHeight;
+
+      const duration = DEBUG ? DEBUG_DURATION : 3000;
+      rouletteBox.style.transition=`transform ${duration}ms cubic-bezier(0.3,1,0.68,1)`;
+      rouletteBox.style.transform=`translateX(${endTranslate}px)`;
+
+      const onEnd = () => {
+          rouletteBox.removeEventListener('transitionend', onEnd);
           finalizeAfterSpin(chosenIndex);
-        };
-        rouletteBox.addEventListener('transitionend', onCorr);
-        return;
+      };
+
+      function finalizeAfterSpin(chosenIndex){
+          const centered = findClosestDivIndex();
+          Array.from(rouletteBox.children).forEach(d=>d.classList.remove('highlight'));
+          if(centered.element) centered.element.classList.add('highlight');
+
+          setTimeout(()=>{
+              message.textContent=`You won ${prizes[chosenIndex]}!`;
+              message.style.display='block';
+              rouletteOverlay.style.display='none';
+              setTimeout(()=>{message.style.display='none'},2000);
+              tapBtn.disabled=false;
+              rouletteTriggered=false;
+              rouletteBox.style.transition='none';
+              updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
+          },500);
       }
 
-      finalizeAfterSpin(chosenIndex);
-    };
-
-    function finalizeAfterSpin(chosenIndex) {
-      const centered = findClosestDivIndex();
-      Array.from(rouletteBox.children).forEach(d => d.classList.remove('highlight'));
-      if (centered.element) centered.element.classList.add('highlight');
-
-      setTimeout(() => {
-        message.textContent = `You won ${prizes[chosenIndex]}!`;
-        message.style.display = 'block';
-        rouletteOverlay.style.display = 'none';
-        setTimeout(() => { message.style.display = 'none'; }, 2000);
-        tapBtn.disabled = false;
-        rouletteTriggered = false;
-        rouletteBox.style.transition = 'none';
-        updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
-      }, 1000);
-    }
-
-    rouletteBox.addEventListener('transitionend', onEnd);
+      rouletteBox.addEventListener('transitionend', onEnd);
   }
 
   tapBtn.addEventListener('click', () => {
-    xp += 10;
-    xpCounter.textContent = `XP: ${xp}`;
-    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
-
-    if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
-      rouletteTriggered = true;
-      lastRouletteXP = xp;
-      startSpin();
-    }
-
-    if (xp >= xpPerLevel && level < maxLevel) {
-      xp -= xpPerLevel;
-      level++;
-      xpPerLevel *= 2;
-      levelIndicator.textContent = `Level: ${level}`;
+      xp += 10;
       xpCounter.textContent = `XP: ${xp}`;
-      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
-      message.textContent = "🎉 Congrats, best level achieved!";
-      message.style.display = "block";
-      setTimeout(() => { message.style.display = "none"; }, 2000);
-    }
+      xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
 
-    const xpSign = document.createElement('div');
-    xpSign.textContent = '+10 XP';
-    xpSign.style.position = 'fixed';
-    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-    xpSign.style.color = 'yellow';
-    xpSign.style.fontWeight = 'bold';
-    xpSign.style.fontSize = '24px';
-    xpSign.style.pointerEvents = 'none';
-    document.body.appendChild(xpSign);
-    xpSign.animate([
-      { opacity: 1, transform: 'translateY(0px)' },
-      { opacity: 0, transform: 'translateY(-50px)' }
-    ], { duration: 1000, easing: 'ease-out' });
-    setTimeout(() => xpSign.remove(), 1000);
+      if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
+          rouletteTriggered = true;
+          lastRouletteXP = xp;
+          startSpin();
+      }
 
-    try { tg.sendData(JSON.stringify({ action: 'tap', taps: 1 })); } catch(e){}
+      if (xp >= xpPerLevel && level < maxLevel) {
+          xp -= xpPerLevel;
+          level++;
+          xpPerLevel *= 2;
+          levelIndicator.textContent = `Level: ${level}`;
+          xpCounter.textContent = `XP: ${xp}`;
+          xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
+          message.textContent = "🎉 Congrats, best level achieved!";
+          message.style.display = "block";
+          setTimeout(() => { message.style.display = "none"; }, 2000);
+      }
+
+      const xpSign = document.createElement('div');
+      xpSign.textContent = '+10 XP';
+      xpSign.style.position = 'fixed';
+      xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+      xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+      xpSign.style.color = 'yellow';
+      xpSign.style.fontWeight = 'bold';
+      xpSign.style.fontSize = '24px';
+      xpSign.style.pointerEvents = 'none';
+      document.body.appendChild(xpSign);
+      xpSign.animate([
+          { opacity: 1, transform: 'translateY(0px)' },
+          { opacity: 0, transform: 'translateY(-50px)' }
+      ], { duration: 1000, easing: 'ease-out' });
+      setTimeout(() => xpSign.remove(), 1000);
+
+      try { tg.sendData(JSON.stringify({ action: 'tap', taps: 1 })); } catch(e){}
   });
 
   document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 </script>
+
 
 
 

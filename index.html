@@ -182,7 +182,7 @@
   const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
   const prizeCount = prizes.length;
 
-  let probabilities = [0.2, 0.2, 0.2, 0.4, 0, 0, 0, 0];
+  let probabilities = [0.2, 0.2, 0.2, 0.2, 0, 0, 0, 0];
   probabilities = probabilities.map(p => p / probabilities.reduce((a,b)=>a+b,0));
 
   function choosePrizeByProbability() {

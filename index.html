@@ -269,8 +269,10 @@
       const startIndex = Math.floor(totalDivs/2 - chosenIndex);
       const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
+      // middle duplicate of the chosen prize
+      const chosenDuplicateIndex = Math.floor(totalDivs/2/prizeCount) * prizeCount + chosenIndex;
       const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
-      const endIndex = startIndex + prizeCount*loops;
+      const endIndex = chosenDuplicateIndex + prizeCount * loops; // full loops
       const endTranslate = -(endIndex * prizeWidth) + centerOffset;
 
       position = startTranslate;

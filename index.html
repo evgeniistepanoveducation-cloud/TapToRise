@@ -165,7 +165,7 @@
   <script>
   // --- core UI & TG init
   const tg = window.Telegram?.WebApp;
-  if (tg && tg.expand) try { tg.expand(); } catch(e){/* ignore */ }
+  if (tg && tg.expand) try { tg.expand(); } catch(e){}
 
   let xp = 0, level = 1, xpPerLevel = 1000;
   const maxLevel = 10;
@@ -182,25 +182,6 @@
   // --- prizes & probabilities
   const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
   const prizeCount = prizes.length;
-  // const prizeWidth = 100;
-
-  // Two lines after kept until Tg mismatch is corrected
-  // const firstPrize = rouletteBox.querySelector('div');
-  // const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
-
-let prizeWidth; 
-let centerOffset = 0; // new global so startSpin can use it
-
-window.addEventListener('load', () => {
-  const firstPrize = rouletteBox.querySelector('div');
-  // prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
-
-  const mask = document.getElementById('rouletteMask');
-  const maskRect = mask.getBoundingClientRect();
-  // centerOffset = maskRect.width / 2 - prizeWidth / 2;
-});
-
-
 
   let probabilities = [0.2, 0.2, 0.2, 0.4, 0, 0, 0, 0];
   (function normalize() {
@@ -209,8 +190,7 @@ window.addEventListener('load', () => {
   })();
 
   function choosePrizeByProbability() {
-    let r = Math.random();
-    let cumulative = 0;
+    let r = Math.random(), cumulative = 0;
     for (let i = 0; i < probabilities.length; i++) {
       cumulative += probabilities[i];
       if (r <= cumulative) return i;
@@ -218,63 +198,50 @@ window.addEventListener('load', () => {
     return probabilities.length - 1;
   }
 
-  // --- spin helpers
-  let duplicatesCount = 0;
+  let duplicatesCount = 50;
   let totalDivCount = 0;
   let position = 0;
 
-// DEBUG helpers (paste right after: let position = 0;)
-const DEBUG = true;              // set false to disable debug UI & slow mode
-const DEBUG_AUTOCORRECT = true; // if true, will auto-shift to chosen prize when mismatch found
-const DEBUG_SPIN_LOOPS = 1;      // 1 loop for step-by-step debugging
-const DEBUG_DURATION = 5000;     // long duration so you can observe (ms)
+  // --- DEBUG
+  const DEBUG = true;
+  const DEBUG_AUTOCORRECT = false;
+  const DEBUG_SPIN_LOOPS = 1;
+  const DEBUG_DURATION = 5000;
 
-(function createDebugPanel(){
-  const p = document.createElement('div');
-  p.id = 'debugPanel';
-  p.style.position = 'fixed';
-  p.style.right = '12px';
-  p.style.top = '12px';
-  p.style.background = 'rgba(0,0,0,0.7)';
-  p.style.color = 'white';
-  p.style.fontSize = '12px';
-  p.style.padding = '8px';
-  p.style.borderRadius = '8px';
-  p.style.zIndex = 9999;
-  p.style.whiteSpace = 'pre';
-  p.style.maxWidth = '220px';
-  p.innerText = 'debug panel';
-  document.body.appendChild(p);
-})();
+  (function createDebugPanel(){
+    const p = document.createElement('div');
+    p.id = 'debugPanel';
+    p.style.cssText = 'position:fixed;right:12px;top:12px;background:rgba(0,0,0,0.7);color:white;font-size:12px;padding:8px;border-radius:8px;z-index:9999;white-space:pre;max-width:220px';
+    p.innerText = 'debug panel';
+    document.body.appendChild(p);
+  })();
 
-function updateDebug(lines){
-  if (!DEBUG) return;
-  const p = document.getElementById('debugPanel');
-  if (!p) return;
-  if (Array.isArray(lines)) p.innerText = lines.join('\n');
-  else p.innerText = String(lines);
-}
+  function updateDebug(lines){
+    if (!DEBUG) return;
+    const p = document.getElementById('debugPanel');
+    if (!p) return;
+    p.innerText = Array.isArray(lines) ? lines.join('\n') : String(lines);
+  }
 
-function findClosestDivIndex(){
-  const mask = document.getElementById('rouletteMask');
-  const maskRect = mask.getBoundingClientRect();
-  const maskCenterX = maskRect.left + maskRect.width/2;
-  const prizeDivs = Array.from(rouletteBox.children);
-  let closestIndex = -1, closestDist = Infinity;
-  prizeDivs.forEach((div,i) => {
-    const r = div.getBoundingClientRect();
-    const divCenter = r.left + r.width/2;
-    const dist = Math.abs(divCenter - maskCenterX);
-    if (dist < closestDist) { closestDist = dist; closestIndex = i; }
-  });
-  return { index: closestIndex, element: prizeDivs[closestIndex] };
-}
+  function findClosestDivIndex(){
+    const mask = document.getElementById('rouletteMask');
+    const maskRect = mask.getBoundingClientRect();
+    const maskCenterX = maskRect.left + maskRect.width/2;
+    const prizeDivs = Array.from(rouletteBox.children);
+    let closestIndex = -1, closestDist = Infinity;
+    prizeDivs.forEach((div,i)=>{
+      const r = div.getBoundingClientRect();
+      const divCenter = r.left + r.width/2;
+      const dist = Math.abs(divCenter - maskCenterX);
+      if(dist < closestDist){ closestDist = dist; closestIndex = i; }
+    });
+    return {index:closestIndex, element:prizeDivs[closestIndex]};
+  }
 
-
-  function buildStrip(duplicates) {
+  function buildStrip(duplicates){
     rouletteBox.innerHTML = '';
-    for (let d = 0; d < duplicates; d++) {
-      for (let i = 0; i < prizeCount; i++) {
+    for(let d=0; d<duplicates; d++){
+      for(let i=0;i<prizeCount;i++){
         const div = document.createElement('div');
         div.textContent = prizes[i];
         rouletteBox.appendChild(div);
@@ -283,181 +250,144 @@ function findClosestDivIndex(){
     totalDivCount = duplicates * prizeCount;
   }
 
-  function startSpin() {
-  const chosenIndex = choosePrizeByProbability(); // preselected prize
-  const mask = document.getElementById('rouletteMask');
-  // const centerOffset = (mask.offsetWidth / 2 - prizeWidth / 2);
+  function startSpin(){
+    const chosenIndex = choosePrizeByProbability();
 
-  // build strip (smaller in debug)
-  duplicatesCount = 50;
-  buildStrip(duplicatesCount);
+    // Show overlay first
+    rouletteOverlay.style.display = 'flex';
 
-  // compute prize width dynamically now
-  const firstPrize = rouletteBox.querySelector('div');
-  const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
-  const maskRect = mask.getBoundingClientRect();
-  const centerOffset = maskRect.width / 2 - prizeWidth / 2;
-  
+    // Build strip & compute widths
+    buildStrip(duplicatesCount);
+    const firstPrize = rouletteBox.querySelector('div');
+    const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+    const mask = document.getElementById('rouletteMask');
+    const maskRect = mask.getBoundingClientRect();
+    const centerOffset = maskRect.width / 2 - prizeWidth / 2;
 
-  // compute startIndex so chosen prize is centered at start
-  const baseCenter = Math.floor(totalDivCount / 2);
-  const mod = ((baseCenter - chosenIndex) % prizeCount + prizeCount) % prizeCount;
-  const startIndex = Math.floor(totalDivCount / 2 / prizeCount) * prizeCount; 
-  const startTranslate = -(startIndex * prizeWidth) + centerOffset;
+    // Compute start & end positions
+    const startIndex = Math.floor(totalDivCount/2 / prizeCount) * prizeCount;
+    const startTranslate = -(startIndex * prizeWidth) + centerOffset;
 
-  // compute end index after fixed loops (DEBUG uses DEBUG_SPIN_LOOPS)
-  const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
-  let OddEvenCheck;
-  if ((prizeCount / 2) % 2 === 0) OddEvenCheck = prizeCount / 2 - 1; 
-  else OddEvenCheck = prizeCount / 2 - 1.5;
-  const endIndex = startIndex + prizeCount * loops + chosenIndex - OddEvenCheck;
-  const endTranslate = -(endIndex * prizeWidth) + centerOffset;
+    const loops = DEBUG ? DEBUG_SPIN_LOOPS : 5;
+    let oddEvenCheck = ((prizeCount/2)%2===0)?prizeCount/2-1:prizeCount/2-1.5;
+    const endIndex = startIndex + prizeCount*loops + chosenIndex - oddEvenCheck;
+    const endTranslate = -(endIndex*prizeWidth) + centerOffset;
 
-  // set initial position (centered on chosen prize)
-  position = startTranslate;
-  rouletteBox.style.transition = 'none';
-  rouletteBox.style.transform = `translateX(${position}px)`;
+    // Set initial position without transition
+    position = startTranslate;
+    rouletteBox.style.transition = 'none';
+    rouletteBox.style.transform = `translateX(${position}px)`;
 
-  // show overlay & lock button
-  tapBtn.disabled = true;
-  rouletteOverlay.style.display = 'flex';
+    // Force reflow
+    rouletteBox.offsetHeight;
 
-  // DEBUG info
-  updateDebug([
-    `chosenIndex: ${chosenIndex}`,
-    `startIndex: ${startIndex}`,
-    `endIndex: ${endIndex}`,
-    `loops: ${loops}`,
-    `duplicates: ${duplicatesCount}`
-  ]);
+    // Lock button
+    tapBtn.disabled = true;
 
-  // force reflow before starting transition
-  rouletteBox.offsetHeight;
+    // Animate
+    const duration = DEBUG ? DEBUG_DURATION : 3000;
 
-  // animate to the computed end translation (duration LONG in debug)
-  const duration = DEBUG ? DEBUG_DURATION : 3000;
-  // const duration = 3000;
-  rouletteBox.style.transition = `transform ${duration}ms cubic-bezier(0.3, 1, 0.68, 1)`; 
-  rouletteBox.style.transform = `translateX(${endTranslate}px)`;
+    const onEnd = ()=>{
+      rouletteBox.removeEventListener('transitionend', onEnd);
 
-  // handle end of the visual animation
-  const onEnd = () => {
-    rouletteBox.removeEventListener('transitionend', onEnd);
+      const centered = findClosestDivIndex();
+      updateDebug([
+        `chosenIndex: ${chosenIndex}`,
+        `centeredIndex: ${centered.index}`,
+        `centeredPrize: ${centered.element ? centered.element.textContent : 'N/A'}`,
+        `expectedPrize: ${prizes[chosenIndex]}`
+      ]);
 
-    // find the element visually centered (best ground-truth)
-    const centered = findClosestDivIndex();
-    updateDebug([
-      `chosenIndex: ${chosenIndex}`,
-      `centeredIndex: ${centered.index}`,
-      `centeredPrize: ${centered.element ? centered.element.textContent : 'N/A'}`,
-      `expectedPrize: ${prizes[chosenIndex]}`
-    ]);
-
-    // if mismatch and debug-autocorrect enabled, shift forward minimal steps to chosenIndex
-    const centeredMod = centered.index % prizeCount;
-    if (centeredMod !== chosenIndex) {
-      updateDebug([`MISMATCH: centeredMod=${centeredMod} != chosenIndex=${chosenIndex}`]);
-      if (DEBUG_AUTOCORRECT) {
+      const centeredMod = centered.index % prizeCount;
+      if(centeredMod !== chosenIndex && DEBUG_AUTOCORRECT){
         const delta = ((chosenIndex - centeredMod) + prizeCount) % prizeCount;
         const correctionIdx = centered.index + delta;
-        const correctionTranslate = -(correctionIdx * prizeWidth) + centerOffset;
-        // small correction animation
+        const correctionTranslate = -(correctionIdx*prizeWidth) + centerOffset;
         rouletteBox.style.transition = 'transform 400ms ease-out';
-        requestAnimationFrame(() => {
-          rouletteBox.style.transform = `translateX(${correctionTranslate}px)`;
-        });
-        // after correction completes, finalize display
-        const onCorr = () => {
+        requestAnimationFrame(()=> rouletteBox.style.transform = `translateX(${correctionTranslate}px)`);
+        const onCorr=()=>{
           rouletteBox.removeEventListener('transitionend', onCorr);
           finalizeAfterSpin(chosenIndex);
         };
         rouletteBox.addEventListener('transitionend', onCorr);
         return;
       }
-    }
+      finalizeAfterSpin(chosenIndex);
+    };
 
-    // normal finalize (no autocorrect)
-    finalizeAfterSpin(chosenIndex);
-  };
+    rouletteBox.addEventListener('transitionend', onEnd);
 
-function finalizeAfterSpin(chosenIndex) {
+    // Start transform
+    requestAnimationFrame(()=>{
+      rouletteBox.style.transition = `transform ${duration}ms cubic-bezier(0.3,1,0.68,1)`;
+      rouletteBox.style.transform = `translateX(${endTranslate}px)`;
+    });
+  }
 
-  // visually find center and highlight
-  const centered = findClosestDivIndex();
-  const prizeDivs = Array.from(rouletteBox.children);
-  prizeDivs.forEach(d => d.classList.remove('highlight'));
-  if (centered.element) centered.element.classList.add('highlight');
+  function finalizeAfterSpin(chosenIndex){
+    const centered = findClosestDivIndex();
+    Array.from(rouletteBox.children).forEach(d => d.classList.remove('highlight'));
+    if(centered.element) centered.element.classList.add('highlight');
 
-  // wait 1 second before showing message
-  setTimeout(() => {
-    message.textContent = `You won ${prizes[chosenIndex]}!`;
-    message.style.display = 'block';
+    setTimeout(()=>{
+      message.textContent = `You won ${prizes[chosenIndex]}!`;
+      message.style.display='block';
+      rouletteOverlay.style.display='none';
+      setTimeout(()=>message.style.display='none',2000);
 
-    // hide roulette overlay immediately
-    rouletteOverlay.style.display = 'none';
+      tapBtn.disabled=false;
+      rouletteTriggered=false;
+      rouletteBox.style.transition='none';
+      updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
+    },1000);
+  }
 
-    setTimeout(() => { message.style.display = 'none'; }, 2000);
-
-    // cleanup
-    tapBtn.disabled = false;
-    rouletteTriggered = false;
-    rouletteBox.style.transition = 'none';
-    updateDebug([`FINALIZED chosenIndex=${chosenIndex}`, `centered index=${centered.index}`]);
-  }, 1000); // 1 second delay
-}
-
-
-
-  rouletteBox.addEventListener('transitionend', onEnd);
-}
-
-
-  // --- tap handler
-  tapBtn.addEventListener('click', () => {
+  tapBtn.addEventListener('click', ()=>{
     xp += 10;
-    xpCounter.textContent = `XP: ${xp}`;
-    xpBar.style.width = Math.min((xp / xpPerLevel) * 100, 100) + '%';
+    xpCounter.textContent=`XP: ${xp}`;
+    xpBar.style.width = Math.min((xp/xpPerLevel)*100,100)+'%';
 
-    if (!rouletteTriggered && xp - lastRouletteXP >= 300) {
-      rouletteTriggered = true;
-      lastRouletteXP = xp;
+    if(!rouletteTriggered && xp - lastRouletteXP >= 300){
+      rouletteTriggered=true;
+      lastRouletteXP=xp;
       startSpin();
     }
 
-    if (xp >= xpPerLevel && level < maxLevel) {
-      xp -= xpPerLevel;
+    if(xp >= xpPerLevel && level<maxLevel){
+      xp-=xpPerLevel;
       level++;
-      xpPerLevel *= 2;
-      levelIndicator.textContent = `Level: ${level}`;
-      xpCounter.textContent = `XP: ${xp}`;
-      xpBar.style.width = (xp / xpPerLevel) * 100 + '%';
-      message.textContent = "🎉 Congrats, best level achieved!";
-      message.style.display = "block";
-      setTimeout(() => { message.style.display = "none"; }, 2000);
+      xpPerLevel*=2;
+      levelIndicator.textContent=`Level: ${level}`;
+      xpCounter.textContent=`XP: ${xp}`;
+      xpBar.style.width=(xp/xpPerLevel)*100+'%';
+      message.textContent="🎉 Congrats, best level achieved!";
+      message.style.display='block';
+      setTimeout(()=>message.style.display='none',2000);
     }
 
     // Floating XP +10
-    const xpSign = document.createElement('div');
-    xpSign.textContent = '+10 XP';
-    xpSign.style.position = 'fixed';
-    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-    xpSign.style.color = 'yellow';
-    xpSign.style.fontWeight = 'bold';
-    xpSign.style.fontSize = '24px';
-    xpSign.style.pointerEvents = 'none';
+    const xpSign=document.createElement('div');
+    xpSign.textContent='+10 XP';
+    xpSign.style.position='fixed';
+    xpSign.style.left=`${Math.random()*(window.innerWidth-100)}px`;
+    xpSign.style.top=`${Math.random()*(window.innerHeight-50)}px`;
+    xpSign.style.color='yellow';
+    xpSign.style.fontWeight='bold';
+    xpSign.style.fontSize='24px';
+    xpSign.style.pointerEvents='none';
     document.body.appendChild(xpSign);
     xpSign.animate([
-      { opacity: 1, transform: 'translateY(0px)' },
-      { opacity: 0, transform: 'translateY(-50px)' }
-    ], { duration: 1000, easing: 'ease-out' });
-    setTimeout(() => xpSign.remove(), 1000);
+      {opacity:1,transform:'translateY(0px)'},
+      {opacity:0,transform:'translateY(-50px)'}
+    ],{duration:1000,easing:'ease-out'});
+    setTimeout(()=>xpSign.remove(),1000);
 
-    try { tg.sendData(JSON.stringify({ action: 'tap', taps: 1 })); } catch(e){/* ignore */ }
+    try{ tg.sendData(JSON.stringify({action:'tap',taps:1})); } catch(e){}
   });
 
-  document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
+  document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 </script>
+
 
 </body>
 </html>

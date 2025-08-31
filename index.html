@@ -181,8 +181,23 @@
   const prizes = ['🍪', '🎁', '💎', '🎉', '🍕', '🏆', '🎮', '💰'];
   const prizeCount = prizes.length;
   // const prizeWidth = 100;
+
+  // Two lines after kept until Tg mismatch is corrected
+  // const firstPrize = rouletteBox.querySelector('div');
+  // const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+
+let prizeWidth; 
+let centerOffset = 0; // new global so startSpin can use it
+
+window.addEventListener('load', () => {
   const firstPrize = rouletteBox.querySelector('div');
-  const prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+  prizeWidth = firstPrize ? firstPrize.offsetWidth : 100;
+
+  const mask = document.getElementById('rouletteMask');
+  const maskRect = mask.getBoundingClientRect();
+  centerOffset = maskRect.width / 2 - prizeWidth / 2;
+});
+
 
 
   let probabilities = [0.2, 0.2, 0.2, 0.4, 0, 0, 0, 0];

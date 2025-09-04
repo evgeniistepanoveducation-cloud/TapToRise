@@ -17,6 +17,29 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #wheelOverlay { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000;}
 #wheelCanvas { background:white; border-radius:50%; border:4px solid gold; }
 #wheelIndicator { position:absolute; top:50%; left:50%; width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-bottom:30px solid red; transform: translate(-50%, -100%); z-index:2001; }
+
+/* Level-up overlay */
+#levelOverlay {
+    display:none;
+    position:fixed;
+    inset:0;
+    background: rgba(0,0,0,0.5);
+    justify-content:center;
+    align-items:center;
+    z-index:3000;
+    flex-direction: column;
+    text-align:center;
+}
+#levelOverlay .content {
+    background:#000;color:#fff;padding:20px;border-radius:16px;font-size:24px;
+}
+#levelOverlay .spin-btn {
+    margin-top:20px;padding:10px 20px;font-size:20px;
+    border:none;border-radius:12px;background:#FFD700;color:#000;
+    cursor:pointer;
+}
+/* blur background during overlay */
+.blurred-bg *:not(#levelOverlay) { filter: blur(5px); }
 </style>
 </head>
 <body>
@@ -33,159 +56,132 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div id="wheelIndicator"></div>
 </div>
 
+<!-- Level-up overlay -->
+<div id="levelOverlay">
+    <div class="content">
+        Congrats, next level achieved!<br>
+        You earned one spin!
+    </div>
+    <button id="levelSpinBtn" class="spin-btn">Spin</button>
+</div>
+
 <script>
+  
 const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰'];
-const probabilities = [0.2,0.2,0.2,0.2,0.2,0,0,0].map(p => p / 1);
+const probabilities = [0.2,0.2,0.2,0.2,0.2,0,0,0].map(p => p/1);
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
 // XP ladder
 const xpLadder = [];
-xpLadder[1] = 300; // Level 1→2
-xpLadder[2] = 600; // Level 2→3
-xpLadder[3] = 1000; // Level 3→4
-const k = 1.8;
-for(let i = 4; i <= 10; i++){
-    xpLadder[i] = Math.round(xpLadder[i-1] * k / 100) * 100;
+xpLadder[1]=300; xpLadder[2]=600; xpLadder[3]=1000;
+const k=1.8;
+for(let i=4;i<=10;i++){ xpLadder[i]=Math.round(xpLadder[i-1]*k/100)*100; }
+
+const tapBtn=document.getElementById('tapBtn');
+const xpCounter=document.getElementById('xpCounter');
+const xpBar=document.getElementById('xpBar');
+const levelIndicator=document.getElementById('levelIndicator');
+const message=document.getElementById('message');
+const wheelOverlay=document.getElementById('wheelOverlay');
+const wheelCanvas=document.getElementById('wheelCanvas');
+const ctx=wheelCanvas.getContext('2d');
+
+const levelOverlay=document.getElementById('levelOverlay');
+const levelSpinBtn=document.getElementById('levelSpinBtn');
+
+let xp=0, level=1;
+
+// choose prize
+function choosePrizeByProbability(){
+    let r=Math.random(),cum=0;
+    for(let i=0;i<probabilities.length;i++){ cum+=probabilities[i]; if(r<=cum) return i; }
+    return probabilities.length-1;
 }
 
-// DOM references
-const tapBtn = document.getElementById('tapBtn');
-const xpCounter = document.getElementById('xpCounter');
-const xpBar = document.getElementById('xpBar');
-const levelIndicator = document.getElementById('levelIndicator');
-const message = document.getElementById('message');
-const wheelOverlay = document.getElementById('wheelOverlay');
-const wheelCanvas = document.getElementById('wheelCanvas');
-const ctx = wheelCanvas.getContext('2d');
-
-let xp = 0, level = 1, lastRouletteXP = 0, rouletteTriggered = false;
-
-// Helper: choose prize by probability
-function choosePrizeByProbability() {
-    let r = Math.random(), cum = 0;
-    for(let i = 0; i < probabilities.length; i++){
-        cum += probabilities[i];
-        if(r <= cum) return i;
-    }
-    return probabilities.length - 1;
-}
-
-// Draw wheel
-function drawWheel(rotation = 0){
-    const N = prizes.length;
-    const center = wheelCanvas.width / 2;
-    const radius = center - 10;
-    ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
-
-    for(let i = 0; i < N; i++){
-        const startAngle = (i/N)*2*Math.PI + rotation;
-        const endAngle = ((i+1)/N)*2*Math.PI + rotation;
-
-        // sector
-        ctx.beginPath();
-        ctx.moveTo(center, center);
-        ctx.arc(center, center, radius, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = colors[i];
-        ctx.fill();
-        ctx.strokeStyle = "#000"; ctx.lineWidth = 2; ctx.stroke();
-
+// draw wheel
+function drawWheel(rotation=0){
+    const N=prizes.length, center=wheelCanvas.width/2, radius=center-10;
+    ctx.clearRect(0,0,wheelCanvas.width,wheelCanvas.height);
+    for(let i=0;i<N;i++){
+        const start=(i/N)*2*Math.PI+rotation;
+        const end=((i+1)/N)*2*Math.PI+rotation;
+        ctx.beginPath(); ctx.moveTo(center,center); ctx.arc(center,center,radius,start,end); ctx.closePath();
+        ctx.fillStyle=colors[i]; ctx.fill();
+        ctx.strokeStyle="#000"; ctx.lineWidth=2; ctx.stroke();
         // emoji
-        ctx.save();
-        ctx.translate(center, center);
-        const angle = startAngle + (endAngle - startAngle)/2;
-        ctx.rotate(angle);
-        ctx.font = "40px Arial";
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#000";
-        ctx.fillText(prizes[i], radius - 20, 10);
-        ctx.restore();
+        ctx.save(); ctx.translate(center,center);
+        const angle=start+(end-start)/2; ctx.rotate(angle);
+        ctx.font="40px Arial"; ctx.textAlign="right"; ctx.fillStyle="#000";
+        ctx.fillText(prizes[i], radius-20,10); ctx.restore();
     }
 }
 
-// Spin wheel animation
+// spin wheel
 function spinWheel(){
-    wheelOverlay.style.display = 'flex';
-    const chosenIndex = choosePrizeByProbability();
-    const N = prizes.length;
-    const fullSpins = 5;
-    const sectorAngle = 2*Math.PI/N;
-    const targetAngle = 3*Math.PI/2 - (chosenIndex + 0.5)*sectorAngle;
-    const totalRotation = fullSpins*2*Math.PI + targetAngle;
-    let start = null;
-    const duration = 3000;
-
-    function animate(timestamp){
-        if(!start) start = timestamp;
-        const elapsed = timestamp - start;
-        const t = Math.min(elapsed / duration, 1);
-        const ease = t<0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2;
-        drawWheel(totalRotation * ease);
-
-        if(t < 1){
-            requestAnimationFrame(animate);
-        } else {
-            setTimeout(()=>{
-                message.textContent = `You won ${prizes[chosenIndex]}!`;
-                message.style.display = 'block';
-                wheelOverlay.style.display = 'none';
-                setTimeout(()=>{message.style.display = 'none'}, 2000);
-                rouletteTriggered = false;
-            }, 200);
-        }
+    wheelOverlay.style.display='flex';
+    const chosenIndex=choosePrizeByProbability(), N=prizes.length, fullSpins=5;
+    const sectorAngle=2*Math.PI/N;
+    const targetAngle=3*Math.PI/2-(chosenIndex+0.5)*sectorAngle;
+    const totalRotation=fullSpins*2*Math.PI+targetAngle;
+    let start=null, duration=3000;
+    function animate(ts){
+        if(!start) start=ts;
+        const elapsed=ts-start, t=Math.min(elapsed/duration,1);
+        const ease=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+        drawWheel(totalRotation*ease);
+        if(t<1) requestAnimationFrame(animate);
+        else setTimeout(()=>{
+            message.textContent=`You won ${prizes[chosenIndex]}!`;
+            message.style.display='block';
+            wheelOverlay.style.display='none';
+            setTimeout(()=>{message.style.display='none'},2000);
+        },200);
     }
     requestAnimationFrame(animate);
 }
 
-// Tap button logic
-tapBtn.addEventListener('click', () => {
-    xp += 10;
+// show/hide level overlay
+function showLevelOverlay(){ levelOverlay.style.display='flex'; document.body.classList.add('blurred-bg'); }
+function hideLevelOverlay(){ levelOverlay.style.display='none'; document.body.classList.remove('blurred-bg'); }
 
-    // XP bar
-    const xpNeeded = xpLadder[level] || xpLadder[xpLadder.length-1]; // handle levels beyond ladder
-    xpCounter.textContent = `XP: ${xp}`;
-    xpBar.style.width = Math.min((xp / xpNeeded) * 100, 100) + '%';
+// tap logic
+tapBtn.addEventListener('click',()=>{
+    xp+=10;
+    const xpNeeded=xpLadder[level]||xpLadder[xpLadder.length-1];
+    xpCounter.textContent=`XP: ${xp}`;
+    xpBar.style.width=Math.min((xp/xpNeeded)*100,100)+'%';
 
-    // Spin trigger
-    if(!rouletteTriggered && xp - lastRouletteXP >= 250){
-        rouletteTriggered = true;
-        lastRouletteXP = xp;
-        spinWheel();
-    }
-
-    // Level-up
-    while(level < xpLadder.length && xp >= xpLadder[level]){
-        xp -= xpLadder[level];
-        level++;
-        levelIndicator.textContent = `Level: ${level}`;
-        const nextXpNeeded = xpLadder[level] || xpLadder[xpLadder.length-1];
-        xpBar.style.width = Math.min((xp / nextXpNeeded) * 100, 100) + '%';
-        message.textContent = "🎉 Congrats, next level achieved!";
-        message.style.display = "block";
-        setTimeout(()=>{message.style.display='none'},2000);
+    // check level-up
+    if(level < xpLadder.length && xp>=xpLadder[level]){
+        xp-=xpLadder[level];
+        level++; levelIndicator.textContent=`Level: ${level}`;
+        xpBar.style.width='0%';
+        showLevelOverlay();
     }
 
     // floating XP
-    const xpSign = document.createElement('div');
-    xpSign.textContent = '+10 XP';
-    xpSign.style.position = 'fixed';
-    xpSign.style.left = `${Math.random()*(window.innerWidth-100)}px`;
-    xpSign.style.top = `${Math.random()*(window.innerHeight-50)}px`;
-    xpSign.style.color = 'yellow';
-    xpSign.style.fontWeight = 'bold';
-    xpSign.style.fontSize = '24px';
-    xpSign.style.pointerEvents = 'none';
+    const xpSign=document.createElement('div');
+    xpSign.textContent='+10 XP';
+    xpSign.style.position='fixed';
+    xpSign.style.left=`${Math.random()*(window.innerWidth-100)}px`;
+    xpSign.style.top=`${Math.random()*(window.innerHeight-50)}px`;
+    xpSign.style.color='yellow'; xpSign.style.fontWeight='bold';
+    xpSign.style.fontSize='24px'; xpSign.style.pointerEvents='none';
     document.body.appendChild(xpSign);
-    xpSign.animate([{opacity:1, transform:'translateY(0px)'},{opacity:0, transform:'translateY(-50px)'}],
+    xpSign.animate([{opacity:1,transform:'translateY(0px)'},{opacity:0,transform:'translateY(-50px)'}],
                    {duration:1000,easing:'ease-out'});
     setTimeout(()=>xpSign.remove(),1000);
 });
 
-document.addEventListener('dblclick', e => e.preventDefault(), {passive:false});
-drawWheel(); // initial draw
+// spin button in overlay
+levelSpinBtn.addEventListener('click',()=>{
+    hideLevelOverlay();
+    spinWheel();
+});
 
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+drawWheel();
 </script>
-
 
 </body>
 </html>

@@ -7,6 +7,8 @@
 <style>
 html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family: Arial,sans-serif;}
 .bg { position:fixed; inset:0; background-image:url('Gradient_Blue.jpg'); background-size:cover; background-position:center;}
+#mainContent { position:relative; width:100%; height:100%; transition: filter 0.3s ease; }
+
 .wrap { position:fixed; inset:0; display:flex; justify-content:center; align-items:center;}
 .tap { font-size:48px; width:300px; height:300px; border:none; border-radius:50%; background-color:#2ea6ff; color:#fff; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,0.3); display:flex; justify-content:center; align-items:center; touch-action: manipulation; user-select:none;}
 .xp-counter { position:fixed; top:20px; left:20px; background:rgba(0,0,0,0.4); color:#fff; padding:16px 20px; border-radius:16px; font-weight:bold; font-size:32px;}
@@ -14,7 +16,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .xp-bar-container { position:fixed; top:0; left:0; width:100%; height:16px; background:rgba(255,255,255,0.2); border-radius:8px; overflow:hidden; z-index:100;}
 .xp-bar { height:100%; width:0%; background:linear-gradient(90deg,#ffd700,#ff8c00); transition:width 0.3s ease-out;}
 #message { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:black; color:white; padding:20px; border-radius:10px; font-size:20px; z-index:2000;}
-#wheelOverlay { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000;}
+#wheelOverlay { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; }
 #wheelCanvas { background:white; border-radius:50%; border:4px solid gold; }
 #wheelIndicator { position:absolute; top:50%; left:50%; width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-bottom:30px solid red; transform: translate(-50%, -100%); z-index:2001; }
 
@@ -29,25 +31,30 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     z-index:3000;
     flex-direction: column;
     text-align:center;
+    pointer-events: all;
 }
 #levelOverlay .content {
     background:#000;color:#fff;padding:20px;border-radius:16px;font-size:24px;
+    text-align:center;
 }
 #levelOverlay .spin-btn {
     margin-top:20px;padding:10px 20px;font-size:20px;
     border:none;border-radius:12px;background:#FFD700;color:#000;
     cursor:pointer;
 }
-/* blur background during overlay */
-.blurred-bg *:not(#levelOverlay) { filter: blur(5px); }
 </style>
 </head>
 <body>
+
 <div class="bg"></div>
-<div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
-<div class="wrap"><button class="tap" id="tapBtn">🔥 TAP! 🔥</button></div>
-<div class="level-indicator" id="levelIndicator">Level: 1</div>
-<div class="xp-counter" id="xpCounter">XP: 0</div>
+
+<div id="mainContent">
+    <div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
+    <div class="wrap"><button class="tap" id="tapBtn">🔥 TAP! 🔥</button></div>
+    <div class="level-indicator" id="levelIndicator">Level: 1</div>
+    <div class="xp-counter" id="xpCounter">XP: 0</div>
+</div>
+
 <div id="message"></div>
 
 <!-- Wheel overlay -->
@@ -59,16 +66,15 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 <!-- Level-up overlay -->
 <div id="levelOverlay">
     <div class="content">
-        Congrats, next level achieved!<br>
+        🎉 Congrats, next level achieved!<br>
         You earned one spin!
     </div>
     <button id="levelSpinBtn" class="spin-btn">Spin</button>
 </div>
 
 <script>
-  
 const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰'];
-const probabilities = [0.2,0.2,0.2,0.2,0.2,0,0,0].map(p => p/1);
+const probabilities = [0.2,0.2,0.2,0.2,0.2,0,0,0];
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
 // XP ladder
@@ -85,20 +91,20 @@ const message=document.getElementById('message');
 const wheelOverlay=document.getElementById('wheelOverlay');
 const wheelCanvas=document.getElementById('wheelCanvas');
 const ctx=wheelCanvas.getContext('2d');
-
 const levelOverlay=document.getElementById('levelOverlay');
 const levelSpinBtn=document.getElementById('levelSpinBtn');
+const mainContent=document.getElementById('mainContent');
 
 let xp=0, level=1;
 
-// choose prize
+// Helper: choose prize by probability
 function choosePrizeByProbability(){
     let r=Math.random(),cum=0;
     for(let i=0;i<probabilities.length;i++){ cum+=probabilities[i]; if(r<=cum) return i; }
     return probabilities.length-1;
 }
 
-// draw wheel
+// Draw wheel
 function drawWheel(rotation=0){
     const N=prizes.length, center=wheelCanvas.width/2, radius=center-10;
     ctx.clearRect(0,0,wheelCanvas.width,wheelCanvas.height);
@@ -116,9 +122,10 @@ function drawWheel(rotation=0){
     }
 }
 
-// spin wheel
+// Spin wheel
 function spinWheel(){
     wheelOverlay.style.display='flex';
+    mainContent.style.filter='blur(5px)'; // blur background during spin
     const chosenIndex=choosePrizeByProbability(), N=prizes.length, fullSpins=5;
     const sectorAngle=2*Math.PI/N;
     const targetAngle=3*Math.PI/2-(chosenIndex+0.5)*sectorAngle;
@@ -134,24 +141,31 @@ function spinWheel(){
             message.textContent=`You won ${prizes[chosenIndex]}!`;
             message.style.display='block';
             wheelOverlay.style.display='none';
+            mainContent.style.filter='none';
             setTimeout(()=>{message.style.display='none'},2000);
         },200);
     }
     requestAnimationFrame(animate);
 }
 
-// show/hide level overlay
-function showLevelOverlay(){ levelOverlay.style.display='flex'; document.body.classList.add('blurred-bg'); }
-function hideLevelOverlay(){ levelOverlay.style.display='none'; document.body.classList.remove('blurred-bg'); }
+// Show/hide level overlay with background blur
+function showLevelOverlay(){
+    mainContent.style.filter='blur(5px)';
+    levelOverlay.style.display='flex';
+}
+function hideLevelOverlay(){
+    mainContent.style.filter='none';
+    levelOverlay.style.display='none';
+}
 
-// tap logic
+// Tap button logic
 tapBtn.addEventListener('click',()=>{
     xp+=10;
     const xpNeeded=xpLadder[level]||xpLadder[xpLadder.length-1];
     xpCounter.textContent=`XP: ${xp}`;
     xpBar.style.width=Math.min((xp/xpNeeded)*100,100)+'%';
 
-    // check level-up
+    // Check level-up
     if(level < xpLadder.length && xp>=xpLadder[level]){
         xp-=xpLadder[level];
         level++; levelIndicator.textContent=`Level: ${level}`;
@@ -159,7 +173,7 @@ tapBtn.addEventListener('click',()=>{
         showLevelOverlay();
     }
 
-    // floating XP
+    // Floating XP
     const xpSign=document.createElement('div');
     xpSign.textContent='+10 XP';
     xpSign.style.position='fixed';
@@ -173,7 +187,7 @@ tapBtn.addEventListener('click',()=>{
     setTimeout(()=>xpSign.remove(),1000);
 });
 
-// spin button in overlay
+// Spin button in level overlay
 levelSpinBtn.addEventListener('click',()=>{
     hideLevelOverlay();
     spinWheel();

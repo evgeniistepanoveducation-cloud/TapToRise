@@ -147,7 +147,7 @@ tapBtn.addEventListener('click', () => {
     xpBar.style.width = Math.min((xp / xpNeeded) * 100, 100) + '%';
 
     // Spin trigger
-    if(!rouletteTriggered && xp - lastRouletteXP >= 20){
+    if(!rouletteTriggered && xp - lastRouletteXP >= 250){
         rouletteTriggered = true;
         lastRouletteXP = xp;
         spinWheel();

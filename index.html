@@ -38,6 +38,16 @@ const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰'];
 const probabilities = [0.2,0.2,0.2,0.2,0.2,0,0,0].map(p => p / 1);
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
+const xpLadder = []; // dynamically filled
+xpLadder[1] = 300; // Level 1 → 2
+xpLadder[2] = 600; // Level 2 → 3
+xpLadder[3] = 1000; // Level 3 → 4
+const k = 1.8; // multiplier
+for(let i = 4; i <= 10; i++){
+    xpLadder[i] = Math.round(xpLadder[i-1] * k / 100) * 100; // round to nearest 100
+}
+
+
 const tapBtn = document.getElementById('tapBtn');
 const xpCounter = document.getElementById('xpCounter');
 const xpBar = document.getElementById('xpBar');
@@ -47,7 +57,8 @@ const wheelOverlay = document.getElementById('wheelOverlay');
 const wheelCanvas = document.getElementById('wheelCanvas');
 const ctx = wheelCanvas.getContext('2d');
 
-let xp=0, level=1, xpPerLevel=1000, maxLevel=10, lastRouletteXP=0, rouletteTriggered=false;
+let xp=0, level=1, maxLevel=10, lastRouletteXP=0, rouletteTriggered=false;
+
 
 // helper: choose prize index based on probability
 function choosePrizeByProbability() {
@@ -130,17 +141,17 @@ tapBtn.addEventListener('click',()=>{
         spinWheel();
     }
 
-    if(xp>=xpPerLevel && level<maxLevel){
-        xp-=xpPerLevel;
-        level++;
-        xpPerLevel*=2;
-        levelIndicator.textContent=`Level: ${level}`;
-        xpCounter.textContent=`XP: ${xp}`;
-        xpBar.style.width=(xp/xpPerLevel)*100+'%';
-        message.textContent="🎉 Congrats, best level achieved!";
-        message.style.display="block";
-        setTimeout(()=>{message.style.display='none'},2000);
-    }
+    if(level < xpLadder.length && xp >= xpLadder[level]){
+    xp -= xpLadder[level];
+    level++;
+    levelIndicator.textContent = `Level: ${level}`;
+    xpCounter.textContent = `XP: ${xp}`;
+    xpBar.style.width = Math.min((xp / xpLadder[level]) * 100, 100) + '%';
+    message.textContent = "🎉 Congrats, best level achieved!";
+    message.style.display = "block";
+    setTimeout(()=>{message.style.display='none'},2000);
+}
+
 
     // floating XP
     const xpSign=document.createElement('div');

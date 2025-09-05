@@ -157,11 +157,6 @@ function spinWheel(){
     const targetAngle = 3 * Math.PI / 2 - (chosenIndex + 0.5) * sectorAngle;
     const totalRotation = fullSpins * 2 * Math.PI + targetAngle;
 
-    if(prizes[chosenIndex] === '🎟️') { // assuming 🎟️ is your golden ticket emoji
-        goldenTickets++;
-        goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
-    }
-
 
     let start = null;
     const duration = 3000;

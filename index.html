@@ -127,6 +127,9 @@ const levelSpinBtn=document.getElementById('levelSpinBtn');
 const mainContent=document.getElementById('mainContent');
 
 let xp=0, level=1;
+let goldenTickets = 0;
+const goldenTicketCounter = document.getElementById('goldenTicketCounter');
+
 
 // Helper: choose prize by probability
 function choosePrizeByProbability(){
@@ -189,6 +192,13 @@ function spinWheel(){
     const sectorAngle = 2 * Math.PI / N;
     const targetAngle = 3 * Math.PI / 2 - (chosenIndex + 0.5) * sectorAngle;
     const totalRotation = fullSpins * 2 * Math.PI + targetAngle;
+
+    if(prizes[chosenIndex] === '🎟️') { // assuming 🎟️ is your golden ticket emoji
+        goldenTickets++;
+        goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
+        // optional: trigger animation here (Step 5)
+    }
+
 
     let start = null;
     const duration = 3000;

@@ -168,27 +168,46 @@ function drawWheel(rotation=0){
 function spinWheel(){
     wheelOverlay.style.display='flex';
     mainContent.style.filter='blur(5px)'; // blur background during spin
-    const chosenIndex=choosePrizeByProbability(), N=prizes.length, fullSpins=5;
-    const sectorAngle=2*Math.PI/N;
-    const targetAngle=3*Math.PI/2-(chosenIndex+0.5)*sectorAngle;
-    const totalRotation=fullSpins*2*Math.PI+targetAngle;
-    let start=null, duration=3000;
+
+    const chosenIndex = choosePrizeByProbability();
+    const N = prizes.length;
+    const fullSpins = 5;
+    const sectorAngle = 2 * Math.PI / N;
+    const targetAngle = 3 * Math.PI / 2 - (chosenIndex + 0.5) * sectorAngle;
+    const totalRotation = fullSpins * 2 * Math.PI + targetAngle;
+
+    let start = null;
+    const duration = 3000;
+
     function animate(ts){
-        if(!start) start=ts;
-        const elapsed=ts-start, t=Math.min(elapsed/duration,1);
-        const ease=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-        drawWheel(totalRotation*ease);
-        if(t<1) requestAnimationFrame(animate);
-        else setTimeout(()=>{
-            message.textContent=`You won ${prizes[chosenIndex]}!`;
-            message.style.display='block';
-            wheelOverlay.style.display='none';
-            mainContent.style.filter='none';
-            setTimeout(()=>{message.style.display='none'},2000);
-        },200);
+        if(!start) start = ts;
+        const elapsed = ts - start;
+        const t = Math.min(elapsed / duration, 1);
+
+        // cubic easing in/out
+        const ease = t < 0.5
+            ? 4 * t * t * t
+            : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        // ✅ scaled drawing at this rotation
+        drawWheel(totalRotation * ease);
+
+        if(t < 1){
+            requestAnimationFrame(animate);
+        } else {
+            setTimeout(()=>{
+                message.textContent = `You won ${prizes[chosenIndex]}!`;
+                message.style.display = 'block';
+                wheelOverlay.style.display = 'none';
+                mainContent.style.filter = 'none';
+                setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+            }, 200);
+        }
     }
+
     requestAnimationFrame(animate);
 }
+
 
 // Show/hide level overlay with background blur
 function showLevelOverlay(){

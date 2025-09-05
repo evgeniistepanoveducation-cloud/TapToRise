@@ -160,13 +160,6 @@ function spinWheel(){
     if(prizes[chosenIndex] === '🎟️') { // assuming 🎟️ is your golden ticket emoji
         goldenTickets++;
         goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
-
-        // create flashy animation
-        const flash = document.createElement('div');
-        flash.className = 'golden-ticket-animation';
-        flash.textContent = '🎟️';
-        document.body.appendChild(flash);
-        setTimeout(() => flash.remove(), 1000); // remove after animation
     }
 
 
@@ -187,16 +180,46 @@ function spinWheel(){
         drawWheel(totalRotation * ease);
 
         if(t < 1){
-            requestAnimationFrame(animate);
-        } else {
-            setTimeout(()=>{
-                message.textContent = `You won ${prizes[chosenIndex]}!`;
-                message.style.display = 'block';
-                wheelOverlay.style.display = 'none';
-                mainContent.style.filter = 'none';
-                setTimeout(()=>{ message.style.display = 'none'; }, 2000);
-            }, 200);
-        }
+    requestAnimationFrame(animate);
+} else {
+    if(prizes[chosenIndex] === '🎟️'){ 
+        // Golden Ticket animation
+        goldenTickets++;
+        goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
+
+        const flash = document.createElement('div');
+        flash.className = 'golden-ticket-animation';
+        flash.textContent = '🎟️';
+        document.body.appendChild(flash);
+
+        // Animate with Web Animations API
+        flash.animate([
+            { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+            { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
+            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+        ], { duration: 1500, easing: 'ease-out' });
+
+        setTimeout(() => {
+            flash.remove();
+            message.textContent = `You won a Golden Ticket!`;
+            message.style.display = 'block';
+            wheelOverlay.style.display = 'none';
+            mainContent.style.filter = 'none';
+            setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+        }, 1500);
+
+    } else {
+        // normal prizes
+        setTimeout(()=>{
+            message.textContent = `You won ${prizes[chosenIndex]}!`;
+            message.style.display = 'block';
+            wheelOverlay.style.display = 'none';
+            mainContent.style.filter = 'none';
+            setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+        }, 200);
+    }
+}
+
     }
 
     requestAnimationFrame(animate);

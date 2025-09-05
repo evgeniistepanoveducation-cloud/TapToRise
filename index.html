@@ -106,7 +106,7 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 
 // XP ladder
 const xpLadder = [];
-xpLadder[1]=100; xpLadder[2]=600; xpLadder[3]=1000;
+xpLadder[1]=300; xpLadder[2]=600; xpLadder[3]=1000;
 const k=1.8;
 for(let i=4;i<=10;i++){ xpLadder[i]=Math.round(xpLadder[i-1]*k/100)*100; }
 
@@ -131,23 +131,15 @@ function choosePrizeByProbability(){
     return probabilities.length-1;
 }
 
-function resizeCanvas() {
-    const size = Math.min(wheelCanvas.clientWidth, wheelCanvas.clientHeight);
-    wheelCanvas.width = size;
-    wheelCanvas.height = size;
-    drawWheel();
-}
-
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas(); // initial sizing
-
-
 // Draw wheel
 function drawWheel(rotation=0){
     // Match drawing to current display size
-   
-    ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+    const displaySize = Math.min(wheelCanvas.clientWidth, wheelCanvas.clientHeight);
+    ctx.clearRect(0,0,wheelCanvas.width,wheelCanvas.height);
 
+    // Scale drawing so it fits responsive size
+    ctx.save();
+    ctx.scale(displaySize / wheelCanvas.width, displaySize / wheelCanvas.height);
 
     const N = prizes.length;
     const center = wheelCanvas.width / 2;

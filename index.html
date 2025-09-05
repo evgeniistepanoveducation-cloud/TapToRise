@@ -1,173 +1,143 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TapToRise - Wheel of Fortune</title>
+<title>Tap to Earn XP with Wheel of Fortune</title>
 <style>
-html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family: Arial,sans-serif;}
-.bg { position:fixed; inset:0; background-image:url('Gradient_Blue.jpg'); background-size:cover; background-position:center;}
-#mainContent { position:relative; width:100%; height:100%; transition: filter 0.3s ease; }
+    body { font-family: Arial, sans-serif; text-align: center; margin: 0; }
+    #mainContent { padding: 20px; transition: filter 0.3s; }
+    button { padding: 10px 20px; font-size: 18px; cursor: pointer; }
+    #xpDisplay, #levelDisplay { margin: 10px 0; font-size: 20px; }
 
-.wrap { position:fixed; inset:0; display:flex; justify-content:center; align-items:center;}
-.tap { font-size:48px; width:300px; height:300px; border:none; border-radius:50%; background-color:#2ea6ff; color:#fff; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,0.3); display:flex; justify-content:center; align-items:center; touch-action: manipulation; user-select:none;}
-.xp-counter { position:fixed; top:20px; left:20px; background:rgba(0,0,0,0.4); color:#fff; padding:16px 20px; border-radius:16px; font-weight:bold; font-size:32px;}
-.level-indicator { position:fixed; top:100px; left:20px; background:rgba(0,0,0,0.4); color:#fff; padding:10px 16px; border-radius:12px; font-weight:bold; font-size:20px;}
-.xp-bar-container { position:fixed; top:0; left:0; width:100%; height:16px; background:rgba(255,255,255,0.2); border-radius:8px; overflow:hidden; z-index:100;}
-.xp-bar { height:100%; width:0%; background:linear-gradient(90deg,#ffd700,#ff8c00); transition:width 0.3s ease-out;}
-#message { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:black; color:white; padding:20px; border-radius:10px; font-size:20px; z-index:2000;}
-#wheelOverlay { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; }
-#wheelCanvas { background:white; border-radius:50%; border:4px solid gold; }
-#wheelIndicator { position:absolute; top:50%; left:50%; width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-bottom:30px solid red; transform: translate(-50%, -100%); z-index:2001; }
-
-/* Level-up overlay */
-#levelOverlay {
-    display:none;
-    position:fixed;
-    inset:0;
-    background: rgba(0,0,0,0.5);
-    justify-content:center;
-    align-items:center;
-    z-index:3000;
-    flex-direction: column;
-    text-align:center;
-    pointer-events: all;
-}
-
-#levelOverlay .content {
-    background: #a0d8ff;      /* light blue background */
-    color: #000;               /* black text for contrast */
-    padding: 30px 40px;        /* a bit more padding */
-    border-radius: 20px;       /* smooth corners */
-    font-size: 24px;
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.3); /* optional: subtle shadow */
-}
-
-#levelOverlay .spin-btn {
-    margin-top:20px;
-    padding:10px 20px;
-    font-size:20px;
-    border:none;
-    border-radius:12px;
-    background:#ffd700;  /* bright button */
-    color:#000;
-    cursor:pointer;
-}
-
-#wheelCanvas {
-    background: white;
-    border-radius: 50%;
-    border: 4px solid gold;
-    width: 80vw;       /* scales with viewport width */
-    height: 80vw;
-    max-width: 500px;  /* don’t get bigger than 500px on desktop */
-    max-height: 500px;
-    min-width: 250px;  /* don’t get smaller than 250px on tiny phones */
-    min-height: 250px;
-}
-
-
+    /* Wheel overlay */
+    #wheelOverlay {
+        display: none;
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: rgba(0,0,0,0.5);
+        justify-content: center; align-items: center;
+        z-index: 10;
+    }
+    #wheelCanvas {
+        width: 80vw; height: 80vw; max-width: 500px; max-height: 500px;
+        background: white; border-radius: 50%;
+    }
+    /* Red indicator triangle */
+    #indicator {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0; height: 0;
+        border-left: 20px solid transparent;
+        border-right: 20px solid transparent;
+        border-bottom: 30px solid red;
+        transform: translate(-50%, -260px);
+        pointer-events: none;
+        z-index: 20;
+    }
+    /* Message box */
+    #message {
+        display: none;
+        position: fixed;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        background: lightblue;
+        padding: 20px;
+        border-radius: 15px;
+        font-size: 20px;
+        z-index: 30;
+    }
 </style>
 </head>
 <body>
-
-<div class="bg"></div>
-
 <div id="mainContent">
-    <div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
-    <div class="wrap"><button class="tap" id="tapBtn">🔥 TAP! 🔥</button></div>
-    <div class="level-indicator" id="levelIndicator">Level: 1</div>
-    <div class="xp-counter" id="xpCounter">XP: 0</div>
+    <div id="xpDisplay">XP: 0</div>
+    <div id="levelDisplay">Level: 1</div>
+    <button id="tapBtn">Tap</button>
 </div>
 
+<div id="wheelOverlay">
+    <div id="indicator"></div>
+    <canvas id="wheelCanvas"></canvas>
+</div>
 <div id="message"></div>
 
-<!-- Wheel overlay -->
-<div id="wheelOverlay">
-    <canvas id="wheelCanvas" width="500" height="500"></canvas>
-
-    <div id="wheelIndicator"></div>
-</div>
-
-<!-- Level-up overlay -->
-<div id="levelOverlay">
-    <div class="content">
-        🎉 Congrats, next level achieved!<br>
-        You earned one spin!
-    </div>
-    <button id="levelSpinBtn" class="spin-btn">Spin</button>
-</div>
-
 <script>
-const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰'];
-const probabilities = [0.2,0.2,0.2,0.2,0.2,0,0,0];
-const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
+let xp = 0;
+let level = 1;
+const xpDisplay = document.getElementById("xpDisplay");
+const levelDisplay = document.getElementById("levelDisplay");
+const tapBtn = document.getElementById("tapBtn");
+const wheelOverlay = document.getElementById("wheelOverlay");
+const message = document.getElementById("message");
+const wheelCanvas = document.getElementById("wheelCanvas");
+const ctx = wheelCanvas.getContext("2d");
 
-// XP ladder
-const xpLadder = [];
-xpLadder[1]=300; xpLadder[2]=600; xpLadder[3]=1000;
-const k=1.8;
-for(let i=4;i<=10;i++){ xpLadder[i]=Math.round(xpLadder[i-1]*k/100)*100; }
+const prizes = ["🍬", "⭐", "💎", "🎁", "🔥", "💰"];
+const probabilities = [0.3, 0.25, 0.2, 0.15, 0.07, 0.03];
 
-const tapBtn=document.getElementById('tapBtn');
-const xpCounter=document.getElementById('xpCounter');
-const xpBar=document.getElementById('xpBar');
-const levelIndicator=document.getElementById('levelIndicator');
-const message=document.getElementById('message');
-const wheelOverlay=document.getElementById('wheelOverlay');
-const wheelCanvas=document.getElementById('wheelCanvas');
-const ctx=wheelCanvas.getContext('2d');
-const levelOverlay=document.getElementById('levelOverlay');
-const levelSpinBtn=document.getElementById('levelSpinBtn');
-const mainContent=document.getElementById('mainContent');
-
-let xp=0, level=1;
-
-// Helper: choose prize by probability
-function choosePrizeByProbability(){
-    let r=Math.random(),cum=0;
-    for(let i=0;i<probabilities.length;i++){ cum+=probabilities[i]; if(r<=cum) return i; }
-    return probabilities.length-1;
+// XP thresholds for levels
+let thresholds = [0, 50, 150]; // level 1–3 fixed
+let k = 1.8;
+for (let i = 3; i < 10; i++) {
+    thresholds.push(Math.round(thresholds[i] * k / 100) * 100);
 }
 
+// Resize canvas dynamically
+function resizeCanvas() {
+    const size = Math.min(wheelCanvas.clientWidth, wheelCanvas.clientHeight);
+    wheelCanvas.width = size;
+    wheelCanvas.height = size;
+    drawWheel();
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+
 // Draw wheel
-function drawWheel(rotation=0){
-    // Match drawing to current display size
-    const displaySize = Math.min(wheelCanvas.clientWidth, wheelCanvas.clientHeight);
-    ctx.clearRect(0,0,wheelCanvas.width,wheelCanvas.height);
-
-    // Scale drawing so it fits responsive size
-    ctx.save();
-    ctx.scale(displaySize / wheelCanvas.width, displaySize / wheelCanvas.height);
-
+function drawWheel(rotation=0) {
     const N = prizes.length;
     const center = wheelCanvas.width / 2;
     const radius = center - 10;
 
-    for(let i=0;i<N;i++){
-        const start=(i/N)*2*Math.PI+rotation;
-        const end=((i+1)/N)*2*Math.PI+rotation;
-        ctx.beginPath(); ctx.moveTo(center,center); ctx.arc(center,center,radius,start,end); ctx.closePath();
-        ctx.fillStyle=colors[i]; ctx.fill();
-        ctx.strokeStyle="#000"; ctx.lineWidth=2; ctx.stroke();
+    ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
 
-        ctx.save(); ctx.translate(center,center);
-        const angle=start+(end-start)/2;
-        ctx.rotate(angle);
-        ctx.font="40px Arial"; ctx.textAlign="right"; ctx.fillStyle="#000";
-        ctx.fillText(prizes[i], radius-20,10);
+    for (let i = 0; i < N; i++) {
+        let start = (i / N) * 2 * Math.PI + rotation;
+        let end = ((i+1) / N) * 2 * Math.PI + rotation;
+
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, end);
+        ctx.fillStyle = `hsl(${i * 360 / N}, 70%, 60%)`;
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(start + (end-start)/2);
+        ctx.textAlign = "right";
+        ctx.font = `${radius*0.2}px Arial`;
+        ctx.fillStyle = "black";
+        ctx.fillText(prizes[i], radius*0.9, 10);
         ctx.restore();
     }
-
-    ctx.restore();
 }
 
+// Weighted random prize
+function choosePrizeByProbability() {
+    let r = Math.random();
+    let cum = 0;
+    for (let i = 0; i < probabilities.length; i++) {
+        cum += probabilities[i];
+        if (r < cum) return i;
+    }
+    return probabilities.length-1;
+}
 
-// Spin wheel
+// Spin wheel animation
 function spinWheel(){
-    wheelOverlay.style.display='flex';
-    mainContent.style.filter='blur(5px)'; // blur background during spin
+    wheelOverlay.style.display = 'flex';
+    mainContent.style.filter = 'blur(5px)';
 
     const chosenIndex = choosePrizeByProbability();
     const N = prizes.length;
@@ -184,12 +154,10 @@ function spinWheel(){
         const elapsed = ts - start;
         const t = Math.min(elapsed / duration, 1);
 
-        // cubic easing in/out
         const ease = t < 0.5
             ? 4 * t * t * t
             : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-        // ✅ scaled drawing at this rotation
         drawWheel(totalRotation * ease);
 
         if(t < 1){
@@ -208,55 +176,30 @@ function spinWheel(){
     requestAnimationFrame(animate);
 }
 
-
-// Show/hide level overlay with background blur
-function showLevelOverlay(){
-    mainContent.style.filter='blur(5px)';
-    levelOverlay.style.display='flex';
-}
-function hideLevelOverlay(){
-    mainContent.style.filter='none';
-    levelOverlay.style.display='none';
-}
-
 // Tap button logic
-tapBtn.addEventListener('click',()=>{
-    xp+=10;
-    const xpNeeded=xpLadder[level]||xpLadder[xpLadder.length-1];
-    xpCounter.textContent=`XP: ${xp}`;
-    xpBar.style.width=Math.min((xp/xpNeeded)*100,100)+'%';
+tapBtn.addEventListener("click", () => {
+    xp += 10;
+    xpDisplay.textContent = "XP: " + xp;
 
-    // Check level-up
-    if(level < xpLadder.length && xp>=xpLadder[level]){
-        xp-=xpLadder[level];
-        level++; levelIndicator.textContent=`Level: ${level}`;
-        xpBar.style.width='0%';
-        showLevelOverlay();
+    if (level < thresholds.length && xp >= thresholds[level]) {
+        level++;
+        levelDisplay.textContent = "Level: " + level;
+        message.textContent = "Congrats, next level achieved! You earned one spin!";
+        message.style.display = "block";
+        mainContent.style.filter = "blur(5px)";
+        // Add spin button inside message
+        message.innerHTML = `
+            <p>Congrats, next level achieved!</p>
+            <p>You earned one spin!</p>
+            <button id="spinBtn">Spin</button>
+        `;
+        document.getElementById("spinBtn").onclick = () => {
+            message.style.display = "none";
+            mainContent.style.filter = "none";
+            spinWheel();
+        };
     }
-
-    // Floating XP
-    const xpSign=document.createElement('div');
-    xpSign.textContent='+10 XP';
-    xpSign.style.position='fixed';
-    xpSign.style.left=`${Math.random()*(window.innerWidth-100)}px`;
-    xpSign.style.top=`${Math.random()*(window.innerHeight-50)}px`;
-    xpSign.style.color='yellow'; xpSign.style.fontWeight='bold';
-    xpSign.style.fontSize='24px'; xpSign.style.pointerEvents='none';
-    document.body.appendChild(xpSign);
-    xpSign.animate([{opacity:1,transform:'translateY(0px)'},{opacity:0,transform:'translateY(-50px)'}],
-                   {duration:1000,easing:'ease-out'});
-    setTimeout(()=>xpSign.remove(),1000);
 });
-
-// Spin button in level overlay
-levelSpinBtn.addEventListener('click',()=>{
-    hideLevelOverlay();
-    spinWheel();
-});
-
-document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
-drawWheel();
 </script>
-
 </body>
 </html>

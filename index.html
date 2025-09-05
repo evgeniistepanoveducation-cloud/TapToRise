@@ -27,6 +27,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #levelOverlay .spin-btn { margin-top:20px; padding:10px 20px; font-size:20px; border:none; border-radius:12px; background:#ffd700; color:#000; cursor:pointer; }
 #wheelCanvas { background:white; border-radius:50%; border:4px solid gold; width:80vw; height:80vw; max-width:500px; max-height:500px; min-width:250px; min-height:250px; }
 
+@keyframes goldenFlash { 0% { transform: scale(1); opacity:1; } 50% { transform: scale(1.5); opacity:0.8; } 100% { transform: scale(1); opacity:0; } }
+.golden-ticket-animation { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:64px; z-index:3000; animation: goldenFlash 1s ease-out forwards; pointer-events:none; }
 
 
 </style>
@@ -87,6 +89,10 @@ const mainContent=document.getElementById('mainContent');
 let xp=0, level=1;
 let goldenTickets = 0;
 const goldenTicketCounter = document.getElementById('goldenTicketCounter');
+
+goldenCounter.className = 'golden-ticket-counter';
+goldenCounter.textContent = `Golden Tickets: ${goldenTickets}`;
+document.body.appendChild(goldenCounter);
 
 
 // Helper: choose prize by probability
@@ -154,7 +160,13 @@ function spinWheel(){
     if(prizes[chosenIndex] === '🎟️') { // assuming 🎟️ is your golden ticket emoji
         goldenTickets++;
         goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
-        // optional: trigger animation here (Step 5)
+
+        // create flashy animation
+        const flash = document.createElement('div');
+        flash.className = 'golden-ticket-animation';
+        flash.textContent = '🎟️';
+        document.body.appendChild(flash);
+        setTimeout(() => flash.remove(), 1000); // remove after animation
     }
 
 

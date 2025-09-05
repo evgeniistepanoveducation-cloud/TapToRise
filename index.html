@@ -131,15 +131,23 @@ function choosePrizeByProbability(){
     return probabilities.length-1;
 }
 
+function resizeCanvas() {
+    const size = Math.min(wheelCanvas.clientWidth, wheelCanvas.clientHeight);
+    wheelCanvas.width = size;
+    wheelCanvas.height = size;
+    drawWheel();
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas(); // initial sizing
+
+
 // Draw wheel
 function drawWheel(rotation=0){
     // Match drawing to current display size
-    const displaySize = Math.min(wheelCanvas.clientWidth, wheelCanvas.clientHeight);
-    ctx.clearRect(0,0,wheelCanvas.width,wheelCanvas.height);
+   
+    ctx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
 
-    // Scale drawing so it fits responsive size
-    ctx.save();
-    ctx.scale(displaySize / wheelCanvas.width, displaySize / wheelCanvas.height);
 
     const N = prizes.length;
     const center = wheelCanvas.width / 2;

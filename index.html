@@ -34,7 +34,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #personalHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }
 .hub-top-row { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
 #hubLevelText { font-size: 28px; font-weight: bold; }
-#hubProfilePic { width: 64px; height: 64px; border-radius: 50%; }
+#hubProfilePic { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; cursor: pointer; }
 #hubLevelName { font-size: 22px; margin-bottom: 16px; }
 .hub-xp-bar-container { width: 90%; height: 20px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-bottom: 16px; }
 .hub-xp-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#ffd700,#ff8c00); border-radius: 10px; transition: width 0.3s ease-out; }
@@ -59,6 +59,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
         <div id="hubLevelText">Level 1</div>
         <img src="profile.jpg" alt="Profile" id="hubProfilePic">
     </div>
+    
     
 
     <div id="hubLevelName">test</div>
@@ -112,6 +113,11 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 </div>
 
 <script>
+// Default profile picture
+const hubProfilePic = document.getElementById('hubProfilePic');
+hubProfilePic.src = 'default_profile.jpg';  // default picture
+
+
 const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰','🎟️']; // last one is Golden Ticket
 const probabilities = [0,0,0,0,0,0,0,0,1];
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
@@ -137,6 +143,29 @@ const mainContent=document.getElementById('mainContent');
 let currentLevelName = "test";
 document.getElementById('hubLevelName').textContent = currentLevelName;
 
+// Create hidden file input
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.accept = 'image/*';  // only images
+fileInput.style.display = 'none';
+document.body.appendChild(fileInput);
+
+// When image is clicked, trigger file selection
+hubProfilePic.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// When a file is selected, update the profile picture
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            hubProfilePic.src = ev.target.result;  // update image
+        }
+        reader.readAsDataURL(file);
+    }
+});
 
 let xp=0, level=1;
 let goldenTickets = 0;

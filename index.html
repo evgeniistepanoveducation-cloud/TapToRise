@@ -148,6 +148,14 @@ personalHub.addEventListener('click', (e) => {
     } 
 });
 
+// Store referral code dynamically
+let referralCode = document.getElementById("referralInput").value;
+
+document.getElementById("referralInput").addEventListener("input", (e) => {
+  referralCode = e.target.value;
+  console.log("Referral code updated:", referralCode);
+});
+
 
 
 // Helper: choose prize by probability

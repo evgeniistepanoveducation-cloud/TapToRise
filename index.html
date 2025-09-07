@@ -372,17 +372,17 @@ tapBtn.addEventListener('click', () => {
 
     // Level-up logic
     // Only allow level-up if XP >= Level 1 XP
-    if (xp >= levels[1].xp) {
-        while (level < levels.length && xp >= levels[level].xp) {
-            xp -= levels[level].xp;
-            level++;
-            showLevelOverlay();
-            xpBar.style.width = '0%';
-            document.getElementById('hubXpBar').style.width = '0%';
-            levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
-            document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
-        }
+    // Original level-up loop
+    while (level < levels.length && xp >= levels[level].xp) {
+        xp -= levels[level].xp;  // optional: keep leftover XP for next level
+        level++;
+        showLevelOverlay();
+        xpBar.style.width = '0%';
+        document.getElementById('hubXpBar').style.width = '0%';
+        levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
 }
+
 
 
 

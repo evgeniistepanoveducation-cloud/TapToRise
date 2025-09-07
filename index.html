@@ -318,17 +318,24 @@ function hideLevelOverlay(){
 }
 
 // Tap button logic
+let lastXpTime = 0;  // timestamp of last XP gain
+const xpCooldown = 200; // ms, i.e., 0.2 sec per XP addition
+
 tapBtn.addEventListener('click',()=>{
-    xp+=10;
-    const xpNeeded=xpLadder[level]||xpLadder[xpLadder.length-1];
+    const now = Date.now();
+    if(now - lastXpTime < xpCooldown) return;  // skip if cooldown not passed
+    lastXpTime = now;
 
-    xpCounter.textContent=`XP: ${xp}`;
-    xpBar.style.width=Math.min((xp/xpNeeded)*100,100)+'%';
+    xp += 10;
+    const xpNeeded = xpLadder[level] || xpLadder[xpLadder.length-1];
 
-     // 🔄 Sync XP bar inside Hub
+    xpCounter.textContent = `XP: ${xp}`;
+    xpBar.style.width = Math.min((xp/xpNeeded)*100,100)+'%';
+
+    // 🔄 Sync XP bar inside Hub
     document.getElementById('hubXpBar').style.width = Math.min((xp/xpNeeded)*100,100)+'%';
 
-        // 🔄 Sync Hub XP counter
+    // 🔄 Sync Hub XP counter
     document.getElementById('hubXpCounter').textContent = `${xp}/${xpNeeded} XP`;
 
     // Check level-up

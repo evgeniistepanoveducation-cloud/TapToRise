@@ -372,33 +372,25 @@ tapBtn.addEventListener('click', () => {
     // Add XP
     xp += 10;
 
-    // Current/Next level XP
-    const prevLevelXP = level === 0 ? 0 : levels[level - 1].xp;
-    const nextLevelXP = levels[level].xp;
-
-    // Update progress bars
-    const progress = (xp - prevLevelXP) / (nextLevelXP - prevLevelXP);
-    xpBar.style.width = `${Math.min(progress * 100, 100)}%`;
-    xpCounter.textContent = `${xp - prevLevelXP}/${nextLevelXP - prevLevelXP} XP`;
-
-    // Sync Hub
-    document.getElementById('hubXpBar').style.width = `${Math.min(progress * 100, 100)}%`;
-    document.getElementById('hubXpCounter').textContent = `${xp - prevLevelXP}/${nextLevelXP - prevLevelXP} XP`;
-    document.getElementById('hubLevelText').textContent = `Level ${level + 1} (${levels[level].name})`;
-
-    // Level-up
-    if (xp >= nextLevelXP && level < levels.length - 1) {
+    // Level-up loop (in case XP exceeds multiple levels at once)
+    while (level < levels.length && xp >= levels[level].xp) {
+        xp -= levels[level].xp;  // optional: keep leftover XP for next level
         level++;
         showLevelOverlay();
-
-        // Reset XP bars
         xpBar.style.width = '0%';
         document.getElementById('hubXpBar').style.width = '0%';
-
-        // Update texts
-        levelIndicator.textContent = `Level ${level + 1} (${levels[level].name})`;
-        document.getElementById('hubLevelText').textContent = `Level ${level + 1} (${levels[level].name})`;
+        levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
     }
+
+    // Update progress bars
+    const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
+    const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
+    const progress = Math.min((xp / nextLevelXP), 1);
+    xpBar.style.width = `${progress * 100}%`;
+    xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
+    document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
+    document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
 
     // Floating XP
     const xpSign = document.createElement('div');
@@ -411,7 +403,6 @@ tapBtn.addEventListener('click', () => {
     xpSign.style.fontSize = '24px';
     xpSign.style.pointerEvents = 'none';
     document.body.appendChild(xpSign);
-
     xpSign.animate(
         [
             { opacity: 1, transform: 'translateY(0px)' },
@@ -421,6 +412,7 @@ tapBtn.addEventListener('click', () => {
     );
     setTimeout(() => xpSign.remove(), 1000);
 });
+
 
 
 

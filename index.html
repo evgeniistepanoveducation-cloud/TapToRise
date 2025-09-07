@@ -254,7 +254,7 @@ function spinWheel(){
             ? 4 * t * t * t
             : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
-        // ✅ scaled drawing at this rotation
+        // scaled drawing at this rotation
         drawWheel(totalRotation * ease);
 
         if(t < 1){
@@ -320,6 +320,7 @@ function hideLevelOverlay(){
 // Tap button logic
 let lastXpTime = 0;  // timestamp of last XP gain
 const xpCooldown = 200; // ms, i.e., 0.2 sec per XP addition
+let levelUpCooldown = false;
 
 tapBtn.addEventListener('click',()=>{
     const now = Date.now();
@@ -356,6 +357,12 @@ tapBtn.addEventListener('click',()=>{
         document.getElementById('hubXpCounter').textContent = `${xp}/${nextXpNeeded} XP`;
 
         showLevelOverlay();
+
+        //Activate 1s cooldown after level-up
+        levelUpCooldown = true;
+        setTimeout(() => {
+            levelUpCooldown = false;
+        }, 1000);
     }
 
     // Floating XP

@@ -371,14 +371,17 @@ tapBtn.addEventListener('click', () => {
     xp += 10;
 
     // Level-up logic
-    while (level < levels.length - 1 && xp >= levels[level + 1].xp) {
+    // Original level-up loop
+    while (level < levels.length && xp >= levels[level].xp) {
+        xp -= levels[level].xp;  // optional: keep leftover XP for next level
         level++;
         showLevelOverlay();
-        levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
-        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
         xpBar.style.width = '0%';
         document.getElementById('hubXpBar').style.width = '0%';
-    }
+        levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
+}
+
 
 
     // Update progress bars

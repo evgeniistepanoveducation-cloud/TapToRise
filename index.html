@@ -124,10 +124,9 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 
 // Levels: cumulative XP + level names
     const levels = [
-        { xp: 0, name: "Beginner" },        // Level 0 placeholder
-        { xp: 100, name: "Apprentice" },    // Level 1
+        { xp: 100, name: "Beginner" },      // Level 1 
         { xp: 200, name: "Novice" },        // Level 2
-        { xp: 3000, name: "Expert" }        // Level 3
+        { xp: 1000, name: "Expert" }        // Level 3
     ];
 
     const k = 1.8;
@@ -386,7 +385,7 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
 
     // Level up
-    if (level > 0 && xp >= nextLevelXP) {
+    if (xp >= nextLevelXP) {
     level++;
     showLevelOverlay();
 
@@ -395,9 +394,10 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubXpBar').style.width = '0%';
 
     // Update texts
-    levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
-    document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
+    levelIndicator.textContent = `Level ${level + 1} (${levels[level].name})`;
+    document.getElementById('hubLevelText').textContent = `Level ${level + 1} (${levels[level].name})`;
 }
+
 
 
     // Floating XP

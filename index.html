@@ -265,7 +265,7 @@ function spinWheel(){
         goldenTickets++;
         goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
 
-         // 🔄 Sync Golden Tickets inside Hub
+         // Sync Golden Tickets inside Hub
         document.getElementById('hubGoldenTickets').textContent = `${goldenTickets}`;
 
         const flash = document.createElement('div');
@@ -333,10 +333,10 @@ tapBtn.addEventListener('click',()=>{
     xpCounter.textContent = `XP: ${xp}`;
     xpBar.style.width = Math.min((xp/xpNeeded)*100,100)+'%';
 
-    // 🔄 Sync XP bar inside Hub
+    // Sync XP bar inside Hub
     document.getElementById('hubXpBar').style.width = Math.min((xp/xpNeeded)*100,100)+'%';
 
-    // 🔄 Sync Hub XP counter
+    // Sync Hub XP counter
     document.getElementById('hubXpCounter').textContent = `${xp}/${xpNeeded} XP`;
 
     // Check level-up
@@ -346,10 +346,10 @@ tapBtn.addEventListener('click',()=>{
         levelIndicator.textContent=`Level: ${level}`;
         xpBar.style.width='0%';
 
-        // 🔄 Sync Level inside Hub
+        // Sync Level inside Hub
         document.getElementById('hubLevelText').textContent = `Level ${level}`;
 
-        // 🔄 Reset Hub XP bar 
+        // Reset Hub XP bar 
         document.getElementById('hubXpBar').style.width = '0%';
 
                 // 🔄 Reset Hub XP counter

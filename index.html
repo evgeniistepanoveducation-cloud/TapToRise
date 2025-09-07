@@ -323,6 +323,10 @@ const xpCooldown = 200; // ms, i.e., 0.2 sec per XP addition
 let levelUpCooldown = false;
 
 tapBtn.addEventListener('click',()=>{
+
+    // Block XP gain
+    if (mainContent.style.filter === 'blur(5px)') return;
+
     const now = Date.now();
     if(now - lastXpTime < xpCooldown) return;  // skip if cooldown not passed
     lastXpTime = now;

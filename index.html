@@ -124,7 +124,8 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 
 // Levels: cumulative XP + level names
     const levels = [
-        { xp: 100, name: "Beginner" },      // Level 1 
+        { xp: 0, name: "Beginner" },       // Level 0
+        { xp: 100, name: "Apprentice" },    // Level 1 
         { xp: 200, name: "Novice" },        // Level 2
         { xp: 1000, name: "Expert" }        // Level 3
     ];
@@ -133,7 +134,7 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
     for(let i = levels.length; i < 10; i++){
         const prevXP = levels[i - 1].xp; // now this always exists
         const newXP = Math.round(prevXP * k); // multiply directly
-        levels.push({ xp: newXP, name: `Level ${i + 1}` });  // Level numbering starts at 1
+        levels.push({ xp: newXP, name: `Level ${i}` });  // Level numbering starts at 1
 }
 
 

@@ -386,18 +386,19 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
 
     // Level up
-    if (xp >= nextLevelXP) {
-        level++;
-        showLevelOverlay();
+    if (level > 0 && xp >= nextLevelXP) {
+    level++;
+    showLevelOverlay();
 
-        // Reset XP bars
-        xpBar.style.width = '0%';
-        document.getElementById('hubXpBar').style.width = '0%';
+    // Reset XP bars
+    xpBar.style.width = '0%';
+    document.getElementById('hubXpBar').style.width = '0%';
 
-        // Update texts
-        levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
-        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
-    }
+    // Update texts
+    levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
+    document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
+}
+
 
     // Floating XP
     const xpSign = document.createElement('div');

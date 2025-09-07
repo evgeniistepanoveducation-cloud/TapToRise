@@ -41,6 +41,9 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #hubGoldenTickets { width: 80px; height: 80px; border-radius: 50%; background: gold; color: #000; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: bold; margin-bottom: 16px; }
 #hubReferral { font-size: 18px; margin-bottom: 20px; }
 #hubXpCounter { font-size: 18px; margin-bottom: 16px; }
+.referral-code { margin-top: 15px; text-align: center; }
+.referral-code label { display: block; margin-bottom: 5px; font-weight: bold; }
+.referral-code input { padding: 5px 10px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; text-align: center; }
 
 </style>
 </head>
@@ -54,7 +57,14 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
         <div id="hubLevelText">Level 1</div>
         <img src="profile.jpg" alt="Profile" id="hubProfilePic">
     </div>
-    // <div id="hubLevelName">test</div>
+    
+    <div class="referral-code">
+        <label for="referralInput">Referral Code:</label>
+        <input type="text" id="referralInput" value="superdigga228" />
+    </div>
+
+
+    <div id="hubLevelName">test</div>
     <div class="hub-xp-bar-container"><div class="hub-xp-bar" id="hubXpBar"></div></div>
     <div id="hubXpCounter">0/100 XP</div>
     <div id="hubGoldenTickets">🎟️ 0</div>
@@ -130,7 +140,7 @@ const personalHub = document.getElementById('personalHub');
 hubBtn.addEventListener('click', () => { 
     personalHub.style.display = 'flex'; 
     mainContent.style.filter='blur(5px)'; 
-});
+});``
 personalHub.addEventListener('click', (e) => { 
     if(e.target===personalHub){ 
         personalHub.style.display='none'; 

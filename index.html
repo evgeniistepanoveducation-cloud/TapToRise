@@ -361,17 +361,19 @@ const xpCooldown = 200; // ms, i.e., 0.2 sec per XP addition
 let levelUpCooldown = false;
 
 tapBtn.addEventListener('click', () => {
-    if (mainContent.style.filter === 'blur(5px)') return; // Block taps while overlay
+    // Block taps if overlay is visible
+    if (levelOverlay.style.display === 'flex' || wheelOverlay.style.display === 'flex') return;
 
+    // Cooldown
     const now = Date.now();
-    if (now - lastXpTime < xpCooldown) return;  // cooldown
+    if (now - lastXpTime < xpCooldown) return;
     lastXpTime = now;
 
     // Add XP
     xp += 10;
 
     // Current/Next level XP
-    const prevLevelXP = level > 0 ? levels[level - 1].xp : 0;
+    const prevLevelXP = level === 0 ? 0 : levels[level - 1].xp;
     const nextLevelXP = levels[level].xp;
 
     // Update progress bars
@@ -382,23 +384,21 @@ tapBtn.addEventListener('click', () => {
     // Sync Hub
     document.getElementById('hubXpBar').style.width = `${Math.min(progress * 100, 100)}%`;
     document.getElementById('hubXpCounter').textContent = `${xp - prevLevelXP}/${nextLevelXP - prevLevelXP} XP`;
-    document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
-
-    // Level up
-    if (xp >= nextLevelXP) {
-    level++;
-    showLevelOverlay();
-
-    // Reset XP bars
-    xpBar.style.width = '0%';
-    document.getElementById('hubXpBar').style.width = '0%';
-
-    // Update texts
-    levelIndicator.textContent = `Level ${level + 1} (${levels[level].name})`;
     document.getElementById('hubLevelText').textContent = `Level ${level + 1} (${levels[level].name})`;
-}
 
+    // Level-up
+    if (xp >= nextLevelXP && level < levels.length - 1) {
+        level++;
+        showLevelOverlay();
 
+        // Reset XP bars
+        xpBar.style.width = '0%';
+        document.getElementById('hubXpBar').style.width = '0%';
+
+        // Update texts
+        levelIndicator.textContent = `Level ${level + 1} (${levels[level].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level + 1} (${levels[level].name})`;
+    }
 
     // Floating XP
     const xpSign = document.createElement('div');
@@ -421,6 +421,7 @@ tapBtn.addEventListener('click', () => {
     );
     setTimeout(() => xpSign.remove(), 1000);
 });
+
 
 
 

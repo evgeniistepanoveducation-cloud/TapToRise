@@ -46,7 +46,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .referral-row { display: inline-flex;      /* keep input + button in one row */ align-items: center; justify-content: center; gap: 8px;  /* space between input and button */ }
 .referral-row button { padding: 5px 12px; font-size: 14px; border-radius: 8px; border: none; background: #4caf50; color: white; cursor: pointer; transition: background 0.2s; }
 .referral-row button:hover { background: #45a049; }
-.copy-confirm { margin-top: 6px; font-size: 13px; color: green; display: none;       /* hidden by default */ }
+.copy-confirm { margin-top: 6px; font-size: 14px; color: #fff; background: #2ea6ff; padding: 4px 12px; border-radius: 12px; display: inline-block; opacity: 0; transition: opacity 0.5s ease; /* fade effect */ }
 
 </style>
 </head>
@@ -160,22 +160,20 @@ let referralCode = document.getElementById("referralInput").value;
 
 // Copy referral code
 const copyConfirm = document.getElementById("copyConfirm");
+
 document.getElementById("copyReferralBtn").addEventListener("click", () => {
   navigator.clipboard.writeText(referralCode).then(() => {
-    copyConfirm.style.display = "block";   // show message
+    copyConfirm.style.opacity = "1";         // fade in
     setTimeout(() => {
-      copyConfirm.style.display = "none";  // hide after 2 sec
-    }, 2000);
+      copyConfirm.style.opacity = "0";       // fade out after 1 sec
+    }, 1000);
   });
 });
-
 
 document.getElementById("referralInput").addEventListener("input", (e) => {
   referralCode = e.target.value;
   console.log("Referral code updated:", referralCode);
 });
-
-
 
 // Helper: choose prize by probability
 function choosePrizeByProbability(){

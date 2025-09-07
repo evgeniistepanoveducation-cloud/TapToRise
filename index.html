@@ -130,11 +130,12 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
     ];
 
     const k = 1.8;
-    for(let i=4; i<=10; i++){
-        const prevXP = levels[i-1].xp;
-        const newXP = Math.round(prevXP * k / 100) * 100;
-        levels.push({ xp: newXP, name: `Level ${i}` });  // placeholder names
-    }
+    for(let i = levels.length; i < 10; i++){
+        const prevXP = levels[i - 1].xp; // now this always exists
+        const newXP = Math.round(prevXP * k); // multiply directly
+        levels.push({ xp: newXP, name: `Level ${i + 1}` });  // Level numbering starts at 1
+}
+
 
 
 const tapBtn=document.getElementById('tapBtn');

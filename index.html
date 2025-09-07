@@ -40,7 +40,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .hub-xp-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#ffd700,#ff8c00); border-radius: 10px; transition: width 0.3s ease-out; }
 #hubGoldenTickets { width: 80px; height: 80px; border-radius: 50%; background: gold; color: #000; display: flex; justify-content: center; align-items: center; font-size: 32px; font-weight: bold; margin-bottom: 16px; }
 #hubReferral { font-size: 18px; margin-bottom: 20px; }
-
+#hubXpCounter { font-size: 18px; margin-bottom: 16px; }
 
 </style>
 </head>
@@ -56,6 +56,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     </div>
     // <div id="hubLevelName">test</div>
     <div class="hub-xp-bar-container"><div class="hub-xp-bar" id="hubXpBar"></div></div>
+    <div id="hubXpCounter">0/100 XP</div>
     <div id="hubGoldenTickets">🎟️ 0</div>
     <div id="hubReferral">Referral: ABC123</div>
 
@@ -289,6 +290,9 @@ tapBtn.addEventListener('click',()=>{
      // 🔄 Sync XP bar inside Hub
     document.getElementById('hubXpBar').style.width = Math.min((xp/xpNeeded)*100,100)+'%';
 
+        // 🔄 Sync Hub XP counter
+    document.getElementById('hubXpCounter').textContent = `${xp}/${xpNeeded} XP`;
+
     // Check level-up
     if(level < xpLadder.length && xp>=xpLadder[level]){
         xp-=xpLadder[level];
@@ -301,6 +305,10 @@ tapBtn.addEventListener('click',()=>{
 
         // 🔄 Reset Hub XP bar 
         document.getElementById('hubXpBar').style.width = '0%';
+
+                // 🔄 Reset Hub XP counter
+        const nextXpNeeded = xpLadder[level] || xpLadder[xpLadder.length-1];
+        document.getElementById('hubXpCounter').textContent = `${xp}/${nextXpNeeded} XP`;
 
         showLevelOverlay();
     }

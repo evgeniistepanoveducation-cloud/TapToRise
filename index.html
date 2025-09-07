@@ -200,7 +200,6 @@ personalHub.addEventListener('click', (e) => {
 // Store referral code dynamically
 let referralCode = document.getElementById("referralInput").value;
 
-
 // Copy referral code
 const copyConfirm = document.getElementById("copyConfirm");
 
@@ -265,8 +264,6 @@ function drawWheel(rotation=0){
         ctx.restore();
     }
 }
-
-
 
 // Spin wheel
 function spinWheel(){
@@ -346,7 +343,6 @@ function spinWheel(){
     requestAnimationFrame(animate);
 }
 
-
 // Show/hide level overlay with background blur
 function showLevelOverlay(){
     mainContent.style.filter='blur(5px)';
@@ -374,16 +370,16 @@ tapBtn.addEventListener('click', () => {
     // Add XP
     xp += 10;
 
-    // Level-up loop (in case XP exceeds multiple levels at once)
-    while (level < levels.length && xp >= levels[level].xp) {
-        xp -= levels[level].xp;  // optional: keep leftover XP for next level
+    // Level-up logic
+    while (level < levels.length - 1 && xp >= levels[level + 1].xp) {
         level++;
         showLevelOverlay();
+        levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
         xpBar.style.width = '0%';
         document.getElementById('hubXpBar').style.width = '0%';
-        levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
-        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
     }
+
 
     // Update progress bars
     const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;

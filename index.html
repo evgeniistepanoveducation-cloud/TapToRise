@@ -122,11 +122,21 @@ const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰','🎟️
 const probabilities = [0,0,0,0,0,0,0,0,1];
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
-// XP ladder
-const xpLadder = [];
-xpLadder[1]=100; xpLadder[2]=200; xpLadder[3]=1000;
-const k=1.8;
-for(let i=4;i<=10;i++){ xpLadder[i]=Math.round(xpLadder[i-1]*k/100)*100; }
+// Levels: cumulative XP + level names
+    const levels = [
+        { xp: 0, name: "Beginner" },        // Level 0 placeholder
+        { xp: 100, name: "Apprentice" },    // Level 1
+        { xp: 200, name: "Novice" },        // Level 2
+        { xp: 3000, name: "Expert" }        // Level 3
+    ];
+
+    const k = 1.8;
+    for(let i=4; i<=10; i++){
+        const prevXP = levels[i-1].xp;
+        const newXP = Math.round(prevXP * k / 100) * 100;
+        levels.push({ xp: newXP, name: `Level ${i}` });  // placeholder names
+    }
+
 
 const tapBtn=document.getElementById('tapBtn');
 const xpCounter=document.getElementById('xpCounter');
@@ -155,7 +165,7 @@ hubProfilePic.addEventListener('click', () => {
     fileInput.click();
 });
 
-// When a file is selected, update the profile picture
+// Update the profile picture
 fileInput.addEventListener('change', (e) => {
     const file = e.target.files[0];
     if(file){
@@ -167,7 +177,7 @@ fileInput.addEventListener('change', (e) => {
     }
 });
 
-let xp=0, level=1;
+let xp=0, level=0;
 let goldenTickets = 0;
 const goldenTicketCounter = document.getElementById('goldenTicketCounter');
 
@@ -351,66 +361,70 @@ let lastXpTime = 0;  // timestamp of last XP gain
 const xpCooldown = 200; // ms, i.e., 0.2 sec per XP addition
 let levelUpCooldown = false;
 
-tapBtn.addEventListener('click',()=>{
+tapBtn.addEventListener('click', () => {
 
-    // Block XP gain
+    // Block taps if blurred
     if (mainContent.style.filter === 'blur(5px)') return;
 
+    // Anti-spam cooldown
     const now = Date.now();
-    if(now - lastXpTime < xpCooldown) return;  // skip if cooldown not passed
+    if (now - lastXpTime < xpCooldown) return;
     lastXpTime = now;
 
+    // Add XP
     xp += 10;
-    const xpNeeded = xpLadder[level] || xpLadder[xpLadder.length-1];
 
-    xpCounter.textContent = `XP: ${xp}`;
-    xpBar.style.width = Math.min((xp/xpNeeded)*100,100)+'%';
+    // XP thresholds
+    const nextLevelXP = levels[level].xp;
+    const prevLevelXP = level > 0 ? levels[level - 1].xp : 0;
 
-    // Sync XP bar inside Hub
-    document.getElementById('hubXpBar').style.width = Math.min((xp/xpNeeded)*100,100)+'%';
+    // Progress within current level
+    const progress = (xp - prevLevelXP) / (nextLevelXP - prevLevelXP);
+    xpBar.style.width = Math.min(progress * 100, 100) + '%';
+    xpCounter.textContent = `${xp - prevLevelXP}/${nextLevelXP - prevLevelXP} XP`;
 
-    // Sync Hub XP counter
-    document.getElementById('hubXpCounter').textContent = `${xp}/${xpNeeded} XP`;
+    // Sync Hub
+    document.getElementById('hubXpBar').style.width = Math.min(progress * 100, 100) + '%';
+    document.getElementById('hubXpCounter').textContent = `${xp - prevLevelXP}/${nextLevelXP - prevLevelXP} XP`;
+    document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
 
-    // Check level-up
-    if(level < xpLadder.length && xp>=xpLadder[level]){
-        xp-=xpLadder[level];
-        level++; 
-        levelIndicator.textContent=`Level: ${level}`;
-        xpBar.style.width='0%';
-
-        // Sync Level inside Hub
-        document.getElementById('hubLevelText').textContent = `Level ${level}`;
-
-        // Reset Hub XP bar 
-        document.getElementById('hubXpBar').style.width = '0%';
-
-                // 🔄 Reset Hub XP counter
-        const nextXpNeeded = xpLadder[level] || xpLadder[xpLadder.length-1];
-        document.getElementById('hubXpCounter').textContent = `${xp}/${nextXpNeeded} XP`;
-
+    // Level-up check
+    if (xp >= nextLevelXP) {
+        level++;
         showLevelOverlay();
 
-        //Activate 1s cooldown after level-up
-        levelUpCooldown = true;
-        setTimeout(() => {
-            levelUpCooldown = false;
-        }, 1000);
+        // Reset XP bars
+        xpBar.style.width = '0%';
+        document.getElementById('hubXpBar').style.width = '0%';
+
+        // Update texts
+        levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
     }
 
-    // Floating XP
-    const xpSign=document.createElement('div');
-    xpSign.textContent='+10 XP';
-    xpSign.style.position='fixed';
-    xpSign.style.left=`${Math.random()*(window.innerWidth-100)}px`;
-    xpSign.style.top=`${Math.random()*(window.innerHeight-50)}px`;
-    xpSign.style.color='yellow'; xpSign.style.fontWeight='bold';
-    xpSign.style.fontSize='24px'; xpSign.style.pointerEvents='none';
+    // Floating XP (your version, with random position)
+    const xpSign = document.createElement('div');
+    xpSign.textContent = '+10 XP';
+    xpSign.style.position = 'fixed';
+    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+    xpSign.style.color = 'yellow';
+    xpSign.style.fontWeight = 'bold';
+    xpSign.style.fontSize = '24px';
+    xpSign.style.pointerEvents = 'none';
     document.body.appendChild(xpSign);
-    xpSign.animate([{opacity:1,transform:'translateY(0px)'},{opacity:0,transform:'translateY(-50px)'}],
-                   {duration:1000,easing:'ease-out'});
-    setTimeout(()=>xpSign.remove(),1000);
+
+    xpSign.animate(
+        [
+            { opacity: 1, transform: 'translateY(0px)' },
+            { opacity: 0, transform: 'translateY(-50px)' }
+        ],
+        { duration: 1000, easing: 'ease-out' }
+    );
+
+    setTimeout(() => xpSign.remove(), 1000);
 });
+
 
 // Spin button in level overlay
 levelSpinBtn.addEventListener('click',()=>{

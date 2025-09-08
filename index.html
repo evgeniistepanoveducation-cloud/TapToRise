@@ -132,9 +132,9 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 
     const k = 1.8;
     for(let i = levels.length; i < 10; i++){
-        const prevXP = levels[i - 1].xp; // now this always exists
-        const newXP = Math.round(prevXP * k); // multiply directly
-        levels.push({ xp: newXP, name: `Level ${i}` });  // Level numbering starts at 1
+        const prevXP = levels[i - 1].xp; 
+        const newXP = Math.round(prevXP * k);
+        levels.push({ xp: newXP, name: `Level ${i}` }); 
 }
 
 
@@ -371,28 +371,39 @@ tapBtn.addEventListener('click', () => {
     xp += 10;
 
     // Original level-up loop
-    while (level < levels.length && xp >= levels[level].xp) {
-        xp -= levels[level].xp;  // optional: keep leftover XP for next level
+    // Level-up using cumulative thresholds: do NOT subtract XP
+    while (level < levels.length - 1 && xp >= levels[level + 1].xp) {
         level++;
         showLevelOverlay();
         xpBar.style.width = '0%';
         document.getElementById('hubXpBar').style.width = '0%';
-        levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
-        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
+        // Show the current level's name (levels[level] is the current level after increment)
+        levelIndicator.textContent = `Level ${level} (${levels[level].name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level].name})`;
 }
 
 
-
-
-
     // Update progress bars
-    const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
-    const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
-    const progress = Math.min((xp / nextLevelXP), 1);
-    xpBar.style.width = `${progress * 100}%`;
-    xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
-    document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
-    document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
+    //const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
+    //const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
+    //const progress = Math.min((xp / nextLevelXP), 1);
+    //xpBar.style.width = `${progress * 100}%`;
+    //xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
+    //document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
+    //document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
+
+    // Progress within current level using cumulative thresholds
+        const currentLevelXP = levels[level].xp; // start threshold for current level
+        const nextLevelXP = (level < levels.length - 1) ? levels[level + 1].xp : (currentLevelXP + 100);
+        const progress = Math.min(Math.max((xp - currentLevelXP) / (nextLevelXP - currentLevelXP), 0), 1);
+
+        xpBar.style.width = `${progress * 100}%`;
+        xpCounter.textContent = `${xp - currentLevelXP}/${nextLevelXP - currentLevelXP} XP`;
+        document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
+        document.getElementById('hubXpCounter').textContent = `${xp - currentLevelXP}/${nextLevelXP - currentLevelXP} XP`;
+
+
+
 
     // Floating XP
     const xpSign = document.createElement('div');

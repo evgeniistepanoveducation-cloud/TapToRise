@@ -59,9 +59,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
         <div id="hubLevelText">Level 1</div>
         <img src="profile.jpg" alt="Profile" id="hubProfilePic">
     </div>
-    
-    
-
+     
     <div id="hubLevelName">test</div>
     <div class="hub-xp-bar-container"><div class="hub-xp-bar" id="hubXpBar"></div></div>
     <div id="hubXpCounter">0/100 XP</div>
@@ -70,7 +68,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
         <div id="hubGoldenTickets" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
         <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Your Golden Tickets</div>
 </div>
-
 
     <div class="referral-code">
         <label for="referralInput">Referral Code:</label>
@@ -92,7 +89,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div class="xp-counter" id="xpCounter">XP: 0</div>
     <div class="golden-ticket-counter" id="goldenTicketCounter">🎟️ 0</div>
     <button id="hubBtn">🏠</button>
-    <button id="leaderboardBtn" style="margin-top:10px;">LBoard</button>
+    <button id="leaderboardBtn" style=" display:flex; align-items:center; justify-content:center; width:60px; height:60px; margin-top:10px; font-size:28px; border-radius:12px; border:none; background:#222; color:#fff; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.3); "> 🏆 </button>
 </div>
 
 <div id="message"></div>
@@ -114,14 +111,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <button id="levelSpinBtn" class="spin-btn">Spin</button>
 </div>
 
-<div id="leaderboardOverlay" 
-     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-            background: rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000; flex-direction:column; overflow:auto;">
-    <div id="leaderboardContainer" style="background:#111; color:#fff; padding:20px; border-radius:10px; width:90%; max-width:600px;">
-        <!-- Rows will be injected here dynamically -->
-    </div>
-    <button id="closeLeaderboardBtn" style="margin-top:10px;">Close</button>
-</div>
 
 <script>
 // Default profile picture

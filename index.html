@@ -380,11 +380,12 @@ tapBtn.addEventListener('click', () => {
     xpBar.style.width = '0%';
     document.getElementById('hubXpBar').style.width = '0%';
     levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
-    document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
+    //document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
+    document.getElementById('hubLevelText').textContent = `Level ${level}`;
     document.getElementById('hubLevelName').textContent = levels[level-1].name;
 }
 
-//d
+
 
     // Update progress bar
     const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;

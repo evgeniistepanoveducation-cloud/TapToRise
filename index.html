@@ -374,7 +374,7 @@ tapBtn.addEventListener('click', () => {
     // Level-up using cumulative thresholds: do NOT subtract XP
 
     while (level < levels.length && xp >= levels[level].xp) {
-    xp -= levels[level].xp;  // optional: keep leftover XP for next level
+    //xp -= levels[level].xp; 
     level++;
     showLevelOverlay();
     xpBar.style.width = '0%';

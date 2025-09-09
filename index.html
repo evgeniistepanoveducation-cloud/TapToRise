@@ -437,137 +437,130 @@ levelSpinBtn.addEventListener('click',()=>{
     spinWheel();
 });
 
-/////////////////////////
-// MVP Leaderboard Setup
-/////////////////////////
+document.addEventListener('DOMContentLoaded', () => {
 
-// Fake users
-const fakeUsers = [
-  { username: "Alpha", baseXP: 10000 },
-  { username: "Bravo", baseXP: 20000 },
-  { username: "Charlie", baseXP: 24000 },
-  { username: "Delta", baseXP: 100000 },
-  { username: "Echo", baseXP: 50000 },
-  { username: "Foxtrot", baseXP: 30000 },
-  { username: "Golf", baseXP: 12000 },
-  { username: "Hotel", baseXP: 45000 },
-  { username: "India", baseXP: 80000 },
-  { username: "Juliet", baseXP: 60000 }
-];
+    /////////////////////////
+    // MVP Leaderboard Setup
+    /////////////////////////
 
-// Real player
-let realPlayer = { username: "YOU", xp: xp, level: level };
+    // Fake users
+    const fakeUsers = [
+      { username: "Alpha", baseXP: 10000 },
+      { username: "Bravo", baseXP: 20000 },
+      { username: "Charlie", baseXP: 24000 },
+      { username: "Delta", baseXP: 100000 },
+      { username: "Echo", baseXP: 50000 },
+      { username: "Foxtrot", baseXP: 30000 },
+      { username: "Golf", baseXP: 12000 },
+      { username: "Hotel", baseXP: 45000 },
+      { username: "India", baseXP: 80000 },
+      { username: "Juliet", baseXP: 60000 }
+    ];
 
-// Generate bot XP once per session
-function calculateBotXP() {
-  fakeUsers.forEach(bot => {
-    const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10; // divisible by 10, ≥5000
-    bot.currentXP = bot.baseXP + randomXP;
-  });
-}
+    // Real player
+    let realPlayer = { username: "YOU", xp: xp, level: level };
 
-// Update real player in leaderboard
-function updateRealPlayerXP() {
-  realPlayer.xp = xp; // live XP
-}
+    // Generate bot XP once per session
+    function calculateBotXP() {
+      fakeUsers.forEach(bot => {
+        const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10; 
+        bot.currentXP = bot.baseXP + randomXP;
+      });
+    }
 
-// Merge, sort, and keep top 10
-function getTopLeaderboard() {
-  const combined = [...fakeUsers, realPlayer];
-  combined.sort((a, b) => b.currentXP - a.currentXP);
-  const top10 = combined.slice(0, 10);
+    function updateRealPlayerXP() {
+      realPlayer.xp = xp; 
+    }
 
-  // Only include real player if inside top 10
-  return top10.includes(realPlayer) ? top10 : top10.slice(0, 10);
-}
+    function getTopLeaderboard() {
+      const combined = [...fakeUsers, realPlayer];
+      combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
+      const top10 = combined.slice(0, 10);
+      return top10.includes(realPlayer) ? top10 : top10.slice(0, 10);
+    }
 
-// Render leaderboard
-function renderLeaderboard() {
-  const container = document.getElementById("leaderboardContainer");
-  container.innerHTML = ""; // clear
+    function renderLeaderboard() {
+      const container = document.getElementById("leaderboardContainer");
+      if(!container) return; // safety
+      container.innerHTML = "";
+      const top10 = getTopLeaderboard();
+      top10.forEach((user, idx) => {
+        const row = document.createElement("div");
+        row.className = "leaderboard-row";
+        row.style.display = "flex";
+        row.style.justifyContent = "space-between";
+        row.style.alignItems = "center";
+        row.style.padding = "4px 8px";
+        row.style.marginBottom = "2px";
+        row.style.borderRadius = "4px";
 
-  const top10 = getTopLeaderboard();
+        if (idx === 0) row.style.background = "#FFD700";
+        else if (idx === 1) row.style.background = "#C0C0C0";
+        else if (idx === 2) row.style.background = "#CD7F32";
+        if (user === realPlayer) row.style.outline = "2px solid #00FF00";
 
-  top10.forEach((user, idx) => {
-    const row = document.createElement("div");
-    row.className = "leaderboard-row";
-    row.style.display = "flex";
-    row.style.justifyContent = "space-between";
-    row.style.alignItems = "center";
-    row.style.padding = "4px 8px";
-    row.style.marginBottom = "2px";
-    row.style.borderRadius = "4px";
+        const rank = document.createElement("span");
+        rank.textContent = `#${idx + 1}`;
+        rank.style.width = "30px";
 
-    // Highlight top 3
-    if (idx === 0) row.style.background = "#FFD700"; // gold
-    else if (idx === 1) row.style.background = "#C0C0C0"; // silver
-    else if (idx === 2) row.style.background = "#CD7F32"; // bronze
-    // Highlight real player if visible
-    if (user === realPlayer) row.style.outline = "2px solid #00FF00";
+        const name = document.createElement("span");
+        name.textContent = user.username;
+        name.style.flex = "1";
+        name.style.marginLeft = "8px";
 
-    const rank = document.createElement("span");
-    rank.textContent = `#${idx + 1}`;
-    rank.style.width = "30px";
+        const xpText = document.createElement("span");
+        xpText.textContent = user === realPlayer ? `${user.xp}` : `${user.currentXP}`;
+        xpText.style.width = "60px";
+        xpText.style.textAlign = "right";
 
-    const name = document.createElement("span");
-    name.textContent = user.username;
-    name.style.flex = "1";
-    name.style.marginLeft = "8px";
+        const xpBarContainer = document.createElement("div");
+        xpBarContainer.style.flex = "1";
+        xpBarContainer.style.height = "10px";
+        xpBarContainer.style.background = "#444";
+        xpBarContainer.style.borderRadius = "5px";
+        xpBarContainer.style.marginLeft = "8px";
 
-    const xpText = document.createElement("span");
-    xpText.textContent = user === realPlayer ? `${user.xp}` : `${user.currentXP}`;
-    xpText.style.width = "60px";
-    xpText.style.textAlign = "right";
+        const xpBar = document.createElement("div");
+        let prevXP = user.level && levels[user.level-1] ? levels[user.level-1].xp : 0;
+        let nextXP = user.level < levels.length ? levels[user.level].xp : prevXP + 100;
+        let progress = Math.min(Math.max((user.xp || user.currentXP) - prevXP,0)/(nextXP - prevXP),1);
+        xpBar.style.width = `${progress*100}%`;
+        xpBar.style.height = "100%";
+        xpBar.style.background = "#0f0";
+        xpBar.style.borderRadius = "5px";
 
-    const xpBarContainer = document.createElement("div");
-    xpBarContainer.style.flex = "1";
-    xpBarContainer.style.height = "10px";
-    xpBarContainer.style.background = "#444";
-    xpBarContainer.style.borderRadius = "5px";
-    xpBarContainer.style.marginLeft = "8px";
+        xpBarContainer.appendChild(xpBar);
+        row.append(rank, name, xpText, xpBarContainer);
+        container.appendChild(row);
+      });
+    }
 
-    const xpBar = document.createElement("div");
-    // Simple bar: fill relative to next level threshold
-    let prevXP = user.level && levels[user.level-1] ? levels[user.level-1].xp : 0;
-    let nextXP = user.level < levels.length ? levels[user.level].xp : prevXP + 100;
-    let progress = Math.min(Math.max((user.xp || user.currentXP) - prevXP,0)/(nextXP - prevXP),1);
-    xpBar.style.width = `${progress*100}%`;
-    xpBar.style.height = "100%";
-    xpBar.style.background = "#0f0";
-    xpBar.style.borderRadius = "5px";
+    calculateBotXP();
+    updateRealPlayerXP();
+    renderLeaderboard();
 
-    xpBarContainer.appendChild(xpBar);
-    row.append(rank, name, xpText, xpBarContainer);
-    container.appendChild(row);
-  });
-}
+    setInterval(() => {
+      updateRealPlayerXP();
+      renderLeaderboard();
+    }, 1000);
 
-// Initial setup
-calculateBotXP();
-updateRealPlayerXP();
-renderLeaderboard();
+    const leaderboardBtn = document.getElementById('leaderboardBtn');
+    const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+    const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
 
-// Update leaderboard live during play
-setInterval(() => {
-  updateRealPlayerXP();
-  renderLeaderboard();
-}, 1000);
+    leaderboardBtn.addEventListener('click', () => {
+        leaderboardOverlay.style.display = 'flex';
+        mainContent.style.filter = 'blur(5px)'; 
+        renderLeaderboard(); 
+    });
 
-//LeaderboardsButton display
-const leaderboardBtn = document.getElementById('leaderboardBtn');
-const leaderboardOverlay = document.getElementById('leaderboardOverlay');
-const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
+    closeLeaderboardBtn.addEventListener('click', () => {
+        leaderboardOverlay.style.display = 'none';
+        mainContent.style.filter = 'none';
+    });
 
-leaderboardBtn.addEventListener('click', () => {
-    leaderboardOverlay.style.display = 'flex';
-    mainContent.style.filter = 'blur(5px)'; // blur background behind overlay
-    renderLeaderboard(); // render fresh leaderboard
-});
+}); // end DOMContentLoaded
 
-closeLeaderboardBtn.addEventListener('click', () => {
-    leaderboardOverlay.style.display = 'none';
-    mainContent.style.filter = 'none';
-});
 
 
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});

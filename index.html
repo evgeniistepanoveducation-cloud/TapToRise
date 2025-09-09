@@ -92,12 +92,10 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div class="xp-counter" id="xpCounter">XP: 0</div>
     <div class="golden-ticket-counter" id="goldenTicketCounter">🎟️ 0</div>
     <button id="hubBtn">🏠</button>
+    <button id="leaderboardBtn" style="margin-top:10px;">LBoard</button>
 </div>
 
 <div id="message"></div>
-
-<!-- Leaderboard -->
-<div id="leaderboardContainer" style="width: 100%; margin-top: 10px;"></div>
 
 
 <!-- Wheel overlay -->
@@ -114,6 +112,15 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
         You earned one spin!
     </div>
     <button id="levelSpinBtn" class="spin-btn">Spin</button>
+</div>
+
+<div id="leaderboardOverlay" 
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000; flex-direction:column; overflow:auto;">
+    <div id="leaderboardContainer" style="background:#111; color:#fff; padding:20px; border-radius:10px; width:90%; max-width:600px;">
+        <!-- Rows will be injected here dynamically -->
+    </div>
+    <button id="closeLeaderboardBtn" style="margin-top:10px;">Close</button>
 </div>
 
 <script>
@@ -550,6 +557,22 @@ setInterval(() => {
   updateRealPlayerXP();
   renderLeaderboard();
 }, 1000);
+
+//LeaderboardsButton display
+const leaderboardBtn = document.getElementById('leaderboardBtn');
+const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
+
+leaderboardBtn.addEventListener('click', () => {
+    leaderboardOverlay.style.display = 'flex';
+    mainContent.style.filter = 'blur(5px)'; // blur background behind overlay
+    renderLeaderboard(); // render fresh leaderboard
+});
+
+closeLeaderboardBtn.addEventListener('click', () => {
+    leaderboardOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+});
 
 
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});

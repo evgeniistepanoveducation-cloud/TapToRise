@@ -381,7 +381,7 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubXpBar').style.width = '0%';
     levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
     document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
-    document.getElementById('hubLevelName').textContent = levels[level].name;
+    document.getElementById('hubLevelName').textContent = levels[level-1].name;
 }
 
 

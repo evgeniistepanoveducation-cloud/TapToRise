@@ -151,8 +151,8 @@ const levelOverlay=document.getElementById('levelOverlay');
 const levelSpinBtn=document.getElementById('levelSpinBtn');
 const mainContent=document.getElementById('mainContent');
 
-let currentLevelName = "test";
-document.getElementById('hubLevelName').textContent = currentLevelName;
+//let currentLevelName = "test";
+document.getElementById('hubLevelName').textContent = levels[level].name;
 
 // Create hidden file input
 const fileInput = document.createElement('input');
@@ -381,11 +381,12 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubXpBar').style.width = '0%';
     levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
     document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
+    document.getElementById('hubLevelName').textContent = levels[level].name;
 }
 
 
 
-    // Update progress bars ds
+    // Update progress bar
     const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
     const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
     const progress = Math.min(((xp - prevLevelXP)/ (nextLevelXP - prevLevelXP)), 1);
@@ -393,10 +394,6 @@ tapBtn.addEventListener('click', () => {
     xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
     document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
     document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
-
-
-
-
 
 
     // Floating XP

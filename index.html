@@ -124,10 +124,10 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 
 // Levels: cumulative XP + level names
     const levels = [
-        { xp: 0, name: "Beginner" },       // Level 0
-        { xp: 100, name: "Apprentice" },    // Level 1 
-        { xp: 200, name: "Novice" },        // Level 2
-        { xp: 1000, name: "Expert" }        // Level 3
+        { xp: 0, name: "Beginner" },       // Level 1
+        { xp: 100, name: "Apprentice" },    // Level 2 
+        { xp: 200, name: "Novice" },        // Level 3
+        { xp: 1000, name: "Expert" }        // Level 4
     ];
 
     const k = 1.8;
@@ -374,7 +374,7 @@ tapBtn.addEventListener('click', () => {
     // Level-up using cumulative thresholds: do NOT subtract XP
 
     while (level < levels.length && xp >= levels[level].xp) {
-    //xp -= levels[level].xp; 
+    //xp -= levels[level].xp; drops the xp to zero each time new level is reached
     level++;
     showLevelOverlay();
     xpBar.style.width = '0%';
@@ -388,7 +388,7 @@ tapBtn.addEventListener('click', () => {
     // Update progress bars
     const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
     const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
-    const progress = Math.min((xp / nextLevelXP), 1);
+    const progress = Math.min((xp / nextLevelXP - prevLevelXP), 1);
     xpBar.style.width = `${progress * 100}%`;
     xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
     document.getElementById('hubXpBar').style.width = `${progress * 100}%`;

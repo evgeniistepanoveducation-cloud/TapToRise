@@ -46,6 +46,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .referral-row button { padding: 5px 12px; font-size: 14px; border-radius: 8px; border: none; background: #4caf50; color: white; cursor: pointer; transition: background 0.2s; }
 .referral-row button:hover { background: #45a049; }
 .copy-confirm { margin-top: 6px; font-size: 14px; color: #fff; background: #2ea6ff; padding: 4px 12px; border-radius: 12px; display: inline-block; opacity: 0; transition: opacity 0.5s ease; /* fade effect */ }
+#leaderboardBtn { position: fixed; top: 78px; /* Hub top (20px) + hub height (48px) + 10px margin */ right: 20px; /* same as hubBtn */ width: 48px; height: 48px; border: none; border-radius: 12px; background: #222; color: #fff; cursor: pointer; z-index: 110; font-size: 24px; }
+
 
 </style>
 </head>
@@ -89,17 +91,9 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div class="xp-counter" id="xpCounter">XP: 0</div>
     <div class="golden-ticket-counter" id="goldenTicketCounter">🎟️ 0</div>
 
-    <!-- Button container: Hub + Leaderboard -->
-    <div class="button-stack" style="display:flex; flex-direction:column; align-items:center; margin-top:20px;">
-        <!-- Hub button stays in its current style -->
-        <button id="hubBtn" style="width:60px; height:60px; font-size:28px; border-radius:12px; background:#222; color:#fff; border:none; box-shadow:0 4px 6px rgba(0,0,0,0.3); cursor:pointer;">
-            🏠
-        </button>
-
-        <!-- Leaderboard button below Hub -->
-        <button id="leaderboardBtn" style="width:60px; height:60px; font-size:28px; border-radius:12px; background:#222; color:#fff; border:none; box-shadow:0 4px 6px rgba(0,0,0,0.3); cursor:pointer; margin-top:10px;">
-            🏆
-        </button>
+    <!-- Buttons -->
+    <button id="hubBtn">🏠</button>
+    <button id="leaderboardBtn">🏆</button>
     </div>
 </div>
 

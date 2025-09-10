@@ -89,7 +89,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div id="leaderboardContainer" style="background:#111; color:#fff; padding:20px; border-radius:10px; width:90%; max-width:600px; max-height:80vh; overflow:auto;">
         <!-- Rows will be injected here dynamically -->
     </div>
-    <button id="closeLeaderboardBtn" style="margin-top:10px;">Close</button>
 </div>
 
 
@@ -492,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!container) return; // safety
       container.innerHTML = "";
       const top10 = getTopLeaderboard();
-      top10.forEach((user, idx) => {
+    top10.forEach((user, idx) => {
         const row = document.createElement("div");
         row.className = "leaderboard-row";
         row.style.display = "flex";
@@ -505,7 +504,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (idx === 0) row.style.background = "#FFD700";
         else if (idx === 1) row.style.background = "#C0C0C0";
         else if (idx === 2) row.style.background = "#CD7F32";
-       
 
         const rank = document.createElement("span");
         rank.textContent = `#${idx + 1}`;
@@ -521,26 +519,10 @@ document.addEventListener('DOMContentLoaded', () => {
         xpText.style.width = "60px";
         xpText.style.textAlign = "right";
 
-        const xpBarContainer = document.createElement("div");
-        xpBarContainer.style.flex = "1";
-        xpBarContainer.style.height = "10px";
-        xpBarContainer.style.background = "#444";
-        xpBarContainer.style.borderRadius = "5px";
-        xpBarContainer.style.marginLeft = "8px";
-
-        const xpBar = document.createElement("div");
-        let prevXP = user.level && levels[user.level-1] ? levels[user.level-1].xp : 0;
-        let nextXP = user.level < levels.length ? levels[user.level].xp : prevXP + 100;
-        let progress = Math.min(Math.max((user.xp || user.currentXP) - prevXP,0)/(nextXP - prevXP),1);
-        xpBar.style.width = `${progress*100}%`;
-        xpBar.style.height = "100%";
-        xpBar.style.background = "#0f0";
-        xpBar.style.borderRadius = "5px";
-
-        xpBarContainer.appendChild(xpBar);
-        row.append(rank, name, xpText, xpBarContainer);
+        row.append(rank, name, xpText);
         container.appendChild(row);
-      });
+});
+
     }
 
     calculateBotXP();
@@ -554,18 +536,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const leaderboardBtn = document.getElementById('leaderboardBtn');
     const leaderboardOverlay = document.getElementById('leaderboardOverlay');
-    const closeLeaderboardBtn = document.getElementById('closeLeaderboardBtn');
-
+  
     leaderboardBtn.addEventListener('click', () => {
         leaderboardOverlay.style.display = 'flex';
         mainContent.style.filter = 'blur(5px)'; 
         renderLeaderboard(); 
     });
 
-    closeLeaderboardBtn.addEventListener('click', () => {
+    leaderboardOverlay.addEventListener('click', (e) => {
+    // Only close if background itself is clicked, not the container
+    if (e.target === leaderboardOverlay) {
         leaderboardOverlay.style.display = 'none';
         mainContent.style.filter = 'none';
-    });
+    }
+});
+
 
 }); // end DOMContentLoaded
 

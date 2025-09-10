@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generate bot XP once per session
     function calculateBotXP() {
       fakeUsers.forEach(bot => {
-        const randomXP = Math.floor((10 + Math.random() * 50000) / 10) * 10; 
+        const randomXP = Math.floor((10 + Math.random() * 5) / 10) * 10; 
         bot.currentXP = bot.baseXP + randomXP;
       });
     }

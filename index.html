@@ -453,16 +453,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fake users
     const fakeUsers = [
-      { username: "Alpha", baseXP: 10000 },
-      { username: "Bravo", baseXP: 20000 },
-      { username: "Charlie", baseXP: 24000 },
-      { username: "Delta", baseXP: 100000 },
-      { username: "Echo", baseXP: 50000 },
-      { username: "Foxtrot", baseXP: 30000 },
-      { username: "Golf", baseXP: 12000 },
-      { username: "Hotel", baseXP: 45000 },
-      { username: "India", baseXP: 80000 },
-      { username: "Juliet", baseXP: 60000 }
+      { username: "Alpha", baseXP: 10 },
+      { username: "Bravo", baseXP: 200 },
+      { username: "Charlie", baseXP: 24 },
+      { username: "Delta", baseXP: 100 },
+      { username: "Echo", baseXP: 50 },
+      { username: "Foxtrot", baseXP: 300 },
+      { username: "Golf", baseXP: 12 },
+      { username: "Hotel", baseXP: 45 },
+      { username: "India", baseXP: 800 },
+      { username: "Juliet", baseXP: 600 }
     ];
 
     // Real player
@@ -471,7 +471,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Generate bot XP once per session
     function calculateBotXP() {
       fakeUsers.forEach(bot => {
-        const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10; 
+        const randomXP = Math.floor((10 + Math.random() * 50000) / 10) * 10; 
         bot.currentXP = bot.baseXP + randomXP;
       });
     }

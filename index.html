@@ -82,14 +82,15 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 </div>
 
-<!-- Leaderboard overlay (paste before </body>)fd -->
 <div id="leaderboardOverlay" 
      style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
-            background: rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:1000; flex-direction:column; overflow:auto;">
-    <div id="leaderboardContainer" style="background:#111; color:#fff; padding:20px; border-radius:10px; width:90%; max-width:600px; max-height:80vh; overflow:auto;">
+            background: rgba(0,0,0,0.8); justify-content:center; align-items:center; z-index:1000; flex-direction:column; overflow:auto;">
+    <div id="leaderboardContainer" 
+         style="background: rgba(0,0,0,0.5); color:#fff; padding:20px; border-radius:10px; width:90%; max-width:600px; max-height:80vh; overflow:auto;">
         <!-- Rows will be injected here dynamically -->
     </div>
 </div>
+
 
 
 <div id="mainContent">
@@ -491,37 +492,55 @@ document.addEventListener('DOMContentLoaded', () => {
       if(!container) return; // safety
       container.innerHTML = "";
       const top10 = getTopLeaderboard();
+
+
     top10.forEach((user, idx) => {
-        const row = document.createElement("div");
-        row.className = "leaderboard-row";
-        row.style.display = "flex";
-        row.style.justifyContent = "space-between";
-        row.style.alignItems = "center";
-        row.style.padding = "4px 8px";
-        row.style.marginBottom = "2px";
-        row.style.borderRadius = "4px";
+    const row = document.createElement("div");
+    row.className = "leaderboard-row";
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.padding = "0 8px";          // left/right padding only
+    row.style.height = "30px";            // fixed height
+    row.style.marginBottom = "2px";
+    row.style.borderRadius = "4px";
+    row.style.background = "rgba(0,0,0,0.4)";  // semi-transparent, like hub
 
-        if (idx === 0) row.style.background = "#FFD700";
-        else if (idx === 1) row.style.background = "#C0C0C0";
-        else if (idx === 2) row.style.background = "#CD7F32";
+    if (idx === 0) row.style.background = "rgba(255, 215, 0, 0.4)";    // gold
+    else if (idx === 1) row.style.background = "rgba(192,192,192,0.4)"; // silver
+    else if (idx === 2) row.style.background = "rgba(205,127,50,0.4)";  // bronze
 
-        const rank = document.createElement("span");
-        rank.textContent = `#${idx + 1}`;
-        rank.style.width = "30px";
+    // Rank
+    const rank = document.createElement("span");
+    rank.textContent = `#${idx + 1}`;
+    rank.style.width = "30px";
+    rank.style.textAlign = "center";
 
-        const name = document.createElement("span");
-        name.textContent = user.username;
-        name.style.flex = "1";
-        name.style.marginLeft = "8px";
+    // Profile picture
+    const pic = document.createElement("img");
+    pic.src = user.username === "YOU" ? hubProfilePic.src : "James.jpeg";
+    pic.style.width = "24px";
+    pic.style.height = "24px";
+    pic.style.borderRadius = "50%";
+    pic.style.margin = "0 8px";
 
-        const xpText = document.createElement("span");
-        xpText.textContent = user === realPlayer ? `${user.xp}` : `${user.currentXP}`;
-        xpText.style.width = "60px";
-        xpText.style.textAlign = "right";
+    // Name
+    const name = document.createElement("span");
+    name.textContent = user.username;
+    name.style.flex = "1";
+    name.style.whiteSpace = "nowrap";
+    name.style.overflow = "hidden";
+    name.style.textOverflow = "ellipsis";
 
-        row.append(rank, name, xpText);
-        container.appendChild(row);
+    // XP
+    const xpText = document.createElement("span");
+    xpText.textContent = user === realPlayer ? `${user.xp}` : `${user.currentXP}`;
+    xpText.style.width = "60px";
+    xpText.style.textAlign = "right";
+
+    row.append(rank, pic, name, xpText);
+    container.appendChild(row);
 });
+
 
     }
 

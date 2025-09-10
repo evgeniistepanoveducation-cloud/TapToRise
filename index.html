@@ -82,6 +82,15 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 </div>
 
+<!-- Leaderboard overlay (paste before </body>) -->
+<div id="leaderboardOverlay" 
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:1000; flex-direction:column; overflow:auto;">
+    <div id="leaderboardContainer" style="background:#111; color:#fff; padding:20px; border-radius:10px; width:90%; max-width:600px; max-height:80vh; overflow:auto;">
+        <!-- Rows will be injected here dynamically -->
+    </div>
+    <button id="closeLeaderboardBtn" style="margin-top:10px;">Close</button>
+</div>
 
 
 <div id="mainContent">

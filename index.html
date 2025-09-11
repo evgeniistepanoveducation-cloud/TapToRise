@@ -139,7 +139,7 @@ const hubProfilePic = document.getElementById('hubProfilePic');
 hubProfilePic.src = 'default_profile.jpg';  // default picture
 
 
-const prizes = ['⚡ x2 XP','✖️ Tap Multiplier','100💎','50💎','10💎','🎨','🏅','🎯 Extra Spin','🎟️'];
+const prizes = ['⚡ x2 XP','✖️','100💎','50💎','10💎','🎨','🏅','🎯','🎟️'];
 const probabilities = [0.25,0.1,0.12,0.18,0.25,0.04,0.02,0.01,0.03];
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
@@ -278,11 +278,11 @@ function drawWheel(rotation=0){
         ctx.save();
         ctx.translate(center, center);
         ctx.rotate(angle);
-        ctx.font = `${Math.round(radius*0.2)}px Arial`; // scale font with radius
-        ctx.textAlign = "right";
+        ctx.font = `${Math.round(radius*0.1)}px Arial`; // scale font with radius
+        ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillStyle = "#000";
         ctx.fillText(prizes[i], textRadius, 0);
+        ctx.fillStyle = "#000";
         ctx.restore();
     }
 }

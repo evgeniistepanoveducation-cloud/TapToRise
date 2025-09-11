@@ -359,14 +359,16 @@ function spinWheel(){
             setTimeout(()=>{ message.style.display = 'none'; }, 2000);
         }, 1500);
 
-    } else if(prizes[chosenIndex].includes('💎')) {
+    } else if (prizes[chosenIndex].includes('💎')) {
     // Gems animation (mirror of golden tickets)
-    const amount = parseInt(prizes[chosenIndex]); // 10, 50, 100
-    gemsCount += amount;
-    document.getElementById('gemsCount').textContent = gems;
+    const amount = parseInt(prizes[chosenIndex]); // e.g., 10, 50, 100
+    gems += amount; // increment the global variable
+
+    // Always show icon + number
+    document.getElementById('gemsCount').textContent = `💎 ${gems}`;
 
     const flash = document.createElement('div');
-    flash.className = 'golden-ticket-animation'; // you can rename to 'gem-animation' if desired
+    flash.className = 'golden-ticket-animation'; // you can duplicate CSS as 'gem-animation' if desired
     flash.textContent = '💎';
     document.body.appendChild(flash);
 
@@ -382,8 +384,9 @@ function spinWheel(){
         message.style.display = 'block';
         wheelOverlay.style.display = 'none';
         mainContent.style.filter = 'none';
-        setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+        setTimeout(() => { message.style.display = 'none'; }, 2000);
     }, 1500);
+
 
 
 

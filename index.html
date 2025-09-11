@@ -363,7 +363,7 @@ function spinWheel(){
     } else if(prizes[chosenIndex].includes('💎')) {
     // Gems animation (mirror of golden tickets)
     const amount = parseInt(prizes[chosenIndex]); // 10, 50, 100
-    gems += amount;
+    gemsCount += amount;
     document.getElementById('gemsCount').textContent = gems;
 
     const flash = document.createElement('div');

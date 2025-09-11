@@ -96,7 +96,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     </div>
 </div>
 
-<div id="gemsCounter">💎 <span id="gemsCount">0</span></div>
+ <!--<div id="gemsCounter">💎 <span id="gemsCount">0</span></div> -->
 
 <div id="mainContent">
     <div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
@@ -112,7 +112,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div class="level-indicator" id="levelIndicator">Level: 1</div>
     <div class="xp-counter" id="xpCounter">XP: 0</div>
     <div class="golden-ticket-counter" id="goldenTicketCounter">🎟️ 0</div>
-
+    <div class="gemsCounter" id="gemsCount">💎 0</div>
 </div>
 
 <div id="bottomButtons">
@@ -152,8 +152,8 @@ const hubProfilePic = document.getElementById('hubProfilePic');
 hubProfilePic.src = 'default_profile.jpg';  // default picture
 
 
-const prizes = ['🍪','🎁','💎','🎉','🍕','🏆','🎮','💰','🎟️']; // last one is Golden Ticket
-const probabilities = [0,0,0,0,0,0,0,0,1];
+const prizes = ['🍪','🎁','10💎','50💎','100💎','🏆','🎮','💰','🎟️']; // last one is Golden Ticket
+const probabilities = [0,0,0.3,0.3,0.3,0,0,0,0.1];
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
 // Levels: cumulative XP + level names
@@ -359,6 +359,34 @@ function spinWheel(){
             mainContent.style.filter = 'none';
             setTimeout(()=>{ message.style.display = 'none'; }, 2000);
         }, 1500);
+
+    } else if(prizes[chosenIndex].includes('💎')) {
+    // Gems animation (mirror of golden tickets)
+    const amount = parseInt(prizes[chosenIndex]); // 10, 50, 100
+    gems += amount;
+    document.getElementById('gemsCount').textContent = gems;
+
+    const flash = document.createElement('div');
+    flash.className = 'golden-ticket-animation'; // you can rename to 'gem-animation' if desired
+    flash.textContent = '💎';
+    document.body.appendChild(flash);
+
+    flash.animate([
+        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+    ], { duration: 1500, easing: 'ease-out' });
+
+    setTimeout(() => {
+        flash.remove();
+        message.textContent = `You won ${prizes[chosenIndex]}!`;
+        message.style.display = 'block';
+        wheelOverlay.style.display = 'none';
+        mainContent.style.filter = 'none';
+        setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+    }, 1500);
+
+
 
     } else {
         // normal prizes

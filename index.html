@@ -355,6 +355,30 @@ function spinWheel(){
     const amount = parseInt(prizes[chosenIndex]); // e.g., 10, 50, 100
     gems += amount; // increment the global variable
 
+
+    } else if (prize === '⚡ x2 XP') {
+        // Double XP multiplier for 2 minutes
+        xpMultiplier = 2;
+        setTimeout(() => { xpMultiplier = 1; }, 120000); // reset after 2 mins
+    } else if (prize === '✖️') {
+        // x5 taps per tap multiplier for 1 minute
+        tapMultiplier = 5;
+        setTimeout(() => { tapMultiplier = 1; }, 60000); // reset after 1 min
+    } else if (prize === '🎨') {
+        // Make profile picture glow
+        document.querySelector('#profilePic')?.classList.add('glow');
+        setTimeout(() => {
+            document.querySelector('#profilePic')?.classList.remove('glow');
+        }, 120000); // glow lasts 2 mins (adjust if needed)
+    } else if (prize === '🏅') {
+        // Placeholder for future achievement/reward
+        console.log("🏅 Achievement unlocked! (not implemented yet)");
+    } else if (prize === '🎯') {
+        // Instant respin
+        startSpin();    
+
+
+
     // Always show icon + number
     document.getElementById('gemsCount').textContent = `💎 ${gems}`;
 

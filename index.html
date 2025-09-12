@@ -18,7 +18,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .xp-bar { height:100%; width:0%; background:linear-gradient(90deg,#ffd700,#ff8c00); transition:width 0.3s ease-out;}
 #message { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:black; color:white; padding:20px; border-radius:10px; font-size:20px; z-index:2000;}
 #wheelOverlay { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; }
-#wheelCanvas { background:white; border-radius:50%; border:4px solid gold; }
+#wheelCanvas { background:white; border-radius:50%; border:4px solid gold; transform: translateY(-40px); /* shift wheel upwards */ }
 #wheelIndicator { position:absolute; top:50%; left:50%; width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-bottom:30px solid red; transform: translate(-50%, -100%); z-index:2001; }
 .golden-ticket-counter { position: fixed; bottom: 220px; left: 20px; background: rgba(255,215,0,0.8); color: #000; padding: 12px 20px; border-radius: 16px; font-weight: bold; font-size: 24px; z-index: 101; }
 .gemsCounter { position: fixed; bottom: 220px; right: 20px; background: rgba(255,215,0,0.8); color: #000; padding: 12px 20px; border-radius: 16px; font-weight: bold; font-size: 24px; z-index: 101; }
@@ -279,7 +279,7 @@ function drawWheel(rotation=0){
         ctx.translate(center, center);
         ctx.rotate(angle);
         let fontSize = Math.round(radius * 0.12); // slightly larger than 0.1
-        if (fontSize < 18) fontSize = 18; // minimum readable size for mobile
+        if (fontSize < 22) fontSize = 22; // minimum readable size for mobile
         ctx.font = `${fontSize}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";

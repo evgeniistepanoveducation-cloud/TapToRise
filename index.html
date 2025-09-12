@@ -142,7 +142,12 @@ hubProfilePic.src = 'default_profile.jpg';  // default picture
 
 
 const prizes = ['⚡ x2 XP','✖️','100💎','50💎','10💎','🎨','🏅','🎯','🎟️'];
+
+// Only for fix:
+//const probabilities = [1,0,0,0,0,0,0,0,0];
+
 const probabilities = [0.25,0.1,0.12,0.18,0.25,0.04,0.02,0.01,0.03];
+
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
 
 // Levels: cumulative XP + level names
@@ -328,45 +333,47 @@ function spinWheel(){
         if(t < 1){
     requestAnimationFrame(animate);
 } else {
-    if(prizes[chosenIndex] === '🎟️'){ 
-        // Golden Ticket animation
-        goldenTickets++;
-        goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
-
-         // Sync Golden Tickets inside Hub
-        document.getElementById('hubGoldenTickets').textContent = `${goldenTickets}`;
-
-        const flash = document.createElement('div');
-        flash.className = 'golden-ticket-animation';
-        flash.textContent = '🎟️';
-        document.body.appendChild(flash);
-
-        // Animate with Web Animations API
-        flash.animate([
-            { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
-            { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
-            { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
-        ], { duration: 1500, easing: 'ease-out' });
-
-        setTimeout(() => {
-            flash.remove();
-            message.textContent = `You won a Golden Ticket!`;
-            message.style.display = 'block';
-            wheelOverlay.style.display = 'none';
-            mainContent.style.filter = 'none';
-            setTimeout(()=>{ message.style.display = 'none'; }, 2000);
-        }, 1500);
-
-    } else if (prizes[chosenIndex].includes('💎')) {
-    // Gems animation (mirror of golden tickets)
-    const amount = parseInt(prizes[chosenIndex]); // e.g., 10, 50, 100
-    gems += amount; // increment the global variable
-
-    document.getElementById('gemsCount').textContent = `💎 ${gems}`;
+    // --- prize handling (replace inside animate's else) ---
+if (prizes[chosenIndex] === '🎟️') {
+    // Golden Ticket
+    goldenTickets++;
+    goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
+    const hubEl = document.getElementById('hubGoldenTickets');
+    if (hubEl) hubEl.textContent = `${goldenTickets}`;
 
     const flash = document.createElement('div');
     flash.className = 'golden-ticket-animation';
-    flash.textContent = '💎 ${amount}';
+    flash.textContent = '🎟️';
+    document.body.appendChild(flash);
+
+    flash.animate([
+        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+    ], { duration: 1500, easing: 'ease-out' });
+
+    setTimeout(() => {
+        flash.remove();
+        message.textContent = `You won a Golden Ticket!`;
+        message.style.display = 'block';
+        wheelOverlay.style.display = 'none';
+        mainContent.style.filter = 'none';
+        setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+    }, 1500);
+
+} else if (prizes[chosenIndex].includes('💎')) {
+    // Gems: safe numeric parse, increment, UI update + flash
+    const raw = String(prizes[chosenIndex] || '');
+    const amount = parseInt(raw.replace(/\D/g, ''), 10) || 0;
+    gems += amount; // global variable must exist
+
+    // update UI (keep emoji so box size stays stable)
+    const gemsEl = document.getElementById('gemsCount') || document.getElementById('gemsCounter') || document.querySelector('.gemsCounter') || document.querySelector('.gems-counter');
+    if (gemsEl) gemsEl.textContent = `💎 ${gems}`;
+
+    const flash = document.createElement('div');
+    flash.className = 'gem-animation'; // uses the same keyframes or new class
+    flash.textContent = `💎 ${amount}`; // template literal - shows correct amount
     document.body.appendChild(flash);
 
     flash.animate([
@@ -384,30 +391,62 @@ function spinWheel(){
         setTimeout(() => { message.style.display = 'none'; }, 2000);
     }, 1500);
 
+} else if (prizes[chosenIndex] === '⚡ x2 XP') {
+    // Double XP multiplier for 2 minutes
+    xpMultiplier = 2;
+    // optional: clear/extend previous timeout logic (see note below)
+    setTimeout(() => { xpMultiplier = 1; }, 120000);
 
-    } else if (prizes[chosenIndex] === '⚡ x2 XP') {
-        // Double XP multiplier for 2 minutes
-        xpMultiplier = 2;
-        setTimeout(() => { xpMultiplier = 1; }, 120000); // reset after 2 mins
-    } else if (prizes[chosenIndex] === '✖️') {
-        // x5 taps per tap multiplier for 1 minute
-        tapMultiplier = 5;
-        setTimeout(() => { tapMultiplier = 1; }, 60000); // reset after 1 min
-    } else if (prizes[chosenIndex] === '🎨') {
-        // Make profile picture glow
-        document.querySelector('#hubprofilePic')?.classList.add('glow');
-        setTimeout(() => {
-            document.querySelector('#hubprofilePic')?.classList.remove('glow');
-        }, 120000); // glow lasts 2 mins (adjust if needed)
-    } else if (prizes[chosenIndex] === '🏅') {
-        // Placeholder for future achievement/reward
-        console.log("🏅 Achievement unlocked! (not implemented yet)");
-    } else if (prizes[chosenIndex] === '🎯') {
-        // Instant respin
-        spinWheel();  
+    // show feedback and close wheel (mirror other branches)
+    message.textContent = `2x XP activated for 2 minutes!`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
 
-    } else {
+} else if (prizes[chosenIndex] === '✖️') {
+    // x5 taps per tap multiplier for 1 minute
+    tapMultiplier = 5;
+    setTimeout(() => { tapMultiplier = 1; }, 60000);
+
+    message.textContent = `x5 taps active for 1 minute!`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
+} else if (prizes[chosenIndex] === '🎨') {
+    // Make profile picture glow; correct selector
+    const pic = document.getElementById('hubProfilePic') || document.getElementById('hubProfilePic');
+    if (pic) pic.classList.add('glow');
+    setTimeout(() => { if (pic) pic.classList.remove('glow'); }, 120000);
+
+    message.textContent = `Profile picture glowing!`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
+} else if (prizes[chosenIndex] === '🏅') {
+    // Placeholder action
+    message.textContent = `You won a Badge! (not implemented)`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
+} else if (prizes[chosenIndex] === '🎯') {
+    // Instant respin — keep overlay visible and start another spin after a small delay
+    setTimeout(() => {
+        spinWheel();
+    }, 300);
+
+} else {
+    // safety: all prizes should be handled explicitly above
     console.error("Unhandled prize:", prizes[chosenIndex]);
+    // close overlay to avoid frozen UI
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
 }
 
 }

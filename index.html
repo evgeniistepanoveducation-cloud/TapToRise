@@ -390,8 +390,8 @@ function spinWheel(){
     document.getElementById('gemsCount').textContent = `💎 ${gems}`;
 
     const flash = document.createElement('div');
-    flash.className = 'golden-ticket-animation'; // you can duplicate CSS as 'gem-animation' if desired
-    flash.textContent = '💎';
+    flash.className = 'golden-ticket-animation';
+    flash.textContent = '💎 ${gems}';
     document.body.appendChild(flash);
 
     flash.animate([

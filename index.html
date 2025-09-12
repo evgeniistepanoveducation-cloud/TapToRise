@@ -55,6 +55,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #hubBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
 #leaderboardBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
 
+.glow { box-shadow: 0 0 20px gold, 0 0 40px orange; border-radius: 50%; }
+
 #adBanner { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; background: #222; color: #aaa; display: flex; justify-content: center; align-items: center; border-radius: 10px; z-index: 1000; }
 
 </style>
@@ -203,6 +205,11 @@ let xp=0, level=1;
 let goldenTickets = 0;
 let gems = 0;
 const goldenTicketCounter = document.getElementById('goldenTicketCounter');
+
+let xpMultiplier = 1;   // default = no boost
+let tapMultiplier = 1;  // default = one tap = one action
+
+
 
 // Hup closing
 const hubBtn = document.getElementById('hubBtn');
@@ -366,9 +373,9 @@ function spinWheel(){
         setTimeout(() => { tapMultiplier = 1; }, 60000); // reset after 1 min
     } else if (prize === '🎨') {
         // Make profile picture glow
-        document.querySelector('#profilePic')?.classList.add('glow');
+        document.querySelector('#hubprofilePic')?.classList.add('glow');
         setTimeout(() => {
-            document.querySelector('#profilePic')?.classList.remove('glow');
+            document.querySelector('#hubprofilePic')?.classList.remove('glow');
         }, 120000); // glow lasts 2 mins (adjust if needed)
     } else if (prize === '🏅') {
         // Placeholder for future achievement/reward
@@ -453,7 +460,7 @@ tapBtn.addEventListener('click', () => {
     lastXpTime = now;
 
     // Add XP
-    xp += 10;
+    xp += 10 * xpMultiplier * tapMultiplier;
 
     // Original level-up loop
     // Level-up using cumulative thresholds: do NOT subtract XP

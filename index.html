@@ -363,24 +363,24 @@ function spinWheel(){
     gems += amount; // increment the global variable
 
 
-    } else if (prize === '⚡ x2 XP') {
+    } else if (prizes[chosenIndex] === '⚡ x2 XP') {
         // Double XP multiplier for 2 minutes
         xpMultiplier = 2;
         setTimeout(() => { xpMultiplier = 1; }, 120000); // reset after 2 mins
-    } else if (prize === '✖️') {
+    } else if (prizes[chosenIndex] === '✖️') {
         // x5 taps per tap multiplier for 1 minute
         tapMultiplier = 5;
         setTimeout(() => { tapMultiplier = 1; }, 60000); // reset after 1 min
-    } else if (prize === '🎨') {
+    } else if (prizes[chosenIndex] === '🎨') {
         // Make profile picture glow
         document.querySelector('#hubprofilePic')?.classList.add('glow');
         setTimeout(() => {
             document.querySelector('#hubprofilePic')?.classList.remove('glow');
         }, 120000); // glow lasts 2 mins (adjust if needed)
-    } else if (prize === '🏅') {
+    } else if (prizes[chosenIndex] === '🏅') {
         // Placeholder for future achievement/reward
         console.log("🏅 Achievement unlocked! (not implemented yet)");
-    } else if (prize === '🎯') {
+    } else if (prizes[chosenIndex] === '🎯') {
         // Instant respin
         startSpin();    
 

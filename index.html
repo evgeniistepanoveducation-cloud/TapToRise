@@ -278,7 +278,9 @@ function drawWheel(rotation=0){
         ctx.save();
         ctx.translate(center, center);
         ctx.rotate(angle);
-        ctx.font = `${Math.round(radius*0.1)}px Arial`; // scale font with radius
+        let fontSize = Math.round(radius * 0.12); // slightly larger than 0.1
+        if (fontSize < 18) fontSize = 18; // minimum readable size for mobile
+        ctx.font = `${fontSize}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "#000";

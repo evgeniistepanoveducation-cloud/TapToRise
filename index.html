@@ -362,6 +362,28 @@ function spinWheel(){
     const amount = parseInt(prizes[chosenIndex]); // e.g., 10, 50, 100
     gems += amount; // increment the global variable
 
+    document.getElementById('gemsCount').textContent = `💎 ${gems}`;
+
+    const flash = document.createElement('div');
+    flash.className = 'golden-ticket-animation';
+    flash.textContent = '💎 ${amount}';
+    document.body.appendChild(flash);
+
+    flash.animate([
+        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+    ], { duration: 1500, easing: 'ease-out' });
+
+    setTimeout(() => {
+        flash.remove();
+        message.textContent = `You won ${prizes[chosenIndex]}!`;
+        message.style.display = 'block';
+        wheelOverlay.style.display = 'none';
+        mainContent.style.filter = 'none';
+        setTimeout(() => { message.style.display = 'none'; }, 2000);
+    }, 1500);
+
 
     } else if (prizes[chosenIndex] === '⚡ x2 XP') {
         // Double XP multiplier for 2 minutes
@@ -382,48 +404,13 @@ function spinWheel(){
         console.log("🏅 Achievement unlocked! (not implemented yet)");
     } else if (prizes[chosenIndex] === '🎯') {
         // Instant respin
-        startSpin();    
-
-
-
-    // Always show icon + number
-    document.getElementById('gemsCount').textContent = `💎 ${gems}`;
-
-    const flash = document.createElement('div');
-    flash.className = 'golden-ticket-animation';
-    flash.textContent = '💎 ${gems}';
-    document.body.appendChild(flash);
-
-    flash.animate([
-        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
-        { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
-        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
-    ], { duration: 1500, easing: 'ease-out' });
-
-    setTimeout(() => {
-        flash.remove();
-        message.textContent = `You won ${prizes[chosenIndex]}!`;
-        message.style.display = 'block';
-        wheelOverlay.style.display = 'none';
-        mainContent.style.filter = 'none';
-        setTimeout(() => { message.style.display = 'none'; }, 2000);
-    }, 1500);
-
-
-
+        spinWheel();  
 
     } else {
-        // normal prizes
-        setTimeout(()=>{
-            message.textContent = `You won ${prizes[chosenIndex]}!`;
-            message.style.display = 'block';
-            wheelOverlay.style.display = 'none';
-            mainContent.style.filter = 'none';
-            setTimeout(()=>{ message.style.display = 'none'; }, 2000);
-        }, 200);
-    }
+    console.error("Unhandled prize:", prizes[chosenIndex]);
 }
 
+}
     }
 
     requestAnimationFrame(animate);

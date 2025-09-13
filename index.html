@@ -506,7 +506,7 @@ tapBtn.addEventListener('click', () => {
 
 
 
-    // Update progress bar
+    // Update progress bar s
     const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
     const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
     const progress = Math.min(((xp - prevLevelXP)/ (nextLevelXP - prevLevelXP)), 1);

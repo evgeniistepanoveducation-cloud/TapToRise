@@ -516,17 +516,19 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
 
 
-    // Floating XP
-    const xpSign = document.createElement('div');
-    xpSign.textContent = '+10 XP';
-    xpSign.style.position = 'fixed';
-    xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
-    xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-    xpSign.style.color = 'yellow';
-    xpSign.style.fontWeight = 'bold';
-    xpSign.style.fontSize = '24px';
-    xpSign.style.pointerEvents = 'none';
-    document.body.appendChild(xpSign);
+        // Floating XP signs (respects multipliers)
+    for (let i = 0; i < tapMultiplier; i++) {
+        const xpSign = document.createElement('div');
+        xpSign.textContent = `+${10 * xpMultiplier} XP`; // scale with xpMultiplier
+        xpSign.style.position = 'fixed';
+        xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+        xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+        xpSign.style.color = 'yellow';
+        xpSign.style.fontWeight = 'bold';
+        xpSign.style.fontSize = '24px';
+        xpSign.style.pointerEvents = 'none';
+        document.body.appendChild(xpSign);
+
     xpSign.animate(
         [
             { opacity: 1, transform: 'translateY(0px)' },
@@ -534,8 +536,13 @@ tapBtn.addEventListener('click', () => {
         ],
         { duration: 1000, easing: 'ease-out' }
     );
+
     setTimeout(() => xpSign.remove(), 1000);
-});
+}
+
+}
+
+);
 
 
 // Spin button in level overlay

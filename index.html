@@ -506,7 +506,7 @@ tapBtn.addEventListener('click', () => {
 
 
 
-    // Update progress bar s
+    // Update progress bar
     const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
     const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
     const progress = Math.min(((xp - prevLevelXP)/ (nextLevelXP - prevLevelXP)), 1);
@@ -516,29 +516,44 @@ tapBtn.addEventListener('click', () => {
     document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
 
 
-        // Floating XP signs (respects multipliers)
+    // Floating XP signs (respects multipliers)
     for (let i = 0; i < tapMultiplier; i++) {
         const xpSign = document.createElement('div');
         xpSign.textContent = `+${10 * xpMultiplier} XP`; // scale with xpMultiplier
         xpSign.style.position = 'fixed';
         xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
         xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
-        xpSign.style.color = 'yellow';
+
+        // Color logic
+            if (tapMultiplier > 1 && xpMultiplier > 1) {
+                xpSign.style.color = 'linear-gradient(to right, purple, pink)'; // both active
+                xpSign.style.backgroundClip = 'text';
+                xpSign.style.webkitBackgroundClip = 'text';
+                xpSign.style.color = 'transparent';
+            } else if (tapMultiplier > 1) {
+                xpSign.style.color = 'purple';
+            } else if (xpMultiplier > 1) {
+                xpSign.style.color = 'pink';
+            } else {
+                xpSign.style.color = 'yellow';
+        }
+
+        //xpSign.style.color = 'yellow';
         xpSign.style.fontWeight = 'bold';
         xpSign.style.fontSize = '24px';
         xpSign.style.pointerEvents = 'none';
         document.body.appendChild(xpSign);
 
-    xpSign.animate(
-        [
-            { opacity: 1, transform: 'translateY(0px)' },
-            { opacity: 0, transform: 'translateY(-50px)' }
-        ],
-        { duration: 1000, easing: 'ease-out' }
-    );
+        xpSign.animate(
+            [
+                { opacity: 1, transform: 'translateY(0px)' },
+                { opacity: 0, transform: 'translateY(-50px)' }
+            ],
+            { duration: 1000, easing: 'ease-out' }
+        );
 
     setTimeout(() => xpSign.remove(), 1000);
-}
+    }
 
 }
 

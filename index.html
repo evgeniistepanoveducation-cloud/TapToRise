@@ -528,9 +528,9 @@ tapBtn.addEventListener('click', () => {
 
         // Color logic
             if (tapMultiplier > 1 && xpMultiplier > 1) {
-                xpSign.style.color = 'linear-gradient(to right, purple, pink)'; // both active
-                xpSign.style.backgroundClip = 'text';
+                xpSign.style.background = 'linear-gradient(to right, purple, pink)';
                 xpSign.style.webkitBackgroundClip = 'text';
+                xpSign.style.backgroundClip = 'text';
                 xpSign.style.color = 'transparent';
             } else if (tapMultiplier > 1) {
                 xpSign.style.color = 'purple';

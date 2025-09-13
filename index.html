@@ -214,7 +214,8 @@ const goldenTicketCounter = document.getElementById('goldenTicketCounter');
 
 let xpMultiplier = 1;   // default = no boost
 let tapMultiplier = 1;  // default = one tap = one action
-
+let xpMultiplierTimeout = null;
+let tapMultiplierTimeout = null;
 
 
 // Hup closing
@@ -408,7 +409,9 @@ if (prizes[chosenIndex] === '🎟️') {
 } else if (prizes[chosenIndex] === '✖️') {
     // x5 taps per tap multiplier for 1 minute
     tapMultiplier = 5;
-    setTimeout(() => { tapMultiplier = 1; }, 60000);
+    //setTimeout(() => { tapMultiplier = 1; }, 60000);
+    clearTimeout(tapMultiplierTimeout);
+    tapMultiplierTimeout = setTimeout(() => { tapMultiplier = 1; }, 60000);
 
     message.textContent = `x5 taps active for 1 minute!`;
     message.style.display = 'block';
@@ -493,7 +496,6 @@ tapBtn.addEventListener('click', () => {
     // Level-up using cumulative thresholds: do NOT subtract XP
 
     while (level < levels.length && xp >= levels[level].xp) {
-    //xp -= levels[level].xp; drops the xp to zero each time new level is reached
     level++;
     showLevelOverlay();
     xpBar.style.width = '0%';

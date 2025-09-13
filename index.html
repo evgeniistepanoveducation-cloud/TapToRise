@@ -61,7 +61,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #adBanner { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; background: #222; color: #aaa; display: flex; justify-content: center; align-items: center; border-radius: 10px; z-index: 1000; }
 
 .hub-section-title { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #fff; }
-.hub-inventory-item { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: default; transition: transform 0.2s; }
+.hub-inventory-item { width: 50px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: default; transition: transform 0.2s; }
 .hub-inventory-item:hover { transform: scale(1.2); }
 
 </style>
@@ -746,11 +746,27 @@ let inventory = []; // store objects: { name: 'Golden Badge', icon: '🏅' }
     inventory.forEach(item => {
         const div = document.createElement('div');
         div.className = 'hub-inventory-item';
-        div.title = item.name + (item.count > 1 ? ` x${item.count}` : '');
-        div.textContent = item.icon + (item.count > 1 ? ` x${item.count}` : '');
+
+        // Icon
+        const iconEl = document.createElement('div');
+        iconEl.textContent = item.icon;
+        iconEl.style.fontSize = '24px';
+        div.appendChild(iconEl);
+
+        // Counter below icon
+        if (item.count && item.count > 1) {
+            const countEl = document.createElement('div');
+            countEl.textContent = `x${item.count}`;
+            countEl.style.fontSize = '14px';
+            countEl.style.marginTop = '2px';
+            countEl.style.color = '#fff';
+            div.appendChild(countEl);
+        }
+
         hubInventory.appendChild(div);
     });
-    }
+}
+
 
 
 

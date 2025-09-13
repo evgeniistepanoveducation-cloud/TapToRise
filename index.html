@@ -60,6 +60,10 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 #adBanner { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; background: #222; color: #aaa; display: flex; justify-content: center; align-items: center; border-radius: 10px; z-index: 1000; }
 
+.hub-section-title { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #fff; }
+.hub-inventory-item { width: 50px; height: 50px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 24px; cursor: default; transition: transform 0.2s; }
+.hub-inventory-item:hover { transform: scale(1.2); }
+
 </style>
 </head>
 <body>
@@ -104,7 +108,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div class="wrap"><button id="tapBtn">TAP</button></div>
     <div id="levelLabel" style="text-align:center; font-size:20px; margin-top:6px;">Level X (level name)</div>
     <div class="level-indicator" id="levelIndicator">Level: 1</div>
-    <div class="xp-counter" id="xpCounter">XP: 0</div>
+    <div class="xp-counter" id="xpCounter">0 XP</div>
     <div class="golden-ticket-counter" id="goldenTicketCounter">🎟️ 0</div>
     <div class="gemsCounter" id="gemsCount">💎 0</div>
 </div>
@@ -133,6 +137,14 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
         You earned one spin!
     </div>
     <button id="levelSpinBtn" class="spin-btn">Spin</button>
+</div>
+
+<!-- Inventory Section -->
+<div id="hubInventoryWrapper">
+    <div class="hub-section-title">Inventory</div>
+    <div id="hubInventory" class="hub-inventory">
+        <!-- Inventory items will be dynamically inserted here -->
+    </div>
 </div>
 
 
@@ -432,12 +444,27 @@ if (prizes[chosenIndex] === '🎟️') {
     setTimeout(()=>{ message.style.display = 'none'; }, 2000);
 
 } else if (prizes[chosenIndex] === '🏅') {
-    // Placeholder action
-    message.textContent = `You won a Badge! (not implemented)`;
+    // Add Badge to Inventory (stackable)
+    const badgeName = 'Badge';
+    const badgeIcon = '🏅';
+
+    // Check if badge already exists in inventory
+    const existing = inventory.find(item => item.name === badgeName);
+    if (existing) {
+        existing.count = (existing.count || 1) + 1; // increment count
+    } else {
+        inventory.push({ name: badgeName, icon: badgeIcon, count: 1 });
+    }
+
+    renderInventory(); // update hub
+
+    // Show feedback message
+    message.textContent = `You won a Badge! 🎉`;
     message.style.display = 'block';
     wheelOverlay.style.display = 'none';
     mainContent.style.filter = 'none';
-    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+    setTimeout(() => { message.style.display = 'none'; }, 2000);
+
 
 } else if (prizes[chosenIndex] === '🎯') {
     // Instant respin — keep overlay visible and start another spin after a small delay
@@ -691,10 +718,33 @@ document.addEventListener('DOMContentLoaded', () => {
         leaderboardOverlay.style.display = 'none';
         mainContent.style.filter = 'none';
     }
-});
+    });
+}); 
 
+// Inventory
+let inventory = []; // store objects: { name: 'Golden Badge', icon: '🏅' }
 
-}); // end DOMContentLoaded
+    // Add an item
+    function addInventoryItem(name, icon) {
+        inventory.push({ name, icon });
+        renderInventory();
+    }
+
+    // Render inventory in hub
+    function renderInventory() {
+    const hubInventory = document.getElementById('hubInventory');
+    if (!hubInventory) return;
+
+    hubInventory.innerHTML = ''; // clear previous items
+
+    inventory.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'hub-inventory-item';
+        div.title = item.name + (item.count > 1 ? ` x${item.count}` : '');
+        div.textContent = item.icon + (item.count > 1 ? ` x${item.count}` : '');
+        hubInventory.appendChild(div);
+    });
+    }
 
 
 

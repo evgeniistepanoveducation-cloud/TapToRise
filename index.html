@@ -636,7 +636,7 @@ levelSpinBtn.addEventListener('click',()=>{
 // document.addEventListener('DOMContentLoaded', () => {
 
     
-// Fake users
+// --- Fake users (bots) ---
 const fakeUsers = [
   { username: "Alpha", baseXP: 10000 },
   { username: "Bravo", baseXP: 20000 },
@@ -650,126 +650,44 @@ const fakeUsers = [
   { username: "Juliet", baseXP: 60000 }
 ];
 
-// Real player
-let realPlayer = { username: "YOU", xp: xp, level: level, inventory: [] };
+// --- Real player (YOU) ---
+let realPlayer = {
+  username: "YOU",
+  xp: xp,        // from your game state
+  level: level,  // from your game state
+  profilePicSrc: document.getElementById("hubProfilePic").src, // cache once
+  goldenTickets: 0,
+  inventory: []
+};
 
-// Generate bot XP once per session
+// --- Helpers ---
 function calculateBotXP() {
   fakeUsers.forEach(bot => {
     const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10;
     bot.currentXP = bot.baseXP + randomXP;
-    bot.inventory = []; // empty for MVP
+    bot.level = 100;          // fixed MVP value
+    bot.goldenTickets = 100;  // MVP demo
+    bot.profilePicSrc = "James.jpeg"; // static bot picture
+    bot.inventory = [];       // placeholder
   });
 }
 
 function updateRealPlayerXP() {
-  realPlayer.xp = xp;
+  realPlayer.xp = xp; // keep in sync with live game variable
 }
 
+// --- Leaderboard ---
 function getTopLeaderboard() {
   const combined = [...fakeUsers, realPlayer];
   combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
-  const top10 = combined.slice(0, 10);
-  return top10.includes(realPlayer) ? top10 : top10.slice(0, 10);
+  return combined.slice(0, 10);
 }
 
-/* ------------------------------
-   OPEN MY PROFILE
------------------------------- */
-function openMyProfile() {
-  const playerData = {
-    username: realPlayer.username,
-    level: realPlayer.level,
-    xp: realPlayer.xp,
-    profilePicSrc: hubProfilePic.src,
-    goldenTickets: 100, // test value
-    inventory: realPlayer.inventory || []
-  };
-
-  document.getElementById('hubReferralBlock').style.display = 'flex';
-  document.getElementById('hubLevelText').textContent = `Level ${playerData.level}`;
-  document.getElementById('hubLevelName').textContent = '';
-  document.getElementById('hubXpCounter').textContent = `${playerData.xp} XP`;
-  document.getElementById('hubProfilePic').src = playerData.profilePicSrc;
-  document.getElementById('hubGoldenTickets').textContent = playerData.goldenTickets;
-
-  // Fill inventory
-  const hubInventoryEl = document.getElementById('hubInventory');
-  hubInventoryEl.innerHTML = '';
-  playerData.inventory.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'hub-inventory-item';
-    const iconEl = document.createElement('div');
-    iconEl.textContent = item.icon || '';
-    iconEl.style.fontSize = '24px';
-    div.appendChild(iconEl);
-    if (item.count && item.count > 1) {
-      const countEl = document.createElement('div');
-      countEl.textContent = `x${item.count}`;
-      countEl.style.fontSize = '14px';
-      countEl.style.marginTop = '2px';
-      countEl.style.color = '#fff';
-      div.appendChild(countEl);
-    }
-    hubInventoryEl.appendChild(div);
-  });
-
-  personalHub.style.display = 'flex';
-  mainContent.style.filter = 'blur(5px)';
-}
-
-/* ------------------------------
-   OPEN OTHER PLAYER PROFILE
------------------------------- */
-function openOtherProfile(user) {
-  const playerData = {
-    username: user.username,
-    level: 100, // MVP fixed
-    xp: user.currentXP || user.xp || 0,
-    profilePicSrc: "James.jpeg", // placeholder bot pic
-    goldenTickets: 0,
-    inventory: user.inventory || []
-  };
-
-  document.getElementById('hubReferralBlock').style.display = 'none';
-  document.getElementById('hubLevelText').textContent = `Level ${playerData.level}`;
-  document.getElementById('hubLevelName').textContent = '';
-  document.getElementById('hubXpCounter').textContent = `${playerData.xp} XP`;
-  document.getElementById('hubProfilePic').src = playerData.profilePicSrc;
-  document.getElementById('hubGoldenTickets').textContent = playerData.goldenTickets;
-
-  // Fill inventory
-  const hubInventoryEl = document.getElementById('hubInventory');
-  hubInventoryEl.innerHTML = '';
-  playerData.inventory.forEach(item => {
-    const div = document.createElement('div');
-    div.className = 'hub-inventory-item';
-    const iconEl = document.createElement('div');
-    iconEl.textContent = item.icon || '';
-    iconEl.style.fontSize = '24px';
-    div.appendChild(iconEl);
-    if (item.count && item.count > 1) {
-      const countEl = document.createElement('div');
-      countEl.textContent = `x${item.count}`;
-      countEl.style.fontSize = '14px';
-      countEl.style.marginTop = '2px';
-      countEl.style.color = '#fff';
-      div.appendChild(countEl);
-    }
-    hubInventoryEl.appendChild(div);
-  });
-
-  personalHub.style.display = 'flex';
-  mainContent.style.filter = 'blur(5px)';
-}
-
-/* ------------------------------
-   RENDER LEADERBOARD
------------------------------- */
 function renderLeaderboard() {
   const container = document.getElementById("leaderboardContainer");
   if (!container) return;
   container.innerHTML = "";
+
   const top10 = getTopLeaderboard();
 
   top10.forEach((user, idx) => {
@@ -787,18 +705,21 @@ function renderLeaderboard() {
     else if (idx === 1) row.style.background = "rgba(192,192,192,0.4)";
     else if (idx === 2) row.style.background = "rgba(205,127,50,0.4)";
 
+    // Rank
     const rank = document.createElement("span");
     rank.textContent = `#${idx + 1}`;
     rank.style.width = "30px";
     rank.style.textAlign = "center";
 
+    // Profile pic
     const pic = document.createElement("img");
-    pic.src = user.username === "YOU" ? hubProfilePic.src : "James.jpeg";
+    pic.src = user.profilePicSrc;
     pic.style.width = "50px";
     pic.style.height = "50px";
     pic.style.borderRadius = "50%";
     pic.style.margin = "0 8px";
 
+    // Username
     const name = document.createElement("span");
     name.textContent = user.username;
     name.style.flex = "1";
@@ -806,15 +727,16 @@ function renderLeaderboard() {
     name.style.overflow = "hidden";
     name.style.textOverflow = "ellipsis";
 
+    // XP
     const xpText = document.createElement("span");
-    xpText.textContent = user === realPlayer ? `${user.xp}` : `${user.currentXP}`;
+    xpText.textContent = user.currentXP || user.xp || 0;
     xpText.style.width = "60px";
     xpText.style.textAlign = "right";
 
     row.append(rank, pic, name, xpText);
     container.appendChild(row);
 
-    // Click handling
+    // --- Profile click ---
     row.style.cursor = "pointer";
     row.addEventListener("click", () => {
       if (user.username === "YOU") {
@@ -826,9 +748,49 @@ function renderLeaderboard() {
   });
 }
 
-/* ------------------------------
-   INIT + LOOP
------------------------------- */
+// --- Profile functions ---
+function openMyProfile() {
+  document.getElementById("hubReferralBlock").style.display = "flex";
+  fillProfile(realPlayer);
+}
+
+function openOtherProfile(user) {
+  document.getElementById("hubReferralBlock").style.display = "none";
+  fillProfile(user);
+}
+
+// Fill hub UI with profile data
+function fillProfile(playerData) {
+  document.getElementById("hubLevelText").textContent = `Level ${playerData.level}`;
+  document.getElementById("hubXpCounter").textContent = `${playerData.xp} XP`;
+  document.getElementById("hubProfilePic").src = playerData.profilePicSrc;
+  document.getElementById("hubGoldenTickets").textContent = playerData.goldenTickets;
+
+  const hubInventoryEl = document.getElementById("hubInventory");
+  hubInventoryEl.innerHTML = "";
+  playerData.inventory.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "hub-inventory-item";
+    const iconEl = document.createElement("div");
+    iconEl.textContent = item.icon || "";
+    iconEl.style.fontSize = "24px";
+    div.appendChild(iconEl);
+    if (item.count && item.count > 1) {
+      const countEl = document.createElement("div");
+      countEl.textContent = `x${item.count}`;
+      countEl.style.fontSize = "14px";
+      countEl.style.marginTop = "2px";
+      countEl.style.color = "#fff";
+      div.appendChild(countEl);
+    }
+    hubInventoryEl.appendChild(div);
+  });
+
+  personalHub.style.display = "flex";
+  mainContent.style.filter = "blur(5px)";
+}
+
+// --- Init ---
 calculateBotXP();
 updateRealPlayerXP();
 renderLeaderboard();
@@ -838,19 +800,20 @@ setInterval(() => {
   renderLeaderboard();
 }, 1000);
 
-const leaderboardBtn = document.getElementById('leaderboardBtn');
-const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+// --- Overlay open/close ---
+const leaderboardBtn = document.getElementById("leaderboardBtn");
+const leaderboardOverlay = document.getElementById("leaderboardOverlay");
 
-leaderboardBtn.addEventListener('click', () => {
-  leaderboardOverlay.style.display = 'flex';
-  mainContent.style.filter = 'blur(5px)';
+leaderboardBtn.addEventListener("click", () => {
+  leaderboardOverlay.style.display = "flex";
+  mainContent.style.filter = "blur(5px)";
   renderLeaderboard();
 });
 
-leaderboardOverlay.addEventListener('click', (e) => {
+leaderboardOverlay.addEventListener("click", (e) => {
   if (e.target === leaderboardOverlay) {
-    leaderboardOverlay.style.display = 'none';
-    mainContent.style.filter = 'none';
+    leaderboardOverlay.style.display = "none";
+    mainContent.style.filter = "none";
   }
 });
 

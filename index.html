@@ -758,7 +758,7 @@ function openOtherProfile(user) {
 // Fill hub UI with profile data
 function fillProfile(playerData) {
   document.getElementById("hubLevelText").textContent = `Level ${playerData.level}`;
-  document.getElementById("hubXpCounter").textContent = `${playerData.xp} XP`;
+  document.getElementById("hubXpCounter").textContent = `${playerData.currentXP} XP`;
   document.getElementById("hubProfilePic").src = playerData.profilePicSrc;
   document.getElementById("hubGoldenTickets").textContent = playerData.goldenTickets;
 

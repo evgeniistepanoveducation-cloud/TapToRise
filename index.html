@@ -175,11 +175,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <button id="levelSpinBtn" class="spin-btn">Spin</button>
 </div>
 
-<div id="hubInventoryWrapper">
-    <div class="hub-section-title">Inventory</div>
-    <div id="hubInventory" class="hub-inventory"></div>
-</div>
-
 
 <script>
 // Default profile picture
@@ -194,7 +189,7 @@ const probabilities = [0,0,0,0,0,0,1,0,0];
 
 //const probabilities = [0.25,0.1,0.12,0.18,0.25,0.04,0.02,0.01,0.03];
 
-const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33'];
+const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33', '#33FF8C'];
 
 // Levels: cumulative XP + level names
     const levels = [
@@ -270,7 +265,8 @@ const personalHub = document.getElementById('personalHub');
 hubBtn.addEventListener('click', () => { 
     personalHub.style.display = 'flex'; 
     mainContent.style.filter='blur(5px)'; 
-});``
+});
+
 personalHub.addEventListener('click', (e) => { 
     if(e.target===personalHub){ 
         personalHub.style.display='none'; 

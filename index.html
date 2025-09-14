@@ -788,7 +788,12 @@ function fillProfile(playerData) {
 
 // --- Init ---
 calculateBotXP();
+console.table(fakeUsers);  // Shows each bot’s username, currentXP, level, goldenTickets
 updateRealPlayerXP();
+updateRealPlayerXP();
+console.log("=== Real Player After XP Sync ===");
+console.log(realPlayer);
+
 renderLeaderboard();
 
 setInterval(() => {

@@ -634,16 +634,16 @@ levelSpinBtn.addEventListener('click',()=>{
     
 // --- Fake users (bots) ---
 const fakeUsers = [
-  { username: "Alpha", baseXP: 10000 },
-  { username: "Bravo", baseXP: 20000 },
-  { username: "Charlie", baseXP: 24000 },
-  { username: "Delta", baseXP: 100000 },
-  { username: "Echo", baseXP: 50000 },
-  { username: "Foxtrot", baseXP: 30000 },
-  { username: "Golf", baseXP: 12000 },
-  { username: "Hotel", baseXP: 45000 },
-  { username: "India", baseXP: 80000 },
-  { username: "Juliet", baseXP: 60000 }
+  { username: "Alpha", baseXP: 100 },
+  { username: "Bravo", baseXP: 200 },
+  { username: "Charlie", baseXP: 240 },
+  { username: "Delta", baseXP: 1000 },
+  { username: "Echo", baseXP: 500 },
+  { username: "Foxtrot", baseXP: 300 },
+  { username: "Golf", baseXP: 120 },
+  { username: "Hotel", baseXP: 450 },
+  { username: "India", baseXP: 80 },
+  { username: "Juliet", baseXP: 600 }
 ];
 
 // --- Real player (YOU) ---
@@ -659,7 +659,7 @@ let realPlayer = {
 // --- Helpers ---
 function calculateBotXP() {
   fakeUsers.forEach(bot => {
-    const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10;
+    const randomXP = Math.floor((50 + Math.random() * 50) / 10) * 10;
     bot.currentXP = bot.baseXP + randomXP;
     bot.level = 100;          // fixed MVP value
     bot.goldenTickets = 100;  // MVP demo

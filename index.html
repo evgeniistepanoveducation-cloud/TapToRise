@@ -278,7 +278,53 @@ personalHub.addEventListener('click', (e) => {
     } 
 });
 
+//Opening the profile
+row.style.cursor = 'pointer';
+row.addEventListener('click', () => {
+    // Use the fake player object
+    const playerData = {
+        username: user.username,
+        level: 100,                 // fixed MVP value
+        xp: user.xp || 0,           // player's stored current XP
+        profilePicSrc: user.picSrc, // player's profile picture
+        goldenTickets: 100,         // for testing, each player has 100
+        inventory: user.inventory || []
+    };
 
+    // Fill personalHub fields
+    document.getElementById('hubReferralBlock').style.display = 'none'; // hide referral for other players
+    document.getElementById('hubLevelText').textContent = `Level ${playerData.level}`;
+    document.getElementById('hubLevelName').textContent = ''; // optional
+    document.getElementById('hubXpCounter').textContent = `${playerData.xp} XP`;
+    document.getElementById('hubXpBar').style.width = '100%'; // optional for MVP
+    document.getElementById('hubProfilePic').src = playerData.profilePicSrc;
+    document.getElementById('hubGoldenTickets').textContent = playerData.goldenTickets;
+
+    // Fill inventory
+    const hubInventoryEl = document.getElementById('hubInventory');
+    hubInventoryEl.innerHTML = '';
+    playerData.inventory.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'hub-inventory-item';
+        const iconEl = document.createElement('div');
+        iconEl.textContent = item.icon || '';
+        iconEl.style.fontSize = '24px';
+        div.appendChild(iconEl);
+        if (item.count && item.count > 1) {
+            const countEl = document.createElement('div');
+            countEl.textContent = `x${item.count}`;
+            countEl.style.fontSize = '14px';
+            countEl.style.marginTop = '2px';
+            countEl.style.color = '#fff';
+            div.appendChild(countEl);
+        }
+        hubInventoryEl.appendChild(div);
+    });
+
+    // Show the hub overlay
+    personalHub.style.display = 'flex';
+    mainContent.style.filter = 'blur(5px)';
+});
 
 
 

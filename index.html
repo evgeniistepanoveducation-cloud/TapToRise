@@ -636,71 +636,162 @@ levelSpinBtn.addEventListener('click',()=>{
 // document.addEventListener('DOMContentLoaded', () => {
 
     
-    // Fake users
-    const fakeUsers = [
-      { username: "Alpha", baseXP: 10000 },
-      { username: "Bravo", baseXP: 20000 },
-      { username: "Charlie", baseXP: 24000 },
-      { username: "Delta", baseXP: 100000 },
-      { username: "Echo", baseXP: 50000 },
-      { username: "Foxtrot", baseXP: 30000 },
-      { username: "Golf", baseXP: 12000 },
-      { username: "Hotel", baseXP: 45000 },
-      { username: "India", baseXP: 80000 },
-      { username: "Juliet", baseXP: 60000 }
-    ];
+// Fake users
+const fakeUsers = [
+  { username: "Alpha", baseXP: 10000 },
+  { username: "Bravo", baseXP: 20000 },
+  { username: "Charlie", baseXP: 24000 },
+  { username: "Delta", baseXP: 100000 },
+  { username: "Echo", baseXP: 50000 },
+  { username: "Foxtrot", baseXP: 30000 },
+  { username: "Golf", baseXP: 12000 },
+  { username: "Hotel", baseXP: 45000 },
+  { username: "India", baseXP: 80000 },
+  { username: "Juliet", baseXP: 60000 }
+];
 
-    // Real player
-    let realPlayer = { username: "YOU", xp: xp, level: level };
+// Real player
+let realPlayer = { username: "YOU", xp: xp, level: level, inventory: [] };
 
-    // Generate bot XP once per session
-    function calculateBotXP() {
-      fakeUsers.forEach(bot => {
-        const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10; 
-        bot.currentXP = bot.baseXP + randomXP;
-      });
+// Generate bot XP once per session
+function calculateBotXP() {
+  fakeUsers.forEach(bot => {
+    const randomXP = Math.floor((5000 + Math.random() * 50000) / 10) * 10;
+    bot.currentXP = bot.baseXP + randomXP;
+    bot.inventory = []; // empty for MVP
+  });
+}
+
+function updateRealPlayerXP() {
+  realPlayer.xp = xp;
+}
+
+function getTopLeaderboard() {
+  const combined = [...fakeUsers, realPlayer];
+  combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
+  const top10 = combined.slice(0, 10);
+  return top10.includes(realPlayer) ? top10 : top10.slice(0, 10);
+}
+
+/* ------------------------------
+   OPEN MY PROFILE
+------------------------------ */
+function openMyProfile() {
+  const playerData = {
+    username: realPlayer.username,
+    level: realPlayer.level,
+    xp: realPlayer.xp,
+    profilePicSrc: hubProfilePic.src,
+    goldenTickets: 100, // test value
+    inventory: realPlayer.inventory || []
+  };
+
+  document.getElementById('hubReferralBlock').style.display = 'flex';
+  document.getElementById('hubLevelText').textContent = `Level ${playerData.level}`;
+  document.getElementById('hubLevelName').textContent = '';
+  document.getElementById('hubXpCounter').textContent = `${playerData.xp} XP`;
+  document.getElementById('hubProfilePic').src = playerData.profilePicSrc;
+  document.getElementById('hubGoldenTickets').textContent = playerData.goldenTickets;
+
+  // Fill inventory
+  const hubInventoryEl = document.getElementById('hubInventory');
+  hubInventoryEl.innerHTML = '';
+  playerData.inventory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'hub-inventory-item';
+    const iconEl = document.createElement('div');
+    iconEl.textContent = item.icon || '';
+    iconEl.style.fontSize = '24px';
+    div.appendChild(iconEl);
+    if (item.count && item.count > 1) {
+      const countEl = document.createElement('div');
+      countEl.textContent = `x${item.count}`;
+      countEl.style.fontSize = '14px';
+      countEl.style.marginTop = '2px';
+      countEl.style.color = '#fff';
+      div.appendChild(countEl);
     }
+    hubInventoryEl.appendChild(div);
+  });
 
-    function updateRealPlayerXP() {
-      realPlayer.xp = xp; 
+  personalHub.style.display = 'flex';
+  mainContent.style.filter = 'blur(5px)';
+}
+
+/* ------------------------------
+   OPEN OTHER PLAYER PROFILE
+------------------------------ */
+function openOtherProfile(user) {
+  const playerData = {
+    username: user.username,
+    level: 100, // MVP fixed
+    xp: user.currentXP || user.xp || 0,
+    profilePicSrc: "James.jpeg", // placeholder bot pic
+    goldenTickets: 0,
+    inventory: user.inventory || []
+  };
+
+  document.getElementById('hubReferralBlock').style.display = 'none';
+  document.getElementById('hubLevelText').textContent = `Level ${playerData.level}`;
+  document.getElementById('hubLevelName').textContent = '';
+  document.getElementById('hubXpCounter').textContent = `${playerData.xp} XP`;
+  document.getElementById('hubProfilePic').src = playerData.profilePicSrc;
+  document.getElementById('hubGoldenTickets').textContent = playerData.goldenTickets;
+
+  // Fill inventory
+  const hubInventoryEl = document.getElementById('hubInventory');
+  hubInventoryEl.innerHTML = '';
+  playerData.inventory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'hub-inventory-item';
+    const iconEl = document.createElement('div');
+    iconEl.textContent = item.icon || '';
+    iconEl.style.fontSize = '24px';
+    div.appendChild(iconEl);
+    if (item.count && item.count > 1) {
+      const countEl = document.createElement('div');
+      countEl.textContent = `x${item.count}`;
+      countEl.style.fontSize = '14px';
+      countEl.style.marginTop = '2px';
+      countEl.style.color = '#fff';
+      div.appendChild(countEl);
     }
+    hubInventoryEl.appendChild(div);
+  });
 
-    function getTopLeaderboard() {
-      const combined = [...fakeUsers, realPlayer];
-      combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
-      const top10 = combined.slice(0, 10);
-      return top10.includes(realPlayer) ? top10 : top10.slice(0, 10);
-    }
+  personalHub.style.display = 'flex';
+  mainContent.style.filter = 'blur(5px)';
+}
 
-    function renderLeaderboard() {
-      const container = document.getElementById("leaderboardContainer");
-      if(!container) return; // safety
-      container.innerHTML = "";
-      const top10 = getTopLeaderboard();
+/* ------------------------------
+   RENDER LEADERBOARD
+------------------------------ */
+function renderLeaderboard() {
+  const container = document.getElementById("leaderboardContainer");
+  if (!container) return;
+  container.innerHTML = "";
+  const top10 = getTopLeaderboard();
 
-
-    top10.forEach((user, idx) => {
+  top10.forEach((user, idx) => {
     const row = document.createElement("div");
     row.className = "leaderboard-row";
     row.style.display = "flex";
     row.style.alignItems = "center";
-    row.style.padding = "0 8px";          // left/right padding only
-    row.style.height = "60px";            // fixed height
+    row.style.padding = "0 8px";
+    row.style.height = "60px";
     row.style.marginBottom = "5px";
     row.style.borderRadius = "4px";
-    row.style.background = "rgba(0,0,0,0.4)";  // semi-transparent, like hub
+    row.style.background = "rgba(0,0,0,0.4)";
 
-    if (idx === 0) row.style.background = "rgba(255, 215, 0, 0.4)";    // gold
-    else if (idx === 1) row.style.background = "rgba(192,192,192,0.4)"; // silver
-    else if (idx === 2) row.style.background = "rgba(205,127,50,0.4)";  // bronze
+    if (idx === 0) row.style.background = "rgba(255, 215, 0, 0.4)";
+    else if (idx === 1) row.style.background = "rgba(192,192,192,0.4)";
+    else if (idx === 2) row.style.background = "rgba(205,127,50,0.4)";
 
-    // Rank
     const rank = document.createElement("span");
     rank.textContent = `#${idx + 1}`;
     rank.style.width = "30px";
     rank.style.textAlign = "center";
 
-    // Profile picture
     const pic = document.createElement("img");
     pic.src = user.username === "YOU" ? hubProfilePic.src : "James.jpeg";
     pic.style.width = "50px";
@@ -708,7 +799,6 @@ levelSpinBtn.addEventListener('click',()=>{
     pic.style.borderRadius = "50%";
     pic.style.margin = "0 8px";
 
-    // Name
     const name = document.createElement("span");
     name.textContent = user.username;
     name.style.flex = "1";
@@ -716,7 +806,6 @@ levelSpinBtn.addEventListener('click',()=>{
     name.style.overflow = "hidden";
     name.style.textOverflow = "ellipsis";
 
-    // XP
     const xpText = document.createElement("span");
     xpText.textContent = user === realPlayer ? `${user.xp}` : `${user.currentXP}`;
     xpText.style.width = "60px";
@@ -724,36 +813,48 @@ levelSpinBtn.addEventListener('click',()=>{
 
     row.append(rank, pic, name, xpText);
     container.appendChild(row);
-    
+
+    // Click handling
+    row.style.cursor = "pointer";
+    row.addEventListener("click", () => {
+      if (user.username === "YOU") {
+        openMyProfile();
+      } else {
+        openOtherProfile(user);
+      }
     });
+  });
+}
 
-    }
+/* ------------------------------
+   INIT + LOOP
+------------------------------ */
+calculateBotXP();
+updateRealPlayerXP();
+renderLeaderboard();
 
-    calculateBotXP();
-    updateRealPlayerXP();
-    renderLeaderboard();
+setInterval(() => {
+  updateRealPlayerXP();
+  renderLeaderboard();
+}, 1000);
 
-    setInterval(() => {
-      updateRealPlayerXP();
-      renderLeaderboard();
-    }, 1000);
+const leaderboardBtn = document.getElementById('leaderboardBtn');
+const leaderboardOverlay = document.getElementById('leaderboardOverlay');
 
-    const leaderboardBtn = document.getElementById('leaderboardBtn');
-    const leaderboardOverlay = document.getElementById('leaderboardOverlay');
-  
-    leaderboardBtn.addEventListener('click', () => {
-        leaderboardOverlay.style.display = 'flex';
-        mainContent.style.filter = 'blur(5px)'; 
-        renderLeaderboard(); 
-    });
+leaderboardBtn.addEventListener('click', () => {
+  leaderboardOverlay.style.display = 'flex';
+  mainContent.style.filter = 'blur(5px)';
+  renderLeaderboard();
+});
 
-    leaderboardOverlay.addEventListener('click', (e) => {
-    // Only close if background itself is clicked, not the container
-    if (e.target === leaderboardOverlay) {
-        leaderboardOverlay.style.display = 'none';
-        mainContent.style.filter = 'none';
-    }
-    });
+leaderboardOverlay.addEventListener('click', (e) => {
+  if (e.target === leaderboardOverlay) {
+    leaderboardOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+  }
+});
+
+
 //}); 
 
 //Shop logic

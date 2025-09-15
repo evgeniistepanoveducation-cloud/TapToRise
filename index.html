@@ -694,6 +694,7 @@ function calculateBotXP() {
 
 function updateRealPlayerXP() {
   realPlayer.xp = xp; // keep in sync with live game variable
+  realPlayer.currentXP = xp;  // keep same as bots
 }
 
 // --- Leaderboard ---

@@ -289,21 +289,33 @@ let xpMultiplierTimeout = null;
 let tapMultiplierTimeout = null;
 
 
-// Hup closing
+// Hub closing
 const hubBtn = document.getElementById('hubBtn');
 const personalHub = document.getElementById('personalHub');
+const otherPlayerHub = document.getElementById('otherPlayerHub');
 
+// Open personal hub
 hubBtn.addEventListener('click', () => { 
     personalHub.style.display = 'flex'; 
-    mainContent.style.filter='blur(5px)'; 
+    mainContent.style.filter = 'blur(5px)'; 
 });
 
+// Close personal hub by clicking outside content
 personalHub.addEventListener('click', (e) => { 
-    if(e.target===personalHub){ 
-        personalHub.style.display='none'; 
-        mainContent.style.filter='none'; 
+    if (e.target === personalHub) { 
+        personalHub.style.display = 'none'; 
+        mainContent.style.filter = 'none'; 
     } 
 });
+
+// Close other player hub by clicking outside content
+otherPlayerHub.addEventListener('click', (e) => {
+    if (e.target === otherPlayerHub) {
+        otherPlayerHub.style.display = 'none';
+        mainContent.style.filter = 'none';
+    }
+});
+
 
 
 // Store referral code dynamically

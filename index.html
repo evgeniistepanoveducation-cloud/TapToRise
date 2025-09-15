@@ -36,12 +36,9 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .gems-counter { position: fixed; bottom: 220px;  right: 20px;  background: rgba(0, 229, 255, 0.8);  color: #000; padding: 12px 20px; border-radius: 16px; font-weight: bold; font-size: 24px; z-index: 101; }
 /* #personalHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; } */
 .hub-top-row { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-#hubLevelText, #hubLevelTextOther { font-size: 28px; font-weight: bold; }
-#hubProfilePic, #hubProfilePicOther { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; cursor: pointer; }
-#hubLevelName, #hubLevelNameOther { font-size: 22px; margin-bottom: 16px; }
+
 .hub-xp-bar-container { width: 90%; height: 20px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-bottom: 16px; }
-#hubXpBar, #hubXpBarOther { height: 100%; width: 0%; background: linear-gradient(90deg,#ffd700,#ff8c00); border-radius: 10px; transition: width 0.3s ease-out; }
-#hubXpCounter, #hubXpCounterOther { font-size: 18px; margin-bottom: 16px; }
+
 .referral-code { margin-top: 15px; text-align: center; }
 .referral-code label { display: block; margin-bottom: 5px; font-weight: bold; }
 .referral-code input { padding: 5px 10px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; text-align: center; }
@@ -51,6 +48,13 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .copy-confirm { margin-top: 6px; font-size: 14px; color: #fff; background: #2ea6ff; padding: 4px 12px; border-radius: 12px; display: inline-block; opacity: 0; transition: opacity 0.5s ease; }
 #leaderboardOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
 #leaderboardContainer { background: rgba(0,0,0,0.5); color: #fff; padding: 20px; border-radius: 10px; width: 90%; max-width: 600px; max-height: 80vh; overflow: auto; }
+
+.hub-level-text { font-size: 28px; font-weight: bold; }
+.hub-profile-pic { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+.hub-level-name { font-size: 22px; margin-bottom: 16px; }
+.hub-xp-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#ffd700,#ff8c00); border-radius: 10px; transition: width 0.3s ease-out; }
+.hub-xp-counter { font-size: 18px; margin-bottom: 16px; }
+
 
 #bottomButtons { position: fixed; bottom: 120px; left: 0; width: 100%; height: 80px; display: flex; justify-content: space-around; /* buttons take equal width inside */ align-items: center; /* vertical centering of buttons */ background: transparent; /* island invisible */ border-top: 2px solid grey; /* only top border visible */ border-left: none; border-right: none; border-bottom: none; border-radius: 0; z-index: 110; }
 #hubBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
@@ -82,63 +86,63 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 
 <div id="personalHub">
-    <div class="hub-top-row">
-        <div id="hubLevelText">Level 1</div>
-        <img src="profile.jpeg" alt="Profile" id="hubProfilePic">
-    </div>
-     
-    <div id="hubLevelName">test</div>
-    <div class="hub-xp-bar-container">
-        <div class="hub-xp-bar" id="hubXpBar"></div>
-    </div>
-    <div id="hubXpCounter">0 XP</div>
+  <div class="hub-top-row">
+    <div class="hub-level-text" id="hubLevelText">Level 1</div>
+    <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePic">
+  </div>
 
-    <div id="hubGoldenTicketsWrapper" style="text-align: center; margin-bottom: 16px;">
-        <div id="hubGoldenTickets" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
-        <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Your Golden Tickets</div>
+  <div class="hub-level-name" id="hubLevelName">test</div>
+
+  <div class="hub-xp-bar-container">
+    <div class="hub-xp-bar" id="hubXpBar"></div>
+  </div>
+  <div class="hub-xp-counter" id="hubXpCounter">0 XP</div>
+
+  <div class="hub-golden-tickets" id="hubGoldenTicketsWrapper" style="text-align: center; margin-bottom: 16px;">
+    <div id="hubGoldenTickets" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
+    <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Your Golden Tickets</div>
+  </div>
+
+  <!-- Referral section -->
+  <div class="referral-code" id="hubReferralBlock" style="margin-top:16px;">
+    <label for="referralInput">Referral Code:</label>
+    <div class="referral-row">
+      <input type="text" id="referralInput" value="superdigga228" />
+      <button id="copyReferralBtn">Copy</button>
     </div>
+    <div class="copy-confirm" id="copyConfirm">Copied!</div>
+  </div>
 
-    <!-- Referral section -->
-    <div id="hubReferralBlock" class="referral-code" style="margin-top:16px;">
-        <label for="referralInput">Referral Code:</label>
-        <div class="referral-row">
-            <input type="text" id="referralInput" value="superdigga228" />
-            <button id="copyReferralBtn">Copy</button>
-        </div>
-        <div id="copyConfirm" class="copy-confirm">Copied!</div>
-    </div>
-
-    <!-- Inventory section -->
-    <div id="hubInventoryWrapper" style="margin-top:16px;">
-        <div class="hub-section-title">Inventory</div>
-        <div id="hubInventory" class="hub-inventory"></div>
-    </div>
-
-
+  <!-- Inventory section -->
+  <div class="hub-inventory-wrapper" id="hubInventoryWrapper" style="margin-top:16px;">
+    <div class="hub-section-title">Inventory</div>
+    <div class="hub-inventory" id="hubInventory"></div>
+  </div>
 </div>
 
 <div id="otherPlayerHub">
-    <div class="hub-top-row">
-        <div id="hubLevelTextOther">Level 1</div>
-        <img src="profile.jpeg" alt="Profile" id="hubProfilePicOther">
-    </div>
-     
-    <div id="hubLevelNameOther">test</div>
-    <div class="hub-xp-bar-container">
-        <div class="hub-xp-bar" id="hubXpBarOther"></div>
-    </div>
-    <div id="hubXpCounterOther">0 XP</div>
+  <div class="hub-top-row">
+    <div class="hub-level-text" id="hubLevelTextOther">Level 1</div>
+    <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePicOther">
+  </div>
 
-    <div id="hubGoldenTicketsWrapperOther" style="text-align: center; margin-bottom: 16px;">
-        <div id="hubGoldenTicketsOther" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
-        <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Golden Tickets</div>
-    </div>
+  <div class="hub-level-name" id="hubLevelNameOther">test</div>
 
-    <!-- Inventory section -->
-    <div id="hubInventoryWrapperOther" style="margin-top:16px;">
-        <div class="hub-section-title">Inventory</div>
-        <div id="hubInventoryOther" class="hub-inventory"></div>
-    </div>
+  <div class="hub-xp-bar-container">
+    <div class="hub-xp-bar" id="hubXpBarOther"></div>
+  </div>
+  <div class="hub-xp-counter" id="hubXpCounterOther">0 XP</div>
+
+  <div class="hub-golden-tickets" id="hubGoldenTicketsWrapperOther" style="text-align: center; margin-bottom: 16px;">
+    <div id="hubGoldenTicketsOther" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
+    <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Golden Tickets</div>
+  </div>
+
+  <!-- Inventory section -->
+  <div class="hub-inventory-wrapper" id="hubInventoryWrapperOther" style="margin-top:16px;">
+    <div class="hub-section-title">Inventory</div>
+    <div class="hub-inventory" id="hubInventoryOther"></div>
+  </div>
 </div>
 
 

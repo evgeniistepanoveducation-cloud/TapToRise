@@ -689,6 +689,19 @@ const fakeUsers = [
   { username: "Juliet", baseXP: 600 }
 ];
 
+const botPictures = {
+  Alpha: "1.jpeg",
+  Bravo: "2.jpeg",
+  Charlie: "3.jpg",
+  Delta: "4.jpeg",
+  Echo: "5.jpg",
+  Foxtrot: "6.jpeg",
+  Golf: "7.jpg",
+  Hotel: "8.jpeg",
+  India: "9.jpg",
+  Juliet: "10.jpg"
+};
+
 // --- Real player (YOU) ---
 let realPlayer = {
   username: "YOU",
@@ -706,7 +719,7 @@ function calculateBotXP() {
     bot.currentXP = bot.baseXP + randomXP;
     bot.level = 100;          // fixed MVP value
     bot.goldenTickets = 100;  // MVP demo
-    bot.profilePicSrc = "James.jpeg"; // static bot picture
+    bot.profilePicSrc = botPictures[bot.username]; // unique per bot
     bot.inventory = [];       // placeholder
   });
 }

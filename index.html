@@ -222,20 +222,90 @@ const probabilities = [0,0,0,0,0,0,1,0,0];
 
 const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33', '#33FF8C'];
 
-// Levels: cumulative XP + level names
-    const levels = [
-        { xp: 0, name: "Beginner" },       // Level 1
-        { xp: 20, name: "Apprentice" },    // Level 2 
-        { xp: 40, name: "Novice" },        // Level 3
-        { xp: 400, name: "Expert" }        // Level 4
-    ];
+// --- Base XP scaling factors ---
+const k = 1.1;  // for levels 4–11
+const k1 = 1.1; // from level 12 onwards
 
-    const k = 1.8;
-    for(let i = levels.length; i < 10; i++){
-        const prevXP = levels[i - 1].xp; 
-        const newXP = Math.round(prevXP * k);
-        levels.push({ xp: newXP, name: `Level ${i}` }); 
+// --- Shared levels (1–10) ---
+const sharedLevels = [
+  "Learn First Words",       // 1
+  "Celebrate Birthday",      // 2
+  "First Day at School",     // 3
+  "Make First Friend",       // 4
+  "Pass a Test",             // 5
+  "Discover a Hobby",        // 6
+  "The First Crush",         // 7
+  "Graduation (Middle School)", // 8
+  "Teen Years Begin",        // 9
+  "Choose Future Path"       // 10
+];
+
+// --- Career path (11–32) ---
+const careerLevels = [
+  "🎓 Enroll in Uni", "Pass first exams", "Internship", "Internship2",
+  "Graduate", "Junior job", "Promotion", "Team leader",
+  "Manager", "Middle Manager", "Senior Manager", "Director",
+  "Conf. Speaker", "VP", "Industry Award", "C-Level (CTO/COO)",
+  "Billionaire Professor", "CEO Appointment", "International Reputation",
+  "Chairperson", "Nobel / Hall of Fame", "Legendary Prestige"
+];
+
+// --- Business path (11–32) ---
+const businessLevels = [
+  "Start hustle", "First profit", "Small business", "Investors",
+  "Startup launch", "Angel investor", "Expansion (10 staff)", "First office",
+  "Series A funding", "Expansion (100 staff)", "National expansion",
+  "Empire milestone", "IPO", "Global reach", "Billionaire status",
+  "Acquire rivals", "Political influence", "Conglomerate", "Tycoon",
+  "World domination", "Legendary empire", "God"
+];
+
+// --- Build progression function ---
+function buildLevels(path) {
+  const levels = [];
+  
+  // Shared levels 1–10
+  sharedLevels.forEach((name, i) => {
+    if (i === 0) {
+      levels.push({ level: 1, xp: 0, name }); // start
+    } else if (i === 1) {
+      levels.push({ level: 2, xp: 20, name });
+    } else if (i === 2) {
+      levels.push({ level: 3, xp: 40, name });
+    } else {
+      // Scaling up to 10
+      const prevXP = levels[i - 1].xp;
+      const newXP = Math.round((prevXP * k) / 100) * 100;
+      levels.push({ level: i + 1, xp: newXP, name });
+    }
+  });
+
+  // Path-specific levels (11–32)
+  const pathLevels = path === "career" ? careerLevels : businessLevels;
+  
+  for (let j = 0; j < pathLevels.length; j++) {
+    const prevXP = levels[levels.length - 1].xp;
+    const factor = (levels.length < 11) ? k : k1;
+    const rounding = (levels.length < 11) ? 100 : 1000;
+    const newXP = Math.round((prevXP * factor) / rounding) * rounding;
+
+    levels.push({
+      level: levels.length + 1,
+      xp: newXP,
+      name: pathLevels[j]
+    });
+  }
+
+  return levels;
 }
+
+// Example usage:
+const careerPathLevels = buildLevels("career");
+const businessPathLevels = buildLevels("business");
+
+console.log("Career Path:", careerPathLevels);
+console.log("Business Path:", businessPathLevels);
+
 
 
 

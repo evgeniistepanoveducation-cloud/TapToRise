@@ -306,7 +306,72 @@ const businessPathLevels = buildLevels("business");
 console.log("Career Path:", careerPathLevels);
 console.log("Business Path:", businessPathLevels);
 
+// --- Trigger after reaching level 10 ---
+function checkLevelForChoice(currentLevel) {
+  if (currentLevel === 10) {
+    // Create overlay
+    const overlay = document.createElement("div");
+    overlay.id = "pathOverlay";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.6)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "1000";
 
+    // Create popup
+    const popup = document.createElement("div");
+    popup.style.background = "#fff";
+    popup.style.padding = "20px";
+    popup.style.borderRadius = "12px";
+    popup.style.textAlign = "center";
+    popup.style.width = "300px";
+    popup.innerHTML = `<h2>Choose Your Path</h2>`;
+
+    // Buttons
+    const careerBtn = document.createElement("button");
+    careerBtn.textContent = "Career";
+    careerBtn.onclick = () => {
+      document.body.removeChild(overlay);
+      proceedWithPath("career");
+    };
+
+    const businessBtn = document.createElement("button");
+    businessBtn.textContent = "Enterprise";
+    businessBtn.onclick = () => {
+      document.body.removeChild(overlay);
+      proceedWithPath("business");
+    };
+
+    // Styling buttons
+    [careerBtn, businessBtn].forEach(btn => {
+      btn.style.margin = "10px";
+      btn.style.padding = "10px 20px";
+      btn.style.border = "none";
+      btn.style.borderRadius = "8px";
+      btn.style.cursor = "pointer";
+      btn.style.fontWeight = "bold";
+    });
+
+    // Append
+    popup.appendChild(careerBtn);
+    popup.appendChild(businessBtn);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+  }
+}
+
+// --- Callback after path is chosen ---
+function proceedWithPath(path) {
+  // Build new levels dynamically
+  const levels = buildLevels(path);
+  console.log(`Chosen path: ${path}`, levels);
+  // TODO: integrate into your progression system
+}
 
 
 const tapBtn=document.getElementById('tapBtn');

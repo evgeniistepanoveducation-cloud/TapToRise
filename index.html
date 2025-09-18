@@ -259,11 +259,11 @@ const businessLevels = [
   "Acquire rivals", "Political influence", "Conglomerate", "Tycoon",
   "World domination", "Legendary empire", "God"
 ];
+const levels = [...sharedLevels, ...careerLevels];
 
 // --- Build progression function ---
 function buildLevels(path) {
-  const levels = [...sharedLevels, ...careerLevels];
-  
+    
   // Shared levels 1–10
   sharedLevels.forEach((name, i) => {
     if (i === 0) {

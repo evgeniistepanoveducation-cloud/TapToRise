@@ -726,7 +726,7 @@ let levelUpCooldown = false;
 // Initial display when game loads
 levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
 document.getElementById('hubLevelText').textContent = `Level ${level}`;
-document.getElementById('hubLevelName').textContent = levels[level-1].name;
+document.getElementById('hubLevelName').textContent = activeLevels[level-1].name;
 
 
 tapBtn.addEventListener('click', () => {

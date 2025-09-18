@@ -260,10 +260,10 @@ const businessLevels = [
   "World domination", "Legendary empire", "God"
 ];
 
-
 // --- Build progression function ---
 function buildLevels(path) {
-    
+  const levels = [];
+
   // Shared levels 1–10
   sharedLevels.forEach((name, i) => {
     if (i === 0) {
@@ -298,8 +298,6 @@ function buildLevels(path) {
 
   return levels;
 }
-
-const levels = [...sharedLevels, ...careerLevels];
 
 // Example usage:
 const careerPathLevels = buildLevels("career");
@@ -369,11 +367,9 @@ function checkLevelForChoice(currentLevel) {
 
 // --- Callback after path is chosen ---
 function proceedWithPath(path) {
-  // Build new levels dynamically
   const levels = buildLevels(path);
   console.log(`Chosen path: ${path}`, levels);
-  // TODO: integrate into your progression system
-}
+  }
 
 
 const tapBtn=document.getElementById('tapBtn');

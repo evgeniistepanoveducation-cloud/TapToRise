@@ -724,7 +724,7 @@ const xpCooldown = 200; // ms, i.e., 0.2 sec per XP addition
 let levelUpCooldown = false;
 
 // Initial display when game loads
-levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
+levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
 document.getElementById('hubLevelText').textContent = `Level ${level}`;
 document.getElementById('hubLevelName').textContent = levels[level-1].name;
 

@@ -259,7 +259,7 @@ const businessLevels = [
   "Acquire rivals", "Political influence", "Conglomerate", "Tycoon",
   "World domination", "Legendary empire", "God"
 ];
-const levels = [...sharedLevels, ...careerLevels];
+
 
 // --- Build progression function ---
 function buildLevels(path) {
@@ -298,6 +298,8 @@ function buildLevels(path) {
 
   return levels;
 }
+
+const levels = [...sharedLevels, ...careerLevels];
 
 // Example usage:
 const careerPathLevels = buildLevels("career");

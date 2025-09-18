@@ -260,51 +260,57 @@ const businessLevels = [
   "World domination", "Legendary empire", "God"
 ];
 
-// --- Build progression function ---
-function buildLevels(path) {
+
+// Build shared levels 1–10 with XP
+let sharedLevelsXP = [];
+sharedLevels.forEach((name, i) => {
+  if (i === 0) {
+    sharedLevelsXP.push({ level: 1, xp: 0, name });
+  } else if (i === 1) {
+    sharedLevelsXP.push({ level: 2, xp: 20, name });
+  } else if (i === 2) {
+    sharedLevelsXP.push({ level: 3, xp: 40, name });
+  } else {
+    const prevXP = sharedLevelsXP[i - 1].xp;
+    const newXP = Math.round((prevXP * k) / 100) * 100;
+    sharedLevelsXP.push({ level: i + 1, xp: newXP, name });
+  }
+});
+
+// Assign to activeLevels
+let activeLevels = sharedLevelsXP;
+
+console.log("Active Levels (1–10 with XP):", activeLevels);
+
+
+// Function to build path-specific levels only (11–32)
+function buildPathLevels(path) {
   const levels = [];
-
-  // Shared levels 1–10
-  sharedLevels.forEach((name, i) => {
-    if (i === 0) {
-      levels.push({ level: 1, xp: 0, name }); // start
-    } else if (i === 1) {
-      levels.push({ level: 2, xp: 20, name });
-    } else if (i === 2) {
-      levels.push({ level: 3, xp: 40, name });
-    } else {
-      // Scaling up to 10
-      const prevXP = levels[i - 1].xp;
-      const newXP = Math.round((prevXP * k) / 100) * 100;
-      levels.push({ level: i + 1, xp: newXP, name });
-    }
-  });
-
-  // Path-specific levels (11–32)
   const pathLevels = path === "career" ? careerLevels : businessLevels;
-  
-  for (let j = 0; j < pathLevels.length; j++) {
-    const prevXP = levels[levels.length - 1].xp;
-    const factor = (levels.length < 11) ? k : k1;
-    const rounding = (levels.length < 11) ? 100 : 1000;
+
+  // Build XP for path levels only
+  pathLevels.forEach((name, i) => {
+    const prevXP = i === 0 ? 0 : levels[i - 1].xp;
+    const factor = k1;       // Use k1 for all path levels
+    const rounding = 1000;
     const newXP = Math.round((prevXP * factor) / rounding) * rounding;
 
     levels.push({
-      level: levels.length + 1,
+      level: i + 11,        // Start from level 11
       xp: newXP,
-      name: pathLevels[j]
+      name
     });
-  }
+  });
 
   return levels;
 }
 
-// Example usage:
-const careerPathLevels = buildLevels("career");
-const businessPathLevels = buildLevels("business");
+const careerPathLevels = buildPathLevels("career");
+const businessPathLevels = buildPathLevels("business");
 
-console.log("Career Path:", careerPathLevels);
-console.log("Business Path:", businessPathLevels);
+console.log("Career Path Levels:", careerPathLevels);
+console.log("Business Path Levels:", businessPathLevels);
+
 
 // --- Trigger after reaching level 10 ---
 function checkLevelForChoice(currentLevel) {
@@ -365,11 +371,21 @@ function checkLevelForChoice(currentLevel) {
   }
 }
 
+
 // --- Callback after path is chosen ---
 function proceedWithPath(path) {
-  const levels = buildLevels(path);
-  console.log(`Chosen path: ${path}`, levels);
+  // Assign the selected path array to activeLevels
+  if (path === "career") {
+    activeLevels = careerPathLevels;
+  } else if (path === "business") {
+    activeLevels = businessPathLevels;
   }
+
+   level = 10;  // player just finished sharedLevels
+  xp = sharedLevels[sharedLevels.length - 1].xp; // keep XP accumulated in shared levels
+
+  console.log(`Chosen path: ${path}`, activeLevels);
+}
 
 
 const tapBtn=document.getElementById('tapBtn');
@@ -728,22 +744,22 @@ tapBtn.addEventListener('click', () => {
     // Original level-up loop
     // Level-up using cumulative thresholds: do NOT subtract XP
 
-    while (level < levels.length && xp >= levels[level].xp) {
+    while (level < activeLevels.length && xp >= activeLevels[level].xp) {
     level++;
     showLevelOverlay();
     xpBar.style.width = '0%';
     document.getElementById('hubXpBar').style.width = '0%';
-    levelIndicator.textContent = `Level ${level} (${levels[level-1].name})`;
-    //document.getElementById('hubLevelText').textContent = `Level ${level} (${levels[level-1].name})`;
+    levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
+    //document.getElementById('hubLevelText').textContent = `Level ${level} (${activeLevels[level-1].name})`;
     document.getElementById('hubLevelText').textContent = `Level ${level}`;
-    document.getElementById('hubLevelName').textContent = levels[level-1].name;
+    document.getElementById('hubLevelName').textContent = activeLevels[level-1].name;
 }
 
 
 
     // Update progress bar
-    const prevLevelXP = level === 0 ? 0 : levels[level-1].xp;
-    const nextLevelXP = level < levels.length ? levels[level].xp : prevLevelXP + 100;
+    const prevLevelXP = level === 0 ? 0 : activeLevels[level-1].xp;
+    const nextLevelXP = level < activeLevels.length ? activeLevels[level].xp : prevLevelXP + 100;
     const progress = Math.min(((xp - prevLevelXP)/ (nextLevelXP - prevLevelXP)), 1);
     xpBar.style.width = `${progress * 100}%`;
     xpCounter.textContent = `${xp}/${nextLevelXP} XP`;

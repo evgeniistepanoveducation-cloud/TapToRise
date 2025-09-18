@@ -262,7 +262,7 @@ const businessLevels = [
 
 // --- Build progression function ---
 function buildLevels(path) {
-  const levels = [];
+  const levels = [...sharedLevels, ...careerLevels];
   
   // Shared levels 1–10
   sharedLevels.forEach((name, i) => {

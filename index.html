@@ -288,12 +288,15 @@ function buildPathLevels(path) {
   const levels = [];
   const pathLevels = path === "career" ? careerLevels : businessLevels;
 
+   // --- Baseline: XP of level 10 (last shared level) ---
+  let prevXP = sharedLevelsXP[sharedLevelsXP.length - 1].xp;
+
   // Build XP for path levels only
   pathLevels.forEach((name, i) => {
     const prevXP = i === 0 ? 0 : levels[i - 1].xp;
     const factor = k1;       // Use k1 for all path levels
     const rounding = 1000;
-    const newXP = Math.round((prevXP * factor) / rounding) * rounding+100;
+    const newXP = Math.round((prevXP * factor) / rounding) * rounding;
 
     levels.push({
       level: i + 11,        // Start from level 11

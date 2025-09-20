@@ -359,18 +359,18 @@ function checkLevelForChoice(currentLevel, currentXP) {
 
     // Buttons
     const careerBtn = document.createElement("button");
-    careerBtn.textContent = "Career";
-    careerBtn.onclick = () => {
-      document.body.removeChild(overlay);
-      proceedWithPath("career");
-    };
+        careerBtn.textContent = "Career";
+        careerBtn.onclick = () => {
+            chosenPath = "career";
+            document.body.removeChild(overlay);
+        };
 
-    const businessBtn = document.createElement("button");
-    businessBtn.textContent = "Enterprise";
-    businessBtn.onclick = () => {
-      document.body.removeChild(overlay);
-      proceedWithPath("business");
-    };
+        const businessBtn = document.createElement("button");
+        businessBtn.textContent = "Enterprise";
+        businessBtn.onclick = () => {
+            chosenPath = "business";
+            document.body.removeChild(overlay);
+        };
 
     // Styling buttons
     [careerBtn, businessBtn].forEach(btn => {

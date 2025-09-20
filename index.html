@@ -301,6 +301,10 @@ function buildPathLevels(path) {
       xp: newXP,
       name
     });
+
+    // update for next iteration
+    prevXP = newXP;
+
   });
 
   return levels;

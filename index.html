@@ -292,7 +292,7 @@ function buildPathLevels(path) {
   // Build XP for path levels only
   pathLevels.forEach((name, i) => {
     const factor = k1;       // Use k1 for all path levels
-    const rounding = 1000;
+    const rounding = 100;
     const newXP = Math.round((prevXP * factor) / rounding) * rounding;
 
     levels.push({

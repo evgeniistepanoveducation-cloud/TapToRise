@@ -385,8 +385,8 @@ function proceedWithPath(path) {
     activeLevels = businessPathLevels;
   }
 
-   level = 10;  // player just finished sharedLevels
-  xp = sharedLevels[sharedLevels.length - 1].xp; // keep XP accumulated in shared levels
+  level = 10;  // player just finished sharedLevels
+  xp = sharedLevelsXP[sharedLevelsXP.length - 1].xp; // keep XP accumulated in shared levels
 
   console.log(`Chosen path: ${path}`, activeLevels);
 }

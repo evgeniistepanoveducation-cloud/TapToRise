@@ -395,8 +395,8 @@ function proceedWithPath(path) {
     activeLevels = businessPathLevels;
   }
 
-  level = 0;  // player just finished sharedLevels
-  xp = sharedLevelsXP[sharedLevelsXP.length - 1].xp; // keep XP accumulated in shared levels
+  //level = 0;  // player just finished sharedLevels
+  //xp = sharedLevelsXP[sharedLevelsXP.length - 1].xp; // keep XP accumulated in shared levels
 
   console.log(`Chosen path: ${path}`, activeLevels);
 }
@@ -801,16 +801,16 @@ tapBtn.addEventListener('click', () => {
     // Original level-up loop
     // Level-up using cumulative thresholds: do NOT subtract XP
 
+    // For path levels, XP thresholds are absolute
     while (level < activeLevels.length && xp >= activeLevels[level].xp) {
     level++;
     showLevelOverlay();
-    xpBar.style.width = '0%';
-    document.getElementById('hubXpBar').style.width = '0%';
-    levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
-    //document.getElementById('hubLevelText').textContent = `Level ${level} (${activeLevels[level-1].name})`;
-    document.getElementById('hubLevelText').textContent = `Level ${level}`;
-    document.getElementById('hubLevelName').textContent = activeLevels[level-1].name;
+    const lvlData = activeLevels[level-1];
+    levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;
+    document.getElementById('hubLevelText').textContent = `Level ${lvlData.level}`;
+    document.getElementById('hubLevelName').textContent = lvlData.name;
 }
+
 
 
 

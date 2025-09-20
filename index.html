@@ -542,26 +542,37 @@ function spinWheel(){
     wheelOverlay.style.display='flex';
     mainContent.style.filter='blur(5px)'; // blur background during spin
 
-      // --- Create Skip button under the wheel ---
-      let skipBtn = document.createElement('button');
-      skipBtn.textContent = 'Skip';
-      skipBtn.id = 'skipButton';
-      skipBtn.style.marginTop = '10px';
-      skipBtn.style.padding = '8px 16px';
-      skipBtn.style.fontSize = '16px';
-      skipBtn.style.cursor = 'pointer';
-      skipBtn.style.borderRadius = '8px';
-      skipBtn.style.border = '1px solid #ccc';
-      skipBtn.style.background = '#fff';
-      skipBtn.style.alignSelf = 'center';
+     // --- Create wrapper for wheel + button ---
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = 'center';
 
-      // Place it inside overlay (under canvas)
-      wheelOverlay.appendChild(skipBtn);
+    // Move wheelCanvas into wrapper
+    wrapper.appendChild(wheelCanvas);
 
-      let skipped = false;
-      skipBtn.addEventListener('click', () => {
-          skipped = true;
-      });
+    // --- Create Skip button under the wheel ---
+    let skipBtn = document.createElement('button');
+    skipBtn.textContent = 'Skip';
+    skipBtn.id = 'skipButton';
+    skipBtn.style.marginTop = '10px';
+    skipBtn.style.padding = '8px 16px';
+    skipBtn.style.fontSize = '16px';
+    skipBtn.style.cursor = 'pointer';
+    skipBtn.style.borderRadius = '8px';
+    skipBtn.style.border = '1px solid #ccc';
+    skipBtn.style.background = '#fff';
+
+    wrapper.appendChild(skipBtn);
+
+    // Clear overlay first, then add wrapper
+    wheelOverlay.innerHTML = '';
+    wheelOverlay.appendChild(wrapper);
+
+    let skipped = false;
+    skipBtn.addEventListener('click', () => {
+        skipped = true;
+    });
 
 
 

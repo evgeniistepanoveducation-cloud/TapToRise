@@ -542,6 +542,29 @@ function spinWheel(){
     wheelOverlay.style.display='flex';
     mainContent.style.filter='blur(5px)'; // blur background during spin
 
+      // --- Create Skip button under the wheel ---
+      let skipBtn = document.createElement('button');
+      skipBtn.textContent = 'Skip';
+      skipBtn.id = 'skipButton';
+      skipBtn.style.marginTop = '10px';
+      skipBtn.style.padding = '8px 16px';
+      skipBtn.style.fontSize = '16px';
+      skipBtn.style.cursor = 'pointer';
+      skipBtn.style.borderRadius = '8px';
+      skipBtn.style.border = '1px solid #ccc';
+      skipBtn.style.background = '#fff';
+      skipBtn.style.alignSelf = 'center';
+
+      // Place it inside overlay (under canvas)
+      wheelOverlay.appendChild(skipBtn);
+
+      let skipped = false;
+      skipBtn.addEventListener('click', () => {
+          skipped = true;
+      });
+
+
+
     const chosenIndex = choosePrizeByProbability();
     const N = prizes.length;
     const fullSpins = 5;
@@ -566,10 +589,17 @@ function spinWheel(){
         // scaled drawing at this rotation
         drawWheel(totalRotation * ease);
 
-        if(t < 1){
-    requestAnimationFrame(animate);
-} else {
-    // --- prize handling (replace inside animate's else) ---
+    if(t < 1 && !skipped){
+      requestAnimationFrame(animate);
+    } else {
+    // remove Skip button once finished or skipped
+      const btn = document.getElementById('skipButton');
+    if (btn) btn.remove();
+
+    // --- prize handling (inside animate's else) ---
+
+
+// --- prize handling (replace inside animate's else) ---
 if (prizes[chosenIndex] === '🎟️') {
     // Golden Ticket
     goldenTickets++;

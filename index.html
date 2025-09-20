@@ -316,9 +316,19 @@ console.log("Career Path Levels:", careerPathLevels);
 console.log("Business Path Levels:", businessPathLevels);
 
 
-// --- Trigger after reaching level 10 ---
-function checkLevelForChoice(currentLevel) {
-  if (currentLevel === 10) {
+// --- Flag to ensure popup appears only once ---
+let destinyPopupShown = false;
+
+// --- Halfway XP for level 10 ---
+const level9XP = sharedLevelsXP[8].xp;   // level 9
+const level10XP = sharedLevelsXP[9].xp;  // level 10
+const halfwayXP10 = sharedLevelsXP[8].xp + (sharedLevelsXP[9].xp - sharedLevelsXP[8].xp) / 2;
+
+// --- Trigger when reaching halfway of level 10 ---
+function checkLevelForChoice(currentLevel, currentXP) {
+  if (!destinyPopupShown && currentLevel === 9 && currentXP >= halfwayXP10) {
+    destinyPopupShown = true; // prevent multiple popups
+
     // Create overlay
     const overlay = document.createElement("div");
     overlay.id = "pathOverlay";
@@ -340,7 +350,8 @@ function checkLevelForChoice(currentLevel) {
     popup.style.borderRadius = "12px";
     popup.style.textAlign = "center";
     popup.style.width = "300px";
-    popup.innerHTML = `<h2>Choose Your Path</h2>`;
+    popup.innerHTML = `<h2>You are close to Level 10!</h2>
+                       <p>Congrats! Now it is time to choose your destiny.</p>`;
 
     // Buttons
     const careerBtn = document.createElement("button");
@@ -375,7 +386,6 @@ function checkLevelForChoice(currentLevel) {
   }
 }
 
-
 // --- Callback after path is chosen ---
 function proceedWithPath(path) {
   // Assign the selected path array to activeLevels
@@ -390,6 +400,7 @@ function proceedWithPath(path) {
 
   console.log(`Chosen path: ${path}`, activeLevels);
 }
+
 
 
 const tapBtn=document.getElementById('tapBtn');
@@ -785,6 +796,7 @@ tapBtn.addEventListener('click', () => {
 
     // Add XP
     xp += 10 * xpMultiplier * tapMultiplier;
+    checkLevelForChoice(level, xp);
 
     // Original level-up loop
     // Level-up using cumulative thresholds: do NOT subtract XP

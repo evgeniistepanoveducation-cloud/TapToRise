@@ -324,6 +324,10 @@ const level9XP = sharedLevelsXP[8].xp;   // level 9
 const level10XP = sharedLevelsXP[9].xp;  // level 10
 const halfwayXP10 = sharedLevelsXP[8].xp + (sharedLevelsXP[9].xp - sharedLevelsXP[8].xp) / 2;
 
+// --- Flag to prevent multiple path selections ---
+let pathChosen = false;
+let chosenPath = null;
+
 // --- Trigger when reaching halfway of level 10 ---
 function checkLevelForChoice(currentLevel, currentXP) {
   if (!destinyPopupShown && currentLevel === 9 && currentXP >= halfwayXP10) {
@@ -386,21 +390,16 @@ function checkLevelForChoice(currentLevel, currentXP) {
   }
 }
 
-// --- Callback after path is chosen ---
-function proceedWithPath(path) {
-  // Assign the selected path array to activeLevels
-  if (path === "career") {
-    activeLevels = careerPathLevels;
-  } else if (path === "business") {
-    activeLevels = businessPathLevels;
-  }
+// --- Assign selected path array only at full level 10 XP ---
+function assignPathIfReady(currentXP) {
+    const level10XP = sharedLevelsXP[9].xp;
 
-  //level = 0;  // player just finished sharedLevels
-  //xp = sharedLevelsXP[sharedLevelsXP.length - 1].xp; // keep XP accumulated in shared levels
-
-  console.log(`Chosen path: ${path}`, activeLevels);
+    if (!pathChosen && chosenPath && currentXP >= level10XP) {
+        pathChosen = true;
+        activeLevels = chosenPath === "career" ? careerPathLevels : businessPathLevels;
+        console.log(`Path activated: ${chosenPath}`, activeLevels);
+    }
 }
-
 
 
 const tapBtn=document.getElementById('tapBtn');
@@ -805,6 +804,8 @@ tapBtn.addEventListener('click', () => {
     while (level < activeLevels.length && xp >= activeLevels[level].xp) {
     level++;
     showLevelOverlay();
+    assignPathIfReady(xp);
+
     const lvlData = activeLevels[level-1];
     levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;
     document.getElementById('hubLevelText').textContent = `Level ${lvlData.level}`;

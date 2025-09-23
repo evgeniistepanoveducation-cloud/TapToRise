@@ -804,10 +804,10 @@ tapBtn.addEventListener('click', () => {
 
     // For path levels, XP thresholds are absolute
     while (level < activeLevels.length && xp >= activeLevels[level].xp) {
+    assignPathIfReady(level, xp);
     level++;
     showLevelOverlay();
-    assignPathIfReady(level, xp);
-
+    
     const lvlData = activeLevels[level-1];
     levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;
     document.getElementById('hubLevelText').textContent = `Level ${lvlData.level}`;

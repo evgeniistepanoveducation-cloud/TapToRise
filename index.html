@@ -363,6 +363,7 @@ function checkLevelForChoice(currentLevel, currentXP) {
         careerBtn.onclick = () => {
             chosenPath = "career";
             document.body.removeChild(overlay);
+            assignPathIfReady(level, xp); // <- immediately switch array
         };
 
         const businessBtn = document.createElement("button");
@@ -370,6 +371,7 @@ function checkLevelForChoice(currentLevel, currentXP) {
         businessBtn.onclick = () => {
             chosenPath = "business";
             document.body.removeChild(overlay);
+            assignPathIfReady(level, xp); // <- immediately switch array
         };
 
     // Styling buttons
@@ -804,7 +806,7 @@ tapBtn.addEventListener('click', () => {
 
     // For path levels, XP thresholds are absolute
     while (level < activeLevels.length && xp >= activeLevels[level].xp) {
-    assignPathIfReady(level, xp);
+    //assignPathIfReady(level, xp);
     level++;
     showLevelOverlay();
     

@@ -237,7 +237,7 @@ const sharedLevels = [
   "The First Crush",         // 7
   "Graduation (Middle School)", // 8
   "Teen Years Begin",        // 9
-  "Choose Future Path"       // 10
+  "Future Path Chosen"       // 10
 ];
 
 // --- Career path (11–32) ---
@@ -780,7 +780,7 @@ const xpCooldown = 20; // ms, i.e., 0.02 sec per XP addition
 let levelUpCooldown = false;
 
 // Initial display when game loads
-levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
+//levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
 document.getElementById('hubLevelText').textContent = `Level ${level}`;
 document.getElementById('hubLevelName').textContent = activeLevels[level-1].name;
 

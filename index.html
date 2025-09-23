@@ -397,6 +397,7 @@ function assignPathIfReady(currentXP) {
     if (!pathChosen && chosenPath && currentXP >= level10XP) {
         pathChosen = true;
         activeLevels = chosenPath === "career" ? careerPathLevels : businessPathLevels;
+        level = 0; // start at first level of the new pat
         console.log(`Path activated: ${chosenPath}`, activeLevels);
     }
 }

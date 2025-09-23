@@ -87,7 +87,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 <div id="personalHub">
   <div class="hub-top-row">
-    <div class="hub-level-text" id="hubLevelText">Level 1</div>
+    <div class="hub-level-text" id="hubLevelText">Level 1 (Learn First Words)</div>
     <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePic">
   </div>
 
@@ -394,7 +394,7 @@ function checkLevelForChoice(currentLevel, currentXP) {
 function assignPathIfReady(currentXP) {
     const level10XP = sharedLevelsXP[9].xp;
 
-    if (!pathChosen && chosenPath && currentXP >= level10XP) {
+    if (!pathChosen && chosenPath && currentXP > level10XP) {
         pathChosen = true;
         activeLevels = chosenPath === "career" ? careerPathLevels : businessPathLevels;
         level = 0; // start at first level of the new pat

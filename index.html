@@ -394,7 +394,8 @@ function checkLevelForChoice(currentLevel, currentXP) {
 function assignPathIfReady(currentXP) {
     const level10XP = sharedLevelsXP[9].xp;
 
-    if (!pathChosen && chosenPath && currentXP > level10XP) {
+    //if (!pathChosen && chosenPath && currentXP > level10XP) {
+    if (!pathChosen && chosenPath && currentLevel === 10 && currentXP >= level10XP) {
         pathChosen = true;
         activeLevels = chosenPath === "career" ? careerPathLevels : businessPathLevels;
         level = 0; // start at first level of the new pat
@@ -805,7 +806,7 @@ tapBtn.addEventListener('click', () => {
     while (level < activeLevels.length && xp >= activeLevels[level].xp) {
     level++;
     showLevelOverlay();
-    assignPathIfReady(xp);
+    assignPathIfReady(level, xp);
 
     const lvlData = activeLevels[level-1];
     levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;

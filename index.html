@@ -391,7 +391,7 @@ function checkLevelForChoice(currentLevel, currentXP) {
 }
 
 // --- Assign selected path array only at full level 10 XP ---
-function assignPathIfReady(currentXP) {
+function assignPathIfReady(currentLevel, currentXP) {
     const level10XP = sharedLevelsXP[9].xp;
 
     //if (!pathChosen && chosenPath && currentXP > level10XP) {

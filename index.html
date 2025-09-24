@@ -949,8 +949,7 @@ function calculateBotXP() {
   fakeUsers.forEach(bot => {
     const randomXP = Math.floor((50 + Math.random() * 50) / 10) * 10;
     bot.currentXP = bot.baseXP + randomXP;
-    bot.goldenTickets = Math.floor(Math.sqrt(bot.currentXP / 100)) * (1 + Math.floor(Math.random() * 2));
-;  
+    bot.goldenTickets = Math.floor(Math.sqrt(bot.currentXP / 100)) * (1 + Math.floor(Math.random() * 2));  
     bot.profilePicSrc = botPictures[bot.username];
     bot.inventory = [];       
 

@@ -912,6 +912,27 @@ const botPictures = {
   ZaraNova: "10.jpg"
 };
 
+function getLevelInfo(xp, path = null) {
+  // choose correct level array
+  let levels = sharedLevelsXP;
+  if (path === "career") levels = [...sharedLevelsXP, ...careerPathLevels];
+  else if (path === "business") levels = [...sharedLevelsXP, ...businessPathLevels];
+
+  // default to level 1
+  let currentLevel = 1;
+  let currentName = levels[0].name;
+
+  for (let i = 0; i < levels.length; i++) {
+    if (xp >= levels[i].xp) {
+      currentLevel = levels[i].level;
+      currentName = levels[i].name;
+    } else {
+      break;
+    }
+  }
+
+  return { level: currentLevel, name: currentName };
+}
 
 // --- Real player (YOU) ---
 let realPlayer = {
@@ -928,12 +949,17 @@ function calculateBotXP() {
   fakeUsers.forEach(bot => {
     const randomXP = Math.floor((50 + Math.random() * 50) / 10) * 10;
     bot.currentXP = bot.baseXP + randomXP;
-    bot.level = 100;          // fixed MVP value
-    bot.goldenTickets = 100;  // MVP demo
-    bot.profilePicSrc = botPictures[bot.username]; // unique per bot
-    bot.inventory = [];       // placeholder
+    bot.goldenTickets = 100;  
+    bot.profilePicSrc = botPictures[bot.username];
+    bot.inventory = [];       
+
+    // derive level + level name
+    const { level, name } = getLevelInfo(bot.currentXP);
+    bot.level = level;
+    bot.levelName = name;
   });
 }
+
 
 function updateRealPlayerXP() {
   realPlayer.xp = xp; // keep in sync with live game variable
@@ -1055,6 +1081,7 @@ function fillProfile(playerData) {
 // Fill *other player's* hub UI with profile data
 function fillOtherProfile(playerData) {
   document.getElementById("hubLevelTextOther").textContent = `Level ${playerData.level}`;
+  document.getElementById("hubLevelNameOther").textContent = playerData.levelName;
   document.getElementById("hubXpCounterOther").textContent = `${playerData.currentXP} XP`;
   document.getElementById("hubProfilePicOther").src = playerData.profilePicSrc;
   document.getElementById("hubGoldenTicketsOther").textContent = playerData.goldenTickets;

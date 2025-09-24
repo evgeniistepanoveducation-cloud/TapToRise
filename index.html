@@ -209,6 +209,21 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 const hubProfilePic = document.getElementById('hubProfilePic');
 hubProfilePic.src = 'default_profile.jpg';  // default picture
 
+const cosmetics = {
+  badges: [
+    { id: "legend", name: "Legendary Grinder", rarity: "super-rare", icon: "badge-legend.png" },
+    { id: "lucky", name: "Wheel Master", rarity: "rare", icon: "badge-wheel.png" }
+  ],
+  frames: [
+    { id: "gold", name: "Golden Frame", rarity: "rare", cssClass: "frame-gold" },
+    { id: "neon", name: "Neon Frame", rarity: "uncommon", cssClass: "frame-neon" }
+  ],
+  backgrounds: [
+    { id: "dark", name: "Dark Mode", rarity: "common", cssClass: "bg-dark" },
+    { id: "cosmos", name: "Cosmic Glow", rarity: "epic", cssClass: "bg-cosmos" }
+  ]
+};
+
 
 const prizes = ['⚡ x2 XP','✖️','100💎','50💎','10💎','🎨','🏅','🎯','🎟️'];
 

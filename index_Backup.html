@@ -1,0 +1,1254 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TapToRise - Wheel of Fortune</title>
+<style>
+html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family: Arial,sans-serif;}
+.bg { position:fixed; inset:0; background-image:url('Gradient_Blue.jpg'); background-size:cover; background-position:center;}
+#mainContent { position:relative; width:100%; height:100%; transition: filter 0.3s ease; }
+
+#tapBtn { width: 220px; height: 220px; border-radius: 50%; border: 6px solid gold; background: linear-gradient(135deg, #ffd700, #ff8c00); color: black; font-size: 70px; font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Vertical positioning: middle between screen top and island top */ position: absolute; top: calc((100vh - 150px) / 2 - 110px);}
+.wrap { position: fixed; top: 0; left: 50%; transform: translateX(-50%); /* center horizontally */ display: flex; justify-content: center; }
+.tap { font-size:48px; width:300px; height:300px; border:none; border-radius:50%; background-color:#2ea6ff; color:#fff; cursor:pointer; box-shadow:0 10px 24px rgba(0,0,0,0.3); display:flex; justify-content:center; align-items:center; touch-action: manipulation; user-select:none;}
+.xp-counter { position:fixed; top:40px; left:20px; background:rgba(0,0,0,0.4); color:#fff; padding:16px 20px; border-radius:16px; font-weight:bold; font-size:16px;}
+.level-indicator { position:fixed; top:100px; left:20px; background:rgba(0,0,0,0.4); color:#fff; padding:10px 16px; border-radius:12px; font-weight:bold; font-size:20px;}
+.xp-bar-container { position:fixed; top:0; left:0; width:100%; height:16px; background:rgba(255,255,255,0.2); border-radius:8px; overflow:hidden; z-index:100;}
+.xp-bar { height:100%; width:0%; background:linear-gradient(90deg,#ffd700,#ff8c00); transition:width 0.3s ease-out;}
+#message { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:black; color:white; padding:20px; border-radius:10px; font-size:20px; z-index:2000;}
+#wheelOverlay { display:none; position:fixed; inset:0; background: rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:2000; }
+#wheelCanvas { background:white; border-radius:50%; border:4px solid gold; transform: translateY(-40px); /* shift wheel upwards */ }
+#wheelIndicator { position:absolute; top:50%; left:50%; width:0; height:0; border-left:15px solid transparent; border-right:15px solid transparent; border-bottom:30px solid red; transform: translate(-50%, -100%); z-index:2001; }
+.golden-ticket-counter { position: fixed; bottom: 220px; left: 20px; background: rgba(255,215,0,0.8); color: #000; padding: 12px 20px; border-radius: 16px; font-weight: bold; font-size: 24px; z-index: 101; }
+.gemsCounter { position: fixed; bottom: 220px; right: 20px; background: rgba(255,215,0,0.8); color: #000; padding: 12px 20px; border-radius: 16px; font-weight: bold; font-size: 24px; z-index: 101; }
+.gem-animation { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 64px; z-index: 3000; animation: goldenFlash 1s ease-out forwards; pointer-events: none; }
+
+/* Level-up overlay */
+#levelOverlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:3000; flex-direction:column; text-align:center; pointer-events:all; }
+#levelOverlay .content { background:#a0d8ff; color:#000; padding:30px 40px; border-radius:20px; font-size:24px; text-align:center; box-shadow:0 8px 20px rgba(0,0,0,0.3); }
+#levelOverlay .spin-btn { margin-top:20px; padding:10px 20px; font-size:20px; border:none; border-radius:12px; background:#ffd700; color:#000; cursor:pointer; }
+#wheelCanvas { background:white; border-radius:50%; border:4px solid gold; width:80vw; height:80vw; max-width:500px; max-height:500px; min-width:250px; min-height:250px; }
+
+@keyframes goldenFlash { 0% { transform: scale(1); opacity:1; } 50% { transform: scale(1.5); opacity:0.8; } 100% { transform: scale(1); opacity:0; } }
+.golden-ticket-animation { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); font-size:64px; z-index:3000; animation: goldenFlash 1s ease-out forwards; pointer-events:none; }
+
+.gems-counter { position: fixed; bottom: 220px;  right: 20px;  background: rgba(0, 229, 255, 0.8);  color: #000; padding: 12px 20px; border-radius: 16px; font-weight: bold; font-size: 24px; z-index: 101; }
+/* #personalHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; } */
+.hub-top-row { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+
+.hub-xp-bar-container { width: 90%; height: 20px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-bottom: 16px; }
+
+.referral-code { margin-top: 15px; text-align: center; }
+.referral-code label { display: block; margin-bottom: 5px; font-weight: bold; }
+.referral-code input { padding: 5px 10px; font-size: 14px; border-radius: 8px; border: 1px solid #ccc; text-align: center; }
+.referral-row { display: flex;   align-items: center; justify-content: center; gap: 8px; width: 100%; }
+.referral-row button { padding: 5px 12px; font-size: 14px; border-radius: 8px; border: none; background: #4caf50; color: white; cursor: pointer; transition: background 0.2s; }
+.referral-row button:hover { background: #45a049; }
+.copy-confirm { margin-top: 6px; font-size: 14px; color: #fff; background: #2ea6ff; padding: 4px 12px; border-radius: 12px; display: inline-block; opacity: 0; transition: opacity 0.5s ease; }
+#leaderboardOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
+#leaderboardContainer { background: rgba(0,0,0,0.5); color: #fff; padding: 20px; border-radius: 10px; width: 90%; max-width: 600px; max-height: 80vh; overflow: auto; }
+
+.hub-level-text { font-size: 28px; font-weight: bold; }
+.hub-profile-pic { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; cursor: pointer; }
+.hub-level-name { font-size: 22px; margin-bottom: 16px; }
+.hub-xp-bar { height: 100%; width: 0%; background: linear-gradient(90deg,#ffd700,#ff8c00); border-radius: 10px; transition: width 0.3s ease-out; }
+.hub-xp-counter { font-size: 18px; margin-bottom: 16px; }
+
+
+#bottomButtons { position: fixed; bottom: 120px; left: 0; width: 100%; height: 80px; display: flex; justify-content: space-around; /* buttons take equal width inside */ align-items: center; /* vertical centering of buttons */ background: transparent; /* island invisible */ border-top: 2px solid grey; /* only top border visible */ border-left: none; border-right: none; border-bottom: none; border-radius: 0; z-index: 110; }
+#hubBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
+#leaderboardBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
+#challengeBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
+#shopBtn { width: 56px; height: 56px; border: none; border-radius: 12px; background: rgba(255,215,0,0.8); color: #fff; cursor: pointer; font-size: 36px; }
+
+.glow { box-shadow: 0 0 20px gold, 0 0 40px orange; border-radius: 50%; }
+
+#adBanner { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; background: #222; color: #aaa; display: flex; justify-content: center; align-items: center; border-radius: 10px; z-index: 1000; }
+
+.hub-section-title { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #fff; }
+.hub-inventory-item { width: 50px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: default; transition: transform 0.2s; }
+.hub-inventory-item:hover { transform: scale(1.2); }
+
+#shopOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; }
+#shopContent { background: #fff; width: 80%; max-width: 400px; max-height: 80%; overflow-y: auto; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; }
+.shop-item { background: rgba(255,215,0,0.2); border: 2px solid rgba(255,215,0,0.8); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
+.shop-item button { background: rgba(255,215,0,0.8); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #fff; }
+
+/* #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }*/
+#personalHub, #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }
+
+</style>
+</head>
+<body>
+
+<div class="bg"></div>
+
+
+<div id="personalHub">
+  <div class="hub-top-row">
+    <div class="hub-level-text" id="hubLevelText">Level 1 (Learn First Words)</div>
+    <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePic">
+  </div>
+
+  <div class="hub-level-name" id="hubLevelName">test</div>
+
+  <div class="hub-xp-bar-container">
+    <div class="hub-xp-bar" id="hubXpBar"></div>
+  </div>
+  <div class="hub-xp-counter" id="hubXpCounter">0 XP</div>
+
+  <div class="hub-golden-tickets" id="hubGoldenTicketsWrapper" style="text-align: center; margin-bottom: 16px;">
+    <div id="hubGoldenTickets" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
+    <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Your Golden Tickets</div>
+  </div>
+
+  <!-- Referral section -->
+  <div class="referral-code" id="hubReferralBlock" style="margin-top:16px;">
+    <label for="referralInput">Referral Code:</label>
+    <div class="referral-row">
+      <input type="text" id="referralInput" value="superdigga228" />
+      <button id="copyReferralBtn">Copy</button>
+    </div>
+    <div class="copy-confirm" id="copyConfirm">Copied!</div>
+  </div>
+
+  <!-- Inventory section -->
+  <div class="hub-inventory-wrapper" id="hubInventoryWrapper" style="margin-top:16px;">
+    <div class="hub-section-title">Inventory</div>
+    <div class="hub-inventory" id="hubInventory"></div>
+  </div>
+</div>
+
+<div id="otherPlayerHub">
+  <div class="hub-top-row">
+    <div class="hub-level-text" id="hubLevelTextOther">Level 1</div>
+    <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePicOther">
+  </div>
+
+  <div class="hub-level-name" id="hubLevelNameOther">DisplayTheActualLevelHere</div>
+
+    <div class="hub-xp-counter" id="hubXpCounterOther">0 XP</div>
+
+  <div class="hub-golden-tickets" id="hubGoldenTicketsWrapperOther" style="text-align: center; margin-bottom: 16px;">
+    <div id="hubGoldenTicketsOther" style="width:80px; height:80px; border-radius:50%; background: gold; display:flex; justify-content:center; align-items:center; font-size:32px; font-weight:bold; color:#000; margin:0 auto;">0</div>
+    <div style="margin-top: 8px; font-size: 16px; font-weight: bold;">Golden Tickets</div>
+  </div>
+
+  <!-- Inventory section -->
+  <div class="hub-inventory-wrapper" id="hubInventoryWrapperOther" style="margin-top:16px;">
+    <div class="hub-section-title">Inventory</div>
+    <div class="hub-inventory" id="hubInventoryOther"></div>
+  </div>
+</div>
+
+
+
+<div id="leaderboardOverlay">
+    <div id="leaderboardContainer"></div>
+</div>
+
+<div id="shopOverlay">
+  <div id="shopContent">
+    <div class="shop-item">
+      <span>Golden Ticket - 100 💎</span>
+      <button data-item="goldenTicket">Buy</button>
+    </div>
+    <div class="shop-item">
+      <span>XP Boost - 20 💎</span>
+      <button data-item="xpBoost">Buy</button>
+    </div>
+    <div class="shop-item">
+      <span>Tap Multiplier - 50 💎</span>
+      <button data-item="tapMultiplier">Buy</button>
+    </div>
+  </div>
+</div>
+
+
+<div id="mainContent">
+    <div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
+    <div class="wrap"><button id="tapBtn">TAP</button></div>
+        <div class="level-indicator" id="levelIndicator">Level: 1</div>
+    <div class="xp-counter" id="xpCounter">0 XP</div>
+    <div class="golden-ticket-counter" id="goldenTicketCounter">🎟️ 0</div>
+    <div class="gemsCounter" id="gemsCount">💎 0</div>
+</div>
+
+<div id="bottomButtons">
+    <button id="hubBtn">🏠</button>
+    <button id="leaderboardBtn">🏆</button>
+    <button id="shopBtn">🛒</button>
+    <button id="challengeBtn">⚔️</button>
+</div>
+
+<div id="adBanner">
+    [Ad Banner Placeholder]
+</div>
+
+<div id="message"></div>
+
+<!-- Wheel overlay -->
+<div id="wheelOverlay">
+    <canvas id="wheelCanvas" width="500" height="500"></canvas>
+    <div id="wheelIndicator"></div>
+</div>
+
+<!-- Level-up overlay -->
+<div id="levelOverlay">
+    <div class="content">
+        🎉 Congrats, next level achieved!<br>
+        You earned one spin!
+    </div>
+    <button id="levelSpinBtn" class="spin-btn">Spin</button>
+</div>
+
+
+<script>
+// Default profile picture s
+const hubProfilePic = document.getElementById('hubProfilePic');
+hubProfilePic.src = 'default_profile.jpg';  // default picture
+
+const cosmetics = {
+  badges: [
+    { id: "legend", name: "Legendary Grinder", rarity: "super-rare", icon: "badge-legend.png" },
+    { id: "lucky", name: "Wheel Master", rarity: "rare", icon: "badge-wheel.png" }
+  ],
+  frames: [
+    { id: "gold", name: "Golden Frame", rarity: "rare", cssClass: "frame-gold" },
+    { id: "neon", name: "Neon Frame", rarity: "uncommon", cssClass: "frame-neon" }
+  ],
+  backgrounds: [
+    { id: "dark", name: "Dark Mode", rarity: "common", cssClass: "bg-dark" },
+    { id: "cosmos", name: "Cosmic Glow", rarity: "epic", cssClass: "bg-cosmos" }
+  ]
+};
+
+
+const prizes = ['⚡ x2 XP','✖️','100💎','50💎','10💎','🎨','🏅','🎯','🎟️'];
+
+// Only for debugging:
+//const probabilities = [0,0,0,0,0,0,1,0,0];
+
+const probabilities = [0.25,0.1,0.12,0.18,0.25,0.04,0.02,0.01,0.03];
+
+const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A133FF','#FF8C33', '#33FF8C'];
+
+// --- Base XP scaling factors ---
+const k = 1.5;  // for levels 4–11
+const k1 = 1.2; // from level 12 onwards
+
+// --- Shared levels (1–10) ---
+const sharedLevels = [
+  "Learn First Words",       // 1
+  "Celebrate Birthday",      // 2
+  "First Day at School",     // 3
+  "Make First Friend",       // 4
+  "Pass a Test",             // 5
+  "Discover a Hobby",        // 6
+  "The First Crush",         // 7
+  "Graduation (Middle School)", // 8
+  "Teen Years Begin",        // 9
+  "Future Path Chosen"       // 10
+];
+
+// --- Career path (11–32) ---
+const careerLevels = [
+  "🎓 Enroll in Uni", "Pass first exams", "Internship", "Internship2",
+  "Graduate", "Junior job", "Promotion", "Team leader",
+  "Manager", "Middle Manager", "Senior Manager", "Director",
+  "Conf. Speaker", "VP", "Industry Award", "C-Level (CTO/COO)",
+  "Billionaire Professor", "CEO Appointment", "International Reputation",
+  "Chairperson", "Nobel / Hall of Fame", "Legendary Prestige"
+];
+
+// --- Business path (11–32) ---
+const businessLevels = [
+  "Start hustle", "First profit", "Small business", "Investors",
+  "Startup launch", "Angel investor", "Expansion (10 staff)", "First office",
+  "Series A funding", "Expansion (100 staff)", "National expansion",
+  "Empire milestone", "IPO", "Global reach", "Billionaire status",
+  "Acquire rivals", "Political influence", "Conglomerate", "Tycoon",
+  "World domination", "Legendary empire", "God"
+];
+
+
+// Build shared levels 1–10 with XP
+let sharedLevelsXP = [];
+sharedLevels.forEach((name, i) => {
+  if (i === 0) {
+    sharedLevelsXP.push({ level: 1, xp: 0, name });
+  } else if (i === 1) {
+    sharedLevelsXP.push({ level: 2, xp: 20, name });
+  } else if (i === 2) {
+    sharedLevelsXP.push({ level: 3, xp: 40, name });
+  } else {
+    const prevXP = sharedLevelsXP[i - 1].xp;
+    const newXP = Math.round((prevXP * k) / 100) * 100;
+    sharedLevelsXP.push({ level: i + 1, xp: newXP, name });
+  }
+});
+
+let activeLevels = sharedLevelsXP;
+
+console.log("Active Levels (1–10 with XP):", activeLevels);
+
+// Function to build path-specific levels only (11–32)
+function buildPathLevels(path) {
+  const levels = [];
+  const pathLevels = path === "career" ? careerLevels : businessLevels;
+
+   // --- Baseline: XP of level 10 (last shared level) ---
+  let prevXP = sharedLevelsXP[sharedLevelsXP.length - 1].xp;
+
+  // Build XP for path levels only
+  pathLevels.forEach((name, i) => {
+    const factor = k1;       // Use k1 for all path levels
+    const rounding = 100;
+    const newXP = Math.round((prevXP * factor) / rounding) * rounding;
+
+    levels.push({
+      level: i + 11,        // Start from level 11
+      xp: newXP,
+      name
+    });
+
+    // update for next iteration
+    prevXP = newXP;
+
+  });
+
+  return levels;
+}
+
+const careerPathLevels = buildPathLevels("career");
+const businessPathLevels = buildPathLevels("business");
+
+console.log("Career Path Levels:", careerPathLevels);
+console.log("Business Path Levels:", businessPathLevels);
+
+
+// --- Flag to ensure popup appears only once ---
+let destinyPopupShown = false;
+
+// --- Halfway XP for level 10 ---
+const level9XP = sharedLevelsXP[8].xp;   // level 9
+const level10XP = sharedLevelsXP[9].xp;  // level 10
+const halfwayXP10 = sharedLevelsXP[8].xp + (sharedLevelsXP[9].xp - sharedLevelsXP[8].xp) / 2;
+
+// --- Flag to prevent multiple path selections ---
+let pathChosen = false;
+let chosenPath = null;
+
+// --- Trigger when reaching halfway of level 10 ---
+function checkLevelForChoice(currentLevel, currentXP) {
+  if (!destinyPopupShown && currentLevel === 9 && currentXP >= halfwayXP10) {
+    destinyPopupShown = true; // prevent multiple popups
+
+    // Create overlay
+    const overlay = document.createElement("div");
+    overlay.id = "pathOverlay";
+    overlay.style.position = "fixed";
+    overlay.style.top = "0";
+    overlay.style.left = "0";
+    overlay.style.width = "100%";
+    overlay.style.height = "100%";
+    overlay.style.background = "rgba(0,0,0,0.6)";
+    overlay.style.display = "flex";
+    overlay.style.justifyContent = "center";
+    overlay.style.alignItems = "center";
+    overlay.style.zIndex = "1000";
+    overlay.style.pointerEvents = "auto";
+
+    // Create popup
+    const popup = document.createElement("div");
+    popup.style.background = "#fff";
+    popup.style.padding = "20px";
+    popup.style.borderRadius = "12px";
+    popup.style.textAlign = "center";
+    popup.style.width = "300px";
+    popup.innerHTML = `<h2>You are close to Level 10!</h2>
+                       <p>Congrats! Now it is time to choose your destiny.</p>`;
+
+    // Buttons
+    const careerBtn = document.createElement("button");
+        careerBtn.textContent = "Career";
+        careerBtn.onclick = () => {
+            chosenPath = "career";
+            document.body.removeChild(overlay);
+            assignPathIfReady(level, xp); // <- immediately switch array
+        };
+
+        const businessBtn = document.createElement("button");
+        businessBtn.textContent = "Enterprise";
+        businessBtn.onclick = () => {
+            chosenPath = "business";
+            document.body.removeChild(overlay);
+            assignPathIfReady(level, xp); // <- immediately switch array
+        };
+
+    // Styling buttons
+    [careerBtn, businessBtn].forEach(btn => {
+      btn.style.margin = "10px";
+      btn.style.padding = "10px 20px";
+      btn.style.border = "none";
+      btn.style.borderRadius = "8px";
+      btn.style.cursor = "pointer";
+      btn.style.fontWeight = "bold";
+    });
+
+    // Append
+    popup.appendChild(careerBtn);
+    popup.appendChild(businessBtn);
+    overlay.appendChild(popup);
+    document.body.appendChild(overlay);
+  }
+}
+
+// --- Assign selected path array only at full level 10 XP ---
+function assignPathIfReady(currentLevel, currentXP) {
+    const level10XP = sharedLevelsXP[9].xp;
+
+    //if (!pathChosen && chosenPath && currentXP > level10XP) {
+    if (!pathChosen && chosenPath && currentLevel === 10 && currentXP >= level10XP) {
+        pathChosen = true;
+        activeLevels = chosenPath === "career" ? careerPathLevels : businessPathLevels;
+        level = 0; // start at first level of the new pat
+        console.log(`Path activated: ${chosenPath}`, activeLevels);
+    }
+}
+
+
+const tapBtn=document.getElementById('tapBtn');
+const xpCounter=document.getElementById('xpCounter');
+const xpBar=document.getElementById('xpBar');
+const levelIndicator=document.getElementById('levelIndicator');
+const message=document.getElementById('message');
+const wheelOverlay=document.getElementById('wheelOverlay');
+const wheelCanvas=document.getElementById('wheelCanvas');
+const ctx=wheelCanvas.getContext('2d');
+const levelOverlay=document.getElementById('levelOverlay');
+const levelSpinBtn=document.getElementById('levelSpinBtn');
+const mainContent=document.getElementById('mainContent');
+
+//let currentLevelName = "test";
+//document.getElementById('hubLevelName').textContent = levels[level].name;
+
+// Create hidden file input
+const fileInput = document.createElement('input');
+fileInput.type = 'file';
+fileInput.accept = 'image/*';  // only images
+fileInput.style.display = 'none';
+document.body.appendChild(fileInput);
+
+// When image is clicked, trigger file selection
+hubProfilePic.addEventListener('click', () => {
+    fileInput.click();
+});
+
+// Update the profile picture
+fileInput.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(file){
+        const reader = new FileReader();
+        reader.onload = function(ev){
+            hubProfilePic.src = ev.target.result;  // update image
+        }
+        reader.readAsDataURL(file);
+    }
+});
+
+let xp=0, level=1;
+let goldenTickets = 0;
+let gems = 0;
+const goldenTicketCounter = document.getElementById('goldenTicketCounter');
+
+let xpMultiplier = 1;   // default = no boost
+let tapMultiplier = 1;  // default = one tap = one action
+let xpMultiplierTimeout = null;
+let tapMultiplierTimeout = null;
+
+
+// Hub closing
+const hubBtn = document.getElementById('hubBtn');
+const personalHub = document.getElementById('personalHub');
+const otherPlayerHub = document.getElementById('otherPlayerHub');
+
+// Open personal hub
+hubBtn.addEventListener('click', () => { 
+    personalHub.style.display = 'flex'; 
+    mainContent.style.filter = 'blur(5px)'; 
+});
+
+// Close personal hub by clicking outside content
+personalHub.addEventListener('click', (e) => { 
+    if (e.target === personalHub) { 
+        personalHub.style.display = 'none'; 
+        mainContent.style.filter = 'none'; 
+    } 
+});
+
+// Close other player hub by clicking outside content
+otherPlayerHub.addEventListener('click', (e) => {
+    if (e.target === otherPlayerHub) {
+        otherPlayerHub.style.display = 'none';
+        mainContent.style.filter = 'none';
+    }
+});
+
+
+
+// Store referral code dynamically
+let referralCode = document.getElementById("referralInput").value;
+
+// Copy referral code
+const copyConfirm = document.getElementById("copyConfirm");
+
+document.getElementById("copyReferralBtn").addEventListener("click", () => {
+  navigator.clipboard.writeText(referralCode).then(() => {
+    copyConfirm.style.opacity = "1";         // fade in
+    setTimeout(() => {
+      copyConfirm.style.opacity = "0";       // fade out after 1 sec
+    }, 1000);
+  });
+});
+
+document.getElementById("referralInput").addEventListener("input", (e) => {
+  referralCode = e.target.value;
+  console.log("Referral code updated:", referralCode);
+});
+
+// Helper: choose prize by probability
+function choosePrizeByProbability(){
+    let r=Math.random(),cum=0;
+    for(let i=0;i<probabilities.length;i++){ cum+=probabilities[i]; if(r<=cum) return i; }
+    return probabilities.length-1;
+}
+
+// Draw wheel
+function drawWheel(rotation=0){
+    const canvasWidth = wheelCanvas.width;
+    const canvasHeight = wheelCanvas.height;
+    const center = canvasWidth / 2;
+    const radius = center - 4; // 4px for the golden border
+
+    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+
+    const N = prizes.length;
+
+    for(let i=0;i<N;i++){
+        const start = (i/N) * 2 * Math.PI + rotation;
+        const end = ((i+1)/N) * 2 * Math.PI + rotation;
+
+        // Slice background
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, end);
+        ctx.closePath();
+        ctx.fillStyle = colors[i];
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Emoji inside slice
+        const angle = start + (end - start)/2;
+        const textRadius = radius * 0.7; // slightly inside the slice
+        ctx.save();
+        ctx.translate(center, center);
+        ctx.rotate(angle);
+        let fontSize = Math.round(radius * 0.12); // slightly larger than 0.1
+        if (fontSize < 22) fontSize = 22; // minimum readable size for mobile
+        ctx.font = `${fontSize}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = "#000";
+        ctx.fillText(prizes[i], textRadius, 0);
+        ctx.restore();
+    }
+}
+
+// Spin wheel
+function spinWheel(){
+    wheelOverlay.style.display='flex';
+    mainContent.style.filter='blur(5px)'; // blur background during spin
+
+     // --- Create wrapper for wheel + button ---
+    const wrapper = document.createElement('div');
+    wrapper.style.display = 'flex';
+    wrapper.style.flexDirection = 'column';
+    wrapper.style.alignItems = 'center';
+
+    // Move wheelCanvas into wrapper
+    wrapper.appendChild(wheelCanvas);
+
+    // --- Create Skip button under the wheel ---
+    let skipBtn = document.createElement('button');
+    skipBtn.textContent = 'Skip';
+    skipBtn.id = 'skipButton';
+    skipBtn.style.marginTop = '10px';
+    skipBtn.style.padding = '8px 16px';
+    skipBtn.style.fontSize = '16px';
+    skipBtn.style.cursor = 'pointer';
+    skipBtn.style.borderRadius = '8px';
+    skipBtn.style.border = '1px solid #ccc';
+    skipBtn.style.background = '#fff';
+
+    wrapper.appendChild(skipBtn);
+
+    // Clear overlay first, then add wrapper
+    wheelOverlay.innerHTML = '';
+    wheelOverlay.appendChild(wrapper);
+
+    let skipped = false;
+    skipBtn.addEventListener('click', () => {
+        skipped = true;
+    });
+
+
+
+    const chosenIndex = choosePrizeByProbability();
+    const N = prizes.length;
+    const fullSpins = 5;
+    const sectorAngle = 2 * Math.PI / N;
+    const targetAngle = 3 * Math.PI / 2 - (chosenIndex + 0.5) * sectorAngle;
+    const totalRotation = fullSpins * 2 * Math.PI + targetAngle;
+
+
+    let start = null;
+    const duration = 3000;
+
+    function animate(ts){
+        if(!start) start = ts;
+        const elapsed = ts - start;
+        const t = Math.min(elapsed / duration, 1);
+
+        // cubic easing in/out
+        const ease = t < 0.5
+            ? 4 * t * t * t
+            : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+        // scaled drawing at this rotation
+        drawWheel(totalRotation * ease);
+
+    if(t < 1 && !skipped){
+      requestAnimationFrame(animate);
+    } else {
+    // remove Skip button once finished or skipped
+      const btn = document.getElementById('skipButton');
+    if (btn) btn.remove();
+
+    // --- prize handling (inside animate's else) ---
+
+
+// --- prize handling (replace inside animate's else) ---
+if (prizes[chosenIndex] === '🎟️') {
+    // Golden Ticket
+    goldenTickets++;
+    goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
+    const hubEl = document.getElementById('hubGoldenTickets');
+    if (hubEl) hubEl.textContent = `${goldenTickets}`;
+
+    const flash = document.createElement('div');
+    flash.className = 'golden-ticket-animation';
+    flash.textContent = '🎟️';
+    document.body.appendChild(flash);
+
+    flash.animate([
+        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+    ], { duration: 1500, easing: 'ease-out' });
+
+    setTimeout(() => {
+        flash.remove();
+        message.textContent = `You won a Golden Ticket!`;
+        message.style.display = 'block';
+        wheelOverlay.style.display = 'none';
+        mainContent.style.filter = 'none';
+        setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+    }, 1500);
+
+} else if (prizes[chosenIndex].includes('💎')) {
+    // Gems: safe numeric parse, increment, UI update + flash
+    const raw = String(prizes[chosenIndex] || '');
+    const amount = parseInt(raw.replace(/\D/g, ''), 10) || 0;
+    gems += amount; // global variable must exist
+
+    // update UI (keep emoji so box size stays stable)
+    const gemsEl = document.getElementById('gemsCount') || document.getElementById('gemsCounter') || document.querySelector('.gemsCounter') || document.querySelector('.gems-counter');
+    if (gemsEl) gemsEl.textContent = `💎 ${gems}`;
+
+    const flash = document.createElement('div');
+    flash.className = 'gem-animation'; // uses the same keyframes or new class
+    flash.textContent = `💎 ${amount}`; // template literal - shows correct amount
+    document.body.appendChild(flash);
+
+    flash.animate([
+        { transform: 'translate(-50%, -50%) scale(0)', opacity: 0 },
+        { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1 },
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }
+    ], { duration: 1500, easing: 'ease-out' });
+
+    setTimeout(() => {
+        flash.remove();
+        message.textContent = `You won ${prizes[chosenIndex]}!`;
+        message.style.display = 'block';
+        wheelOverlay.style.display = 'none';
+        mainContent.style.filter = 'none';
+        setTimeout(() => { message.style.display = 'none'; }, 2000);
+    }, 1500);
+
+} else if (prizes[chosenIndex] === '⚡ x2 XP') {
+    // Double XP multiplier for 2 minutes
+    xpMultiplier = 2;
+    // optional: clear/extend previous timeout logic (see note below)
+    setTimeout(() => { xpMultiplier = 1; }, 120000);
+
+    // show feedback and close wheel (mirror other branches)
+    message.textContent = `2x XP activated for 2 minutes!`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
+} else if (prizes[chosenIndex] === '✖️') {
+    // x5 taps per tap multiplier for 1 minute
+    tapMultiplier = 5;
+    //setTimeout(() => { tapMultiplier = 1; }, 60000);
+    clearTimeout(tapMultiplierTimeout);
+    tapMultiplierTimeout = setTimeout(() => { tapMultiplier = 1; }, 60000);
+
+    message.textContent = `x5 taps active for 1 minute!`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
+} else if (prizes[chosenIndex] === '🎨') {
+    // Make profile picture glow; correct selector
+    const pic = document.getElementById('hubProfilePic') || document.getElementById('hubProfilePic');
+    if (pic) pic.classList.add('glow');
+    setTimeout(() => { if (pic) pic.classList.remove('glow'); }, 120000);
+
+    message.textContent = `Profile picture glowing!`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
+} else if (prizes[chosenIndex] === '🏅') {
+    // Add Badge to Inventory (stackable)
+    const badgeName = 'Badge';
+    const badgeIcon = '🏅';
+
+    // Check if badge already exists in inventory
+    const existing = inventory.find(item => item.name === badgeName);
+    if (existing) {
+        existing.count = (existing.count || 1) + 1; // increment count
+    } else {
+        inventory.push({ name: badgeName, icon: badgeIcon, count: 1 });
+    }
+
+    renderInventory(); // update hub
+
+    // Show feedback message
+    message.textContent = `You won a Badge! 🎉`;
+    message.style.display = 'block';
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+    setTimeout(() => { message.style.display = 'none'; }, 2000);
+
+
+} else if (prizes[chosenIndex] === '🎯') {
+    // Instant respin — keep overlay visible and start another spin after a small delay
+    setTimeout(() => {
+        spinWheel();
+    }, 300);
+
+} else {
+    // safety: all prizes should be handled explicitly above
+    console.error("Unhandled prize:", prizes[chosenIndex]);
+    // close overlay to avoid frozen UI
+    wheelOverlay.style.display = 'none';
+    mainContent.style.filter = 'none';
+}
+
+}
+    }
+
+    requestAnimationFrame(animate);
+}
+
+// Show/hide level overlay with background blur
+function showLevelOverlay(){
+    mainContent.style.filter='blur(5px)';
+    levelOverlay.style.display='flex';
+}
+function hideLevelOverlay(){
+    mainContent.style.filter='none';
+    levelOverlay.style.display='none';
+}
+
+// Tap button logic
+let lastXpTime = 0;  // timestamp of last XP gain
+const xpCooldown = 20; // ms, i.e., 0.02 sec per XP addition
+let levelUpCooldown = false;
+
+// Initial display when game loads
+levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
+document.getElementById('hubLevelText').textContent = `Level ${level}`;
+document.getElementById('hubLevelName').textContent = activeLevels[level-1].name;
+
+
+tapBtn.addEventListener('click', () => {
+    // Block taps if overlay is visible
+    if (levelOverlay.style.display === 'flex' || wheelOverlay.style.display === 'flex') return;
+
+    // Cooldown
+    const now = Date.now();
+    if (now - lastXpTime < xpCooldown) return;
+    lastXpTime = now;
+
+    // Add XP
+    xp += 10 * xpMultiplier * tapMultiplier;
+    checkLevelForChoice(level, xp);
+
+    // Original level-up loop
+    // Level-up using cumulative thresholds: do NOT subtract XP
+
+    // For path levels, XP thresholds are absolute
+    while (level < activeLevels.length && xp >= activeLevels[level].xp) {
+     level++;
+    showLevelOverlay();
+    
+    const lvlData = activeLevels[level-1];
+    levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;
+    document.getElementById('hubLevelText').textContent = `Level ${lvlData.level}`;
+    document.getElementById('hubLevelName').textContent = lvlData.name;
+
+    assignPathIfReady(level, xp);
+}
+
+
+
+
+    // Update progress bar
+    const prevLevelXP = level === 0 ? 0 : activeLevels[level-1].xp;
+    const nextLevelXP = level < activeLevels.length ? activeLevels[level].xp : prevLevelXP + 100;
+    const progress = Math.min(((xp - prevLevelXP)/ (nextLevelXP - prevLevelXP)), 1);
+    xpBar.style.width = `${progress * 100}%`;
+    xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
+    document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
+    document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
+
+
+    // Floating XP signs (respects multipliers)
+    for (let i = 0; i < tapMultiplier; i++) {
+        const xpSign = document.createElement('div');
+        xpSign.textContent = `+${10 * xpMultiplier} XP`; // scale with xpMultiplier
+        xpSign.style.position = 'fixed';
+        xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
+        xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
+
+        // Color logic
+            if (tapMultiplier > 1 && xpMultiplier > 1) {
+                xpSign.style.background = 'linear-gradient(to right, purple, pink)';
+                xpSign.style.webkitBackgroundClip = 'text';
+                xpSign.style.backgroundClip = 'text';
+                xpSign.style.color = 'transparent';
+            } else if (tapMultiplier > 1) {
+                xpSign.style.color = 'purple';
+            } else if (xpMultiplier > 1) {
+                xpSign.style.color = 'pink';
+            } else {
+                xpSign.style.color = 'yellow';
+        }
+
+        //xpSign.style.color = 'yellow';
+        xpSign.style.fontWeight = 'bold';
+        xpSign.style.fontSize = '24px';
+        xpSign.style.pointerEvents = 'none';
+        document.body.appendChild(xpSign);
+
+        xpSign.animate(
+            [
+                { opacity: 1, transform: 'translateY(0px)' },
+                { opacity: 0, transform: 'translateY(-50px)' }
+            ],
+            { duration: 1000, easing: 'ease-out' }
+        );
+
+    setTimeout(() => xpSign.remove(), 1000);
+    }
+
+}
+
+);
+
+
+// Spin button in level overlay
+levelSpinBtn.addEventListener('click',()=>{
+    hideLevelOverlay();
+    spinWheel();
+});
+
+/////////////////////////
+// MVP Leaderboard Setup
+/////////////////////////
+  
+// --- Fake users (bots) ---
+const fakeUsers = [
+  { username: "LunaSpark",   baseXP: 100 },
+  { username: "CryptoFox",   baseXP: 200 },
+  { username: "Milo88",      baseXP: 240 },
+  { username: "SkyRider",    baseXP: 1000 },
+  { username: "Jaxster",     baseXP: 500 },
+  { username: "NinaWave",    baseXP: 300 },
+  { username: "PixelFury",   baseXP: 120 },
+  { username: "EchoZen",     baseXP: 450 },
+  { username: "TommyKnox",   baseXP: 80 },
+  { username: "ZaraNova",    baseXP: 600 }
+];
+
+const botPictures = {
+  LunaSpark: "1.jpeg",
+  CryptoFox: "2.jpeg",
+  Milo88: "3.jpg",
+  SkyRider: "4.jpeg",
+  Jaxster: "5.jpeg",
+  NinaWave: "6.jpeg",
+  PixelFury: "7.jpg",
+  EchoZen: "8.jpeg",
+  TommyKnox: "9.jpg",
+  ZaraNova: "10.jpg"
+};
+
+function getLevelInfo(xp, path = null) {
+  // choose correct level array
+  let levels = sharedLevelsXP;
+  if (path === "career") levels = [...sharedLevelsXP, ...careerPathLevels];
+  else if (path === "business") levels = [...sharedLevelsXP, ...businessPathLevels];
+
+  // default to level 1
+  let currentLevel = 1;
+  let currentName = levels[0].name;
+
+  for (let i = 0; i < levels.length; i++) {
+    if (xp >= levels[i].xp) {
+      currentLevel = levels[i].level;
+      currentName = levels[i].name;
+    } else {
+      break;
+    }
+  }
+
+  return { level: currentLevel, name: currentName };
+}
+
+// --- Real player (YOU) ---
+let realPlayer = {
+  username: "YOU",
+  xp: xp,        // from your game state
+  level: level,  // from your game state
+  profilePicSrc: document.getElementById("hubProfilePic").src, // cache once
+  goldenTickets: 0,
+  inventory: []
+};
+
+// --- Helpers ---
+function calculateBotXP() {
+  fakeUsers.forEach(bot => {
+    const randomXP = Math.floor((50 + Math.random() * 50) / 10) * 10;
+    bot.currentXP = bot.baseXP + randomXP;
+    bot.goldenTickets = Math.floor(Math.sqrt(bot.currentXP / 100)) * (1 + Math.floor(Math.random() * 2));  
+    bot.profilePicSrc = botPictures[bot.username];
+    bot.inventory = [];       
+
+    // derive level + level name
+    const { level, name } = getLevelInfo(bot.currentXP);
+    bot.level = level;
+    bot.levelName = name;
+  });
+}
+
+
+function updateRealPlayerXP() {
+  realPlayer.xp = xp; // keep in sync with live game variabl
+  realPlayer.currentXP = xp;  // keep same as bots
+}
+
+// --- Leaderboard ---
+function getTopLeaderboard() {
+  const combined = [...fakeUsers, realPlayer];
+  combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
+  return combined.slice(0, 10);
+}
+
+function renderLeaderboard() {
+  const container = document.getElementById("leaderboardContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const top10 = getTopLeaderboard();
+
+  top10.forEach((user, idx) => {
+    const row = document.createElement("div");
+    row.className = "leaderboard-row";
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.padding = "0 8px";
+    row.style.height = "60px";
+    row.style.marginBottom = "5px";
+    row.style.borderRadius = "4px";
+    row.style.background = "rgba(0,0,0,0.4)";
+
+    if (idx === 0) row.style.background = "rgba(255, 215, 0, 0.4)";
+    else if (idx === 1) row.style.background = "rgba(192,192,192,0.4)";
+    else if (idx === 2) row.style.background = "rgba(205,127,50,0.4)";
+
+    // Rank
+    const rank = document.createElement("span");
+    rank.textContent = `#${idx + 1}`;
+    rank.style.width = "30px";
+    rank.style.textAlign = "center";
+
+    // Profile pic
+    const pic = document.createElement("img");
+    pic.src = user.profilePicSrc;
+    pic.style.width = "50px";
+    pic.style.height = "50px";
+    pic.style.borderRadius = "50%";
+    pic.style.margin = "0 8px";
+
+    // Username
+    const name = document.createElement("span");
+    name.textContent = user.username;
+    name.style.flex = "1";
+    name.style.whiteSpace = "nowrap";
+    name.style.overflow = "hidden";
+    name.style.textOverflow = "ellipsis";
+
+    // XP
+    const xpText = document.createElement("span");
+    xpText.textContent = user.currentXP || user.xp || 0;
+    xpText.style.width = "60px";
+    xpText.style.textAlign = "right";
+
+    row.append(rank, pic, name, xpText);
+    container.appendChild(row);
+
+    // --- Profile click ---
+    row.style.cursor = "pointer";
+    row.addEventListener("click", () => {
+      if (user.username === "YOU") {
+        openMyProfile();
+      } else {
+        openOtherProfile(user);
+      }
+    });
+  });
+}
+
+// --- Profile functions ---
+function openMyProfile() {
+  fillProfile(realPlayer);  // fills personal hub
+}
+
+function openOtherProfile(user) {
+  fillOtherProfile(user);   // fills other player's hub
+}
+
+// Fill *my* hub UI with profile data
+function fillProfile(playerData) {
+  document.getElementById("hubLevelText").textContent = `Level ${playerData.level}`;
+  document.getElementById("hubXpCounter").textContent = `${playerData.currentXP} XP`;
+  document.getElementById("hubProfilePic").src = playerData.profilePicSrc;
+  document.getElementById("hubGoldenTickets").textContent = playerData.goldenTickets;
+
+  const hubInventoryEl = document.getElementById("hubInventory");
+  hubInventoryEl.innerHTML = "";
+  playerData.inventory.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "hub-inventory-item";
+    const iconEl = document.createElement("div");
+    iconEl.textContent = item.icon || "";
+    iconEl.style.fontSize = "24px";
+    div.appendChild(iconEl);
+    if (item.count && item.count > 1) {
+      const countEl = document.createElement("div");
+      countEl.textContent = `x${item.count}`;
+      countEl.style.fontSize = "14px";
+      countEl.style.marginTop = "2px";
+      countEl.style.color = "#fff";
+      div.appendChild(countEl);
+    }
+    hubInventoryEl.appendChild(div);
+  });
+
+  document.getElementById("personalHub").style.display = "flex";
+  mainContent.style.filter = "blur(5px)";
+}
+
+// Fill *other player's* hub UI with profile data
+function fillOtherProfile(playerData) {
+  document.getElementById("hubLevelTextOther").textContent = `Level ${playerData.level}`;
+  document.getElementById("hubLevelNameOther").textContent = playerData.levelName;
+  document.getElementById("hubXpCounterOther").textContent = `${playerData.currentXP} XP`;
+  document.getElementById("hubProfilePicOther").src = playerData.profilePicSrc;
+  document.getElementById("hubGoldenTicketsOther").textContent = playerData.goldenTickets;
+
+  const hubInventoryEl = document.getElementById("hubInventoryOther");
+  hubInventoryEl.innerHTML = "";
+  playerData.inventory.forEach(item => {
+    const div = document.createElement("div");
+    div.className = "hub-inventory-item";
+    const iconEl = document.createElement("div");
+    iconEl.textContent = item.icon || "";
+    iconEl.style.fontSize = "24px";
+    div.appendChild(iconEl);
+    if (item.count && item.count > 1) {
+      const countEl = document.createElement("div");
+      countEl.textContent = `x${item.count}`;
+      countEl.style.fontSize = "14px";
+      countEl.style.marginTop = "2px";
+      countEl.style.color = "#fff";
+      div.appendChild(countEl);
+    }
+    hubInventoryEl.appendChild(div);
+  });
+
+  document.getElementById("otherPlayerHub").style.display = "flex";
+  mainContent.style.filter = "blur(5px)";
+}
+
+
+
+// --- Init ---
+calculateBotXP();
+updateRealPlayerXP();
+//updateRealPlayerXP();
+
+renderLeaderboard();
+
+setInterval(() => {
+  updateRealPlayerXP();
+  renderLeaderboard();
+}, 1000);
+
+// --- Overlay open/close ---
+const leaderboardBtn = document.getElementById("leaderboardBtn");
+const leaderboardOverlay = document.getElementById("leaderboardOverlay");
+
+leaderboardBtn.addEventListener("click", () => {
+  leaderboardOverlay.style.display = "flex";
+  mainContent.style.filter = "blur(5px)";
+  renderLeaderboard();
+});
+
+leaderboardOverlay.addEventListener("click", (e) => {
+  if (e.target === leaderboardOverlay) {
+    leaderboardOverlay.style.display = "none";
+    mainContent.style.filter = "none";
+  }
+});
+
+
+//}); 
+
+//Shop logic
+const shopOverlay = document.getElementById("shopOverlay");
+const shopBtn = document.getElementById("shopBtn");
+
+// Open shop on button click
+shopBtn.addEventListener("click", () => {
+  shopOverlay.style.display = "flex";
+});
+
+// Close overlay on background click
+shopOverlay.addEventListener("click", (e) => {
+  if (e.target === shopOverlay) {
+    shopOverlay.style.display = "none";
+  }
+});
+
+// Handle purchases
+document.querySelectorAll("#shopContent button").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const item = btn.getAttribute("data-item");
+
+    if (item === "goldenTicket" && gems >= 100) {
+      gems -= 100;
+      goldenTickets++;
+      updateCounters();
+      alert("You bought a Golden Ticket!");
+    } 
+    else if (item === "xpBoost" && gems >= 20) {
+      gems -= 20;
+      xpMultiplierTimeout = Date.now() + 60000; // 60 sec boost
+      updateCounters();
+      alert("XP Boost activated for 60s!");
+    } 
+    else if (item === "tapMultiplier" && gems >= 50) {
+      gems -= 50;
+      tapMultiplierTimeout = Date.now() + 60000; // 60 sec boost
+      updateCounters();
+      alert("Tap Multiplier activated for 60s!");
+    } 
+    else {
+      alert("Not enough gems!");
+    }
+  });
+});
+
+
+
+// Inventory
+let inventory = []; // store objects: { name: 'Golden Badge', icon: '🏅' }
+
+    // Add an item
+    function addInventoryItem(name, icon) {
+        inventory.push({ name, icon });
+        renderInventory();
+    }
+
+    // Render inventory in hub
+    function renderInventory() {
+    const hubInventory = document.getElementById('hubInventory');
+    if (!hubInventory) return;
+
+    hubInventory.innerHTML = ''; // clear previous items
+
+    inventory.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'hub-inventory-item';
+
+        // Icon
+        const iconEl = document.createElement('div');
+        iconEl.textContent = item.icon;
+        iconEl.style.fontSize = '24px';
+        div.appendChild(iconEl);
+
+        // Counter below icon
+        if (item.count && item.count > 1) {
+            const countEl = document.createElement('div');
+            countEl.textContent = `x${item.count}`;
+            countEl.style.fontSize = '14px';
+            countEl.style.marginTop = '2px';
+            countEl.style.color = '#fff';
+            div.appendChild(countEl);
+        }
+
+        hubInventory.appendChild(div);
+    });
+}
+
+
+
+
+document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
+drawWheel();
+</script>
+
+</body>
+</html>

@@ -205,9 +205,42 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 
 <script>
-// Default profile picture s
-const hubProfilePic = document.getElementById('hubProfilePic');
-hubProfilePic.src = 'default_profile.jpg';  // default picture
+
+//Storing all variables in one Item per user
+let player = {
+  username: "YOU",
+  xp: 0,
+  currentXP: 0,         
+  level: 1,
+  goldenTickets: 0,
+  gems: 0,
+
+  xpMultiplier: 1,
+  tapMultiplier: 1,
+  xpMultiplierTimeout: null,
+  tapMultiplierTimeout: null,
+
+  lastXpTime: 0,
+  levelUpCooldown: false,
+
+  pathChosen: false,
+  chosenPath: null,
+  destinyPopupShown: false,
+
+  activeLevels: [...sharedLevelsXP],
+  halfwayXP10: sharedLevelsXP[8].xp + (sharedLevelsXP[9].xp - sharedLevelsXP[8].xp)/2,
+
+  inventory: [],
+  cosmetics: { badges: [], frames: [], backgrounds: [] },
+
+  profile: {
+    picSrc: document.getElementById("hubProfilePic").src,
+    defaultPic: 'default_profile.jpg'
+  },
+
+  referralCode: document.getElementById("referralInput").value
+};
+
 
 const cosmetics = {
   badges: [
@@ -237,6 +270,11 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 // --- Base XP scaling factors ---
 const k = 1.5;  // for levels 4–11
 const k1 = 1.2; // from level 12 onwards
+
+
+// Default profile picture s
+const hubProfilePic = document.getElementById('hubProfilePic');
+hubProfilePic.src = 'default_profile.jpg';  // default picture
 
 // --- Shared levels (1–10) ---
 const sharedLevels = [
@@ -273,6 +311,35 @@ const businessLevels = [
 ];
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Build shared levels 1–10 with XP
 let sharedLevelsXP = [];
 sharedLevels.forEach((name, i) => {
@@ -288,18 +355,17 @@ sharedLevels.forEach((name, i) => {
     sharedLevelsXP.push({ level: i + 1, xp: newXP, name });
   }
 });
+player.activeLevels = sharedLevelsXP;
 
-let activeLevels = sharedLevelsXP;
-
-console.log("Active Levels (1–10 with XP):", activeLevels);
+console.log("Active Levels (1–10 with XP):", player.activeLevels);
 
 // Function to build path-specific levels only (11–32)
 function buildPathLevels(path) {
   const levels = [];
   const pathLevels = path === "career" ? careerLevels : businessLevels;
 
-   // --- Baseline: XP of level 10 (last shared level) ---
-  let prevXP = sharedLevelsXP[sharedLevelsXP.length - 1].xp;
+  // --- Baseline: XP of level 10 (last shared level) ---
+  let prevXP = player.activeLevels[player.activeLevels.length - 1].xp;
 
   // Build XP for path levels only
   pathLevels.forEach((name, i) => {
@@ -315,11 +381,11 @@ function buildPathLevels(path) {
 
     // update for next iteration
     prevXP = newXP;
-
   });
 
   return levels;
 }
+
 
 const careerPathLevels = buildPathLevels("career");
 const businessPathLevels = buildPathLevels("business");
@@ -329,21 +395,20 @@ console.log("Business Path Levels:", businessPathLevels);
 
 
 // --- Flag to ensure popup appears only once ---
-let destinyPopupShown = false;
+player.destinyPopupShown = false;
 
 // --- Halfway XP for level 10 ---
-const level9XP = sharedLevelsXP[8].xp;   // level 9
-const level10XP = sharedLevelsXP[9].xp;  // level 10
-const halfwayXP10 = sharedLevelsXP[8].xp + (sharedLevelsXP[9].xp - sharedLevelsXP[8].xp) / 2;
+player.halfwayXP10 = player.activeLevels[8].xp + (player.activeLevels[9].xp - player.activeLevels[8].xp) / 2;
+
 
 // --- Flag to prevent multiple path selections ---
-let pathChosen = false;
-let chosenPath = null;
+//let pathChosen = false;
+//let chosenPath = null;
 
 // --- Trigger when reaching halfway of level 10 ---
 function checkLevelForChoice(currentLevel, currentXP) {
-  if (!destinyPopupShown && currentLevel === 9 && currentXP >= halfwayXP10) {
-    destinyPopupShown = true; // prevent multiple popups
+  if (!player.destinyPopupShown && currentLevel === 9 && currentXP >= player.halfwayXP10) {
+    player.destinyPopupShown = true; // prevent multiple popups
 
     // Create overlay
     const overlay = document.createElement("div");
@@ -372,20 +437,20 @@ function checkLevelForChoice(currentLevel, currentXP) {
 
     // Buttons
     const careerBtn = document.createElement("button");
-        careerBtn.textContent = "Career";
-        careerBtn.onclick = () => {
-            chosenPath = "career";
-            document.body.removeChild(overlay);
-            assignPathIfReady(level, xp); // <- immediately switch array
-        };
+    careerBtn.textContent = "Career";
+    careerBtn.onclick = () => {
+      player.chosenPath = "career";
+      document.body.removeChild(overlay);
+      assignPathIfReady(player.level, player.xp); // immediately switch array
+    };
 
-        const businessBtn = document.createElement("button");
-        businessBtn.textContent = "Enterprise";
-        businessBtn.onclick = () => {
-            chosenPath = "business";
-            document.body.removeChild(overlay);
-            assignPathIfReady(level, xp); // <- immediately switch array
-        };
+    const businessBtn = document.createElement("button");
+    businessBtn.textContent = "Enterprise";
+    businessBtn.onclick = () => {
+      player.chosenPath = "business";
+      document.body.removeChild(overlay);
+      assignPathIfReady(player.level, player.xp); // immediately switch array
+    };
 
     // Styling buttons
     [careerBtn, businessBtn].forEach(btn => {
@@ -405,18 +470,19 @@ function checkLevelForChoice(currentLevel, currentXP) {
   }
 }
 
+
 // --- Assign selected path array only at full level 10 XP ---
 function assignPathIfReady(currentLevel, currentXP) {
     const level10XP = sharedLevelsXP[9].xp;
 
-    //if (!pathChosen && chosenPath && currentXP > level10XP) {
-    if (!pathChosen && chosenPath && currentLevel === 10 && currentXP >= level10XP) {
-        pathChosen = true;
-        activeLevels = chosenPath === "career" ? careerPathLevels : businessPathLevels;
-        level = 0; // start at first level of the new pat
-        console.log(`Path activated: ${chosenPath}`, activeLevels);
+    if (!player.pathChosen && player.chosenPath && currentLevel === 10 && currentXP >= level10XP) {
+        player.pathChosen = true;
+        player.activeLevels = player.chosenPath === "career" ? careerPathLevels : businessPathLevels;
+        player.level = 0; // start at first level of the new path
+        console.log(`Path activated: ${player.chosenPath}`, player.activeLevels);
     }
 }
+
 
 
 const tapBtn=document.getElementById('tapBtn');
@@ -442,7 +508,8 @@ fileInput.style.display = 'none';
 document.body.appendChild(fileInput);
 
 // When image is clicked, trigger file selection
-hubProfilePic.addEventListener('click', () => {
+player.profile.picSrc = document.getElementById("hubProfilePic");
+player.profile.picSrc.addEventListener('click', () => {
     fileInput.click();
 });
 
@@ -452,21 +519,22 @@ fileInput.addEventListener('change', (e) => {
     if(file){
         const reader = new FileReader();
         reader.onload = function(ev){
-            hubProfilePic.src = ev.target.result;  // update image
+            player.profile.picSrc.src = ev.target.result;  // update image in player object
         }
         reader.readAsDataURL(file);
     }
 });
 
-let xp=0, level=1;
-let goldenTickets = 0;
-let gems = 0;
+
+// let xp=0, level=1;
+//let goldenTickets = 0;
+//let gems = 0;
 const goldenTicketCounter = document.getElementById('goldenTicketCounter');
 
-let xpMultiplier = 1;   // default = no boost
-let tapMultiplier = 1;  // default = one tap = one action
-let xpMultiplierTimeout = null;
-let tapMultiplierTimeout = null;
+//let xpMultiplier = 1;   // default = no boost
+//let tapMultiplier = 1;  // default = one tap = one action
+//let xpMultiplierTimeout = null;
+//let tapMultiplierTimeout = null;
 
 
 // Hub closing
@@ -478,6 +546,7 @@ const otherPlayerHub = document.getElementById('otherPlayerHub');
 hubBtn.addEventListener('click', () => { 
     personalHub.style.display = 'flex'; 
     mainContent.style.filter = 'blur(5px)'; 
+    // you can reference player data here, e.g., player.username, player.profile.picSrc
 });
 
 // Close personal hub by clicking outside content
@@ -498,14 +567,14 @@ otherPlayerHub.addEventListener('click', (e) => {
 
 
 
-// Store referral code dynamically
-let referralCode = document.getElementById("referralInput").value;
+// Store referral code dynamically in player object
+player.referralCode = document.getElementById("referralInput").value;
 
 // Copy referral code
 const copyConfirm = document.getElementById("copyConfirm");
 
 document.getElementById("copyReferralBtn").addEventListener("click", () => {
-  navigator.clipboard.writeText(referralCode).then(() => {
+  navigator.clipboard.writeText(player.referralCode).then(() => {
     copyConfirm.style.opacity = "1";         // fade in
     setTimeout(() => {
       copyConfirm.style.opacity = "0";       // fade out after 1 sec
@@ -514,9 +583,10 @@ document.getElementById("copyReferralBtn").addEventListener("click", () => {
 });
 
 document.getElementById("referralInput").addEventListener("input", (e) => {
-  referralCode = e.target.value;
-  console.log("Referral code updated:", referralCode);
+  player.referralCode = e.target.value;
+  console.log("Referral code updated:", player.referralCode);
 });
+
 
 // Helper: choose prize by probability
 function choosePrizeByProbability(){
@@ -791,14 +861,15 @@ function hideLevelOverlay(){
 }
 
 // Tap button logic
-let lastXpTime = 0;  // timestamp of last XP gain
+//let lastXpTime = 0;  // timestamp of last XP gain
 const xpCooldown = 20; // ms, i.e., 0.02 sec per XP addition
-let levelUpCooldown = false;
+//let levelUpCooldown = false;
 
 // Initial display when game loads
-levelIndicator.textContent = `Level ${level} (${activeLevels[level-1].name})`;
-document.getElementById('hubLevelText').textContent = `Level ${level}`;
-document.getElementById('hubLevelName').textContent = activeLevels[level-1].name;
+levelIndicator.textContent = `Level ${player.level} (${player.activeLevels[player.level-1].name})`;
+document.getElementById('hubLevelText').textContent = `Level ${player.level}`;
+document.getElementById('hubLevelName').textContent = player.activeLevels[player.level-1].name;
+
 
 
 tapBtn.addEventListener('click', () => {
@@ -807,65 +878,56 @@ tapBtn.addEventListener('click', () => {
 
     // Cooldown
     const now = Date.now();
-    if (now - lastXpTime < xpCooldown) return;
-    lastXpTime = now;
+    if (now - player.lastXpTime < xpCooldown) return;
+    player.lastXpTime = now;
 
     // Add XP
-    xp += 10 * xpMultiplier * tapMultiplier;
-    checkLevelForChoice(level, xp);
+    player.xp += 10 * player.xpMultiplier * player.tapMultiplier;
+    checkLevelForChoice(player.level, player.xp);
 
-    // Original level-up loop
-    // Level-up using cumulative thresholds: do NOT subtract XP
+    // Level-up loop
+    while (player.level < player.activeLevels.length && player.xp >= player.activeLevels[player.level].xp) {
+        player.level++;
+        showLevelOverlay();
 
-    // For path levels, XP thresholds are absolute
-    while (level < activeLevels.length && xp >= activeLevels[level].xp) {
-     level++;
-    showLevelOverlay();
-    
-    const lvlData = activeLevels[level-1];
-    levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;
-    document.getElementById('hubLevelText').textContent = `Level ${lvlData.level}`;
-    document.getElementById('hubLevelName').textContent = lvlData.name;
+        const lvlData = player.activeLevels[player.level-1];
+        levelIndicator.textContent = `Level ${lvlData.level} (${lvlData.name})`;
+        document.getElementById('hubLevelText').textContent = `Level ${lvlData.level}`;
+        document.getElementById('hubLevelName').textContent = lvlData.name;
 
-    assignPathIfReady(level, xp);
-}
-
-
-
+        assignPathIfReady(player.level, player.xp);
+    }
 
     // Update progress bar
-    const prevLevelXP = level === 0 ? 0 : activeLevels[level-1].xp;
-    const nextLevelXP = level < activeLevels.length ? activeLevels[level].xp : prevLevelXP + 100;
-    const progress = Math.min(((xp - prevLevelXP)/ (nextLevelXP - prevLevelXP)), 1);
+    const prevLevelXP = player.level === 0 ? 0 : player.activeLevels[player.level-1].xp;
+    const nextLevelXP = player.level < player.activeLevels.length ? player.activeLevels[player.level].xp : prevLevelXP + 100;
+    const progress = Math.min(((player.xp - prevLevelXP) / (nextLevelXP - prevLevelXP)), 1);
     xpBar.style.width = `${progress * 100}%`;
-    xpCounter.textContent = `${xp}/${nextLevelXP} XP`;
+    xpCounter.textContent = `${player.xp}/${nextLevelXP} XP`;
     document.getElementById('hubXpBar').style.width = `${progress * 100}%`;
-    document.getElementById('hubXpCounter').textContent = `${xp}/${nextLevelXP} XP`;
+    document.getElementById('hubXpCounter').textContent = `${player.xp}/${nextLevelXP} XP`;
 
-
-    // Floating XP signs (respects multipliers)
-    for (let i = 0; i < tapMultiplier; i++) {
+    // Floating XP signs
+    for (let i = 0; i < player.tapMultiplier; i++) {
         const xpSign = document.createElement('div');
-        xpSign.textContent = `+${10 * xpMultiplier} XP`; // scale with xpMultiplier
+        xpSign.textContent = `+${10 * player.xpMultiplier} XP`;
         xpSign.style.position = 'fixed';
         xpSign.style.left = `${Math.random() * (window.innerWidth - 100)}px`;
         xpSign.style.top = `${Math.random() * (window.innerHeight - 50)}px`;
 
-        // Color logic
-            if (tapMultiplier > 1 && xpMultiplier > 1) {
-                xpSign.style.background = 'linear-gradient(to right, purple, pink)';
-                xpSign.style.webkitBackgroundClip = 'text';
-                xpSign.style.backgroundClip = 'text';
-                xpSign.style.color = 'transparent';
-            } else if (tapMultiplier > 1) {
-                xpSign.style.color = 'purple';
-            } else if (xpMultiplier > 1) {
-                xpSign.style.color = 'pink';
-            } else {
-                xpSign.style.color = 'yellow';
+        if (player.tapMultiplier > 1 && player.xpMultiplier > 1) {
+            xpSign.style.background = 'linear-gradient(to right, purple, pink)';
+            xpSign.style.webkitBackgroundClip = 'text';
+            xpSign.style.backgroundClip = 'text';
+            xpSign.style.color = 'transparent';
+        } else if (player.tapMultiplier > 1) {
+            xpSign.style.color = 'purple';
+        } else if (player.xpMultiplier > 1) {
+            xpSign.style.color = 'pink';
+        } else {
+            xpSign.style.color = 'yellow';
         }
 
-        //xpSign.style.color = 'yellow';
         xpSign.style.fontWeight = 'bold';
         xpSign.style.fontSize = '24px';
         xpSign.style.pointerEvents = 'none';
@@ -879,12 +941,10 @@ tapBtn.addEventListener('click', () => {
             { duration: 1000, easing: 'ease-out' }
         );
 
-    setTimeout(() => xpSign.remove(), 1000);
+        setTimeout(() => xpSign.remove(), 1000);
     }
+});
 
-}
-
-);
 
 
 // Spin button in level overlay
@@ -923,6 +983,15 @@ const botPictures = {
   TommyKnox: "9.jpg",
   ZaraNova: "10.jpg"
 };
+
+
+
+
+
+
+
+
+
 
 function getLevelInfo(xp, path = null) {
   // choose correct level array

@@ -935,15 +935,6 @@ const botPictures = {
   ZaraNova: "10.jpg"
 };
 
-
-
-
-
-
-
-
-
-
 function getLevelInfo(xp = player.xp, path = player.chosenPath) {
   let levels = player.activeLevels;
   if (path === "career") levels = [...player.activeLevels, ...careerPathLevels];
@@ -1110,7 +1101,7 @@ function fillOtherProfile(playerData) {
   document.getElementById("hubLevelTextOther").textContent = `Level ${playerData.level}`;
   document.getElementById("hubLevelNameOther").textContent = playerData.levelName;
   document.getElementById("hubXpCounterOther").textContent = `${playerData.currentXP} XP`;
-  document.getElementById("hubProfilePicOther").src = bot.profilePicSrc;
+  document.getElementById("hubProfilePicOther").src = playerData.profilePicSrc
   document.getElementById("hubGoldenTicketsOther").textContent = playerData.goldenTickets;
 
   const hubInventoryEl = document.getElementById("hubInventoryOther");

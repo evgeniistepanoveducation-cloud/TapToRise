@@ -1154,13 +1154,13 @@ function fillOtherProfile(playerData) {
 
 // --- Init ---
 calculateBotXP();
-updateRealPlayerXP();
+updatePlayerXP();
 //updateRealPlayerXP();
 
 renderLeaderboard();
 
 setInterval(() => {
-  updateRealPlayerXP();
+  updatePlayerXP();
   renderLeaderboard();
 }, 1000);
 

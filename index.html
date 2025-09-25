@@ -771,9 +771,9 @@ if (prizes[chosenIndex] === '🎟️') {
 
 } else if (prizes[chosenIndex] === '⚡ x2 XP') {
     // Double XP multiplier for 2 minutes
-    xpMultiplier = 2;
+    player.xpMultiplier = 2;
     // optional: clear/extend previous timeout logic (see note below)
-    setTimeout(() => { xpMultiplier = 1; }, 120000);
+    setTimeout(() => { player.xpMultiplier = 1; }, 120000);
 
     // show feedback and close wheel (mirror other branches)
     message.textContent = `2x XP activated for 2 minutes!`;

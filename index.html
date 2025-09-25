@@ -993,37 +993,26 @@ const botPictures = {
 
 
 
-function getLevelInfo(xp, path = null) {
-  // choose correct level array
-  let levels = sharedLevelsXP;
-  if (path === "career") levels = [...sharedLevelsXP, ...careerPathLevels];
-  else if (path === "business") levels = [...sharedLevelsXP, ...businessPathLevels];
+function getLevelInfo(xp = player.xp, path = player.chosenPath) {
+  let levels = player.activeLevels;
+  if (path === "career") levels = [...player.activeLevels, ...careerPathLevels];
+  else if (path === "business") levels = [...player.activeLevels, ...businessPathLevels];
 
-  // default to level 1
   let currentLevel = 1;
-  let currentName = levels[0].name;
+  let currentName = levels[0]?.name ?? "Level 1";
 
   for (let i = 0; i < levels.length; i++) {
     if (xp >= levels[i].xp) {
       currentLevel = levels[i].level;
       currentName = levels[i].name;
-    } else {
-      break;
-    }
+    } else break;
   }
 
   return { level: currentLevel, name: currentName };
 }
 
-// --- Real player (YOU) ---
-let realPlayer = {
-  username: "YOU",
-  xp: xp,        // from your game state
-  level: level,  // from your game state
-  profilePicSrc: document.getElementById("hubProfilePic").src, // cache once
-  goldenTickets: 0,
-  inventory: []
-};
+// --- Update player profilePic on load ---
+player.profile.picSrc = document.getElementById("hubProfilePic").src;
 
 // --- Helpers ---
 function calculateBotXP() {
@@ -1034,7 +1023,7 @@ function calculateBotXP() {
     bot.profilePicSrc = botPictures[bot.username];
     bot.inventory = [];       
 
-    // derive level + level name
+    // derive level + level name (using same function as player)
     const { level, name } = getLevelInfo(bot.currentXP);
     bot.level = level;
     bot.levelName = name;
@@ -1042,17 +1031,18 @@ function calculateBotXP() {
 }
 
 
-function updateRealPlayerXP() {
-  realPlayer.xp = xp; // keep in sync with live game variabl
-  realPlayer.currentXP = xp;  // keep same as bots
+
+function updatePlayerXP() {
+  player.currentXP = player.xp; // sync for leaderboard logic
 }
 
 // --- Leaderboard ---
 function getTopLeaderboard() {
-  const combined = [...fakeUsers, realPlayer];
+  const combined = [...fakeUsers, player];
   combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
   return combined.slice(0, 10);
 }
+
 
 function renderLeaderboard() {
   const container = document.getElementById("leaderboardContainer");
@@ -1084,7 +1074,11 @@ function renderLeaderboard() {
 
     // Profile pic
     const pic = document.createElement("img");
-    pic.src = user.profilePicSrc;
+    if (user.username === "YOU") {
+      pic.src = player.profile.picSrc || player.profile.defaultPic;
+    } else {
+      pic.src = user.profilePicSrc || "default_profile.jpg";
+    }
     pic.style.width = "50px";
     pic.style.height = "50px";
     pic.style.borderRadius = "50%";
@@ -1119,20 +1113,21 @@ function renderLeaderboard() {
   });
 }
 
+
 // --- Profile functions ---
 function openMyProfile() {
-  fillProfile(realPlayer);  // fills personal hub
+  fillProfile(player);  // fills personal hub from player object
 }
 
 function openOtherProfile(user) {
-  fillOtherProfile(user);   // fills other player's hub
+  fillOtherProfile(user);   // fills other player's hub (bots or other users)
 }
 
-// Fill *my* hub UI with profile data
+
 function fillProfile(playerData) {
   document.getElementById("hubLevelText").textContent = `Level ${playerData.level}`;
   document.getElementById("hubXpCounter").textContent = `${playerData.currentXP} XP`;
-  document.getElementById("hubProfilePic").src = playerData.profilePicSrc;
+  document.getElementById("hubProfilePic").src = playerData.profile.picSrc;  // updated
   document.getElementById("hubGoldenTickets").textContent = playerData.goldenTickets;
 
   const hubInventoryEl = document.getElementById("hubInventory");
@@ -1159,12 +1154,12 @@ function fillProfile(playerData) {
   mainContent.style.filter = "blur(5px)";
 }
 
-// Fill *other player's* hub UI with profile data
+
 function fillOtherProfile(playerData) {
   document.getElementById("hubLevelTextOther").textContent = `Level ${playerData.level}`;
   document.getElementById("hubLevelNameOther").textContent = playerData.levelName;
   document.getElementById("hubXpCounterOther").textContent = `${playerData.currentXP} XP`;
-  document.getElementById("hubProfilePicOther").src = playerData.profilePicSrc;
+  document.getElementById("hubProfilePicOther").src = playerData.profile.picSrc; // updated
   document.getElementById("hubGoldenTicketsOther").textContent = playerData.goldenTickets;
 
   const hubInventoryEl = document.getElementById("hubInventoryOther");
@@ -1223,8 +1218,6 @@ leaderboardOverlay.addEventListener("click", (e) => {
 });
 
 
-//}); 
-
 //Shop logic
 const shopOverlay = document.getElementById("shopOverlay");
 const shopBtn = document.getElementById("shopBtn");
@@ -1246,21 +1239,21 @@ document.querySelectorAll("#shopContent button").forEach(btn => {
   btn.addEventListener("click", () => {
     const item = btn.getAttribute("data-item");
 
-    if (item === "goldenTicket" && gems >= 100) {
-      gems -= 100;
-      goldenTickets++;
+    if (item === "goldenTicket" && player.gems >= 100) {
+      player.gems -= 100;
+      player.goldenTickets++;
       updateCounters();
       alert("You bought a Golden Ticket!");
     } 
-    else if (item === "xpBoost" && gems >= 20) {
-      gems -= 20;
-      xpMultiplierTimeout = Date.now() + 60000; // 60 sec boost
+    else if (item === "xpBoost" && player.gems >= 20) {
+      player.gems -= 20;
+      player.xpMultiplierTimeout = Date.now() + 60000; // 60 sec boost
       updateCounters();
       alert("XP Boost activated for 60s!");
     } 
-    else if (item === "tapMultiplier" && gems >= 50) {
-      gems -= 50;
-      tapMultiplierTimeout = Date.now() + 60000; // 60 sec boost
+    else if (item === "tapMultiplier" && player.gems >= 50) {
+      player.gems -= 50;
+      player.tapMultiplierTimeout = Date.now() + 60000; // 60 sec boost
       updateCounters();
       alert("Tap Multiplier activated for 60s!");
     } 
@@ -1272,29 +1265,27 @@ document.querySelectorAll("#shopContent button").forEach(btn => {
 
 
 
-// Inventory
-let inventory = []; // store objects: { name: 'Golden Badge', icon: '🏅' }
+// Inventory is now inside player object
+// Add an item
+function addInventoryItem(name, icon) {
+    player.inventory.push({ name, icon });
+    renderInventory();
+}
 
-    // Add an item
-    function addInventoryItem(name, icon) {
-        inventory.push({ name, icon });
-        renderInventory();
-    }
-
-    // Render inventory in hub
-    function renderInventory() {
+// Render inventory in hub
+function renderInventory() {
     const hubInventory = document.getElementById('hubInventory');
     if (!hubInventory) return;
 
     hubInventory.innerHTML = ''; // clear previous items
 
-    inventory.forEach(item => {
+    player.inventory.forEach(item => {
         const div = document.createElement('div');
         div.className = 'hub-inventory-item';
 
         // Icon
         const iconEl = document.createElement('div');
-        iconEl.textContent = item.icon;
+        iconEl.textContent = item.icon || '';
         iconEl.style.fontSize = '24px';
         div.appendChild(iconEl);
 
@@ -1311,7 +1302,6 @@ let inventory = []; // store objects: { name: 'Golden Badge', icon: '🏅' }
         hubInventory.appendChild(div);
     });
 }
-
 
 
 

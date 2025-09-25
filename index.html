@@ -1078,7 +1078,7 @@ function openOtherProfile(user) {
 function fillProfile(playerData) {
   document.getElementById("hubLevelText").textContent = `Level ${playerData.level}`;
   document.getElementById("hubXpCounter").textContent = `${playerData.currentXP} XP`;
-  document.getElementById("hubProfilePic").src = playerData.profile.picSrc;  // updated
+  document.getElementById("hubProfilePic").src = playerData.profile.picSrc;
   document.getElementById("hubGoldenTickets").textContent = playerData.goldenTickets;
 
   const hubInventoryEl = document.getElementById("hubInventory");
@@ -1110,7 +1110,7 @@ function fillOtherProfile(playerData) {
   document.getElementById("hubLevelTextOther").textContent = `Level ${playerData.level}`;
   document.getElementById("hubLevelNameOther").textContent = playerData.levelName;
   document.getElementById("hubXpCounterOther").textContent = `${playerData.currentXP} XP`;
-  document.getElementById("hubProfilePicOther").src = playerData.profile.picSrc; // updated
+  document.getElementById("hubProfilePicOther").src = bot.profilePicSrc;
   document.getElementById("hubGoldenTicketsOther").textContent = playerData.goldenTickets;
 
   const hubInventoryEl = document.getElementById("hubInventoryOther");

@@ -310,36 +310,6 @@ const businessLevels = [
   "World domination", "Legendary empire", "God"
 ];
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Build shared levels 1–10 with XP
 let sharedLevelsXP = [];
 sharedLevels.forEach((name, i) => {
@@ -772,8 +742,8 @@ if (prizes[chosenIndex] === '🎟️') {
 } else if (prizes[chosenIndex] === '⚡ x2 XP') {
     // Double XP multiplier for 2 minutes
     player.xpMultiplier = 2;
-    // optional: clear/extend previous timeout logic (see note below)
-    setTimeout(() => { player.xpMultiplier = 1; }, 120000);
+    clearTimeout(player.xpMultiplierTimeout);
+    player.xpMultiplierTimeout = setTimeout(() => { player.xpMultiplier = 1; }, 120000);
 
     // show feedback and close wheel (mirror other branches)
     message.textContent = `2x XP activated for 2 minutes!`;
@@ -784,16 +754,16 @@ if (prizes[chosenIndex] === '🎟️') {
 
 } else if (prizes[chosenIndex] === '✖️') {
     // x5 taps per tap multiplier for 1 minute
-    tapMultiplier = 5;
-    //setTimeout(() => { tapMultiplier = 1; }, 60000);
-    clearTimeout(tapMultiplierTimeout);
-    tapMultiplierTimeout = setTimeout(() => { tapMultiplier = 1; }, 60000);
+    player.tapMultiplier = 5;
+    clearTimeout(player.tapMultiplierTimeout);
+    player.tapMultiplierTimeout = setTimeout(() => { player.tapMultiplier = 1; }, 60000);
 
     message.textContent = `x5 taps active for 1 minute!`;
     message.style.display = 'block';
     wheelOverlay.style.display = 'none';
     mainContent.style.filter = 'none';
     setTimeout(()=>{ message.style.display = 'none'; }, 2000);
+
 
 } else if (prizes[chosenIndex] === '🎨') {
     // Make profile picture glow; correct selector

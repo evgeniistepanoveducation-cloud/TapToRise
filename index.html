@@ -672,16 +672,15 @@ function spinWheel(){
       const btn = document.getElementById('skipButton');
     if (btn) btn.remove();
 
-    // --- prize handling (inside animate's else) ---
+    
 
-
-// --- prize handling (replace inside animate's else) ---
+// --- prize handling (inside animate's else) ---
 if (prizes[chosenIndex] === '🎟️') {
     // Golden Ticket
-    goldenTickets++;
-    goldenTicketCounter.textContent = `🎟️ ${goldenTickets}`;
+    player.goldenTickets++;
+    goldenTicketCounter.textContent = `🎟️ ${player.goldenTickets}`;
     const hubEl = document.getElementById('hubGoldenTickets');
-    if (hubEl) hubEl.textContent = `${goldenTickets}`;
+    if (hubEl) hubEl.textContent = `${player.goldenTickets}`;
 
     const flash = document.createElement('div');
     flash.className = 'golden-ticket-animation';
@@ -704,18 +703,20 @@ if (prizes[chosenIndex] === '🎟️') {
     }, 1500);
 
 } else if (prizes[chosenIndex].includes('💎')) {
-    // Gems: safe numeric parse, increment, UI update + flash
+    // Gems
     const raw = String(prizes[chosenIndex] || '');
     const amount = parseInt(raw.replace(/\D/g, ''), 10) || 0;
-    gems += amount; // global variable must exist
+    player.gems += amount; // <- now inside player object
 
-    // update UI (keep emoji so box size stays stable)
-    const gemsEl = document.getElementById('gemsCount') || document.getElementById('gemsCounter') || document.querySelector('.gemsCounter') || document.querySelector('.gems-counter');
-    if (gemsEl) gemsEl.textContent = `💎 ${gems}`;
+    const gemsEl = document.getElementById('gemsCount') || 
+                   document.getElementById('gemsCounter') || 
+                   document.querySelector('.gemsCounter') || 
+                   document.querySelector('.gems-counter');
+    if (gemsEl) gemsEl.textContent = `💎 ${player.gems}`;
 
     const flash = document.createElement('div');
-    flash.className = 'gem-animation'; // uses the same keyframes or new class
-    flash.textContent = `💎 ${amount}`; // template literal - shows correct amount
+    flash.className = 'gem-animation';
+    flash.textContent = `💎 ${amount}`;
     document.body.appendChild(flash);
 
     flash.animate([
@@ -734,12 +735,10 @@ if (prizes[chosenIndex] === '🎟️') {
     }, 1500);
 
 } else if (prizes[chosenIndex] === '⚡ x2 XP') {
-    // Double XP multiplier for 2 minutes
     player.xpMultiplier = 2;
     clearTimeout(player.xpMultiplierTimeout);
     player.xpMultiplierTimeout = setTimeout(() => { player.xpMultiplier = 1; }, 120000);
 
-    // show feedback and close wheel (mirror other branches)
     message.textContent = `2x XP activated for 2 minutes!`;
     message.style.display = 'block';
     wheelOverlay.style.display = 'none';
@@ -747,7 +746,6 @@ if (prizes[chosenIndex] === '🎟️') {
     setTimeout(()=>{ message.style.display = 'none'; }, 2000);
 
 } else if (prizes[chosenIndex] === '✖️') {
-    // x5 taps per tap multiplier for 1 minute
     player.tapMultiplier = 5;
     clearTimeout(player.tapMultiplierTimeout);
     player.tapMultiplierTimeout = setTimeout(() => { player.tapMultiplier = 1; }, 60000);
@@ -758,10 +756,8 @@ if (prizes[chosenIndex] === '🎟️') {
     mainContent.style.filter = 'none';
     setTimeout(()=>{ message.style.display = 'none'; }, 2000);
 
-
 } else if (prizes[chosenIndex] === '🎨') {
-    // Make profile picture glow; correct selector
-    const pic = document.getElementById('hubProfilePic') || document.getElementById('hubProfilePic');
+    const pic = document.getElementById('hubProfilePic');
     if (pic) pic.classList.add('glow');
     setTimeout(() => { if (pic) pic.classList.remove('glow'); }, 120000);
 
@@ -772,41 +768,32 @@ if (prizes[chosenIndex] === '🎟️') {
     setTimeout(()=>{ message.style.display = 'none'; }, 2000);
 
 } else if (prizes[chosenIndex] === '🏅') {
-    // Add Badge to Inventory (stackable)
     const badgeName = 'Badge';
     const badgeIcon = '🏅';
 
-    // Check if badge already exists in inventory
-    const existing = inventory.find(item => item.name === badgeName);
+    const existing = player.inventory.find(item => item.name === badgeName);
     if (existing) {
-        existing.count = (existing.count || 1) + 1; // increment count
+        existing.count = (existing.count || 1) + 1;
     } else {
-        inventory.push({ name: badgeName, icon: badgeIcon, count: 1 });
+        player.inventory.push({ name: badgeName, icon: badgeIcon, count: 1 });
     }
 
-    renderInventory(); // update hub
+    renderInventory();
 
-    // Show feedback message
     message.textContent = `You won a Badge! 🎉`;
     message.style.display = 'block';
     wheelOverlay.style.display = 'none';
     mainContent.style.filter = 'none';
     setTimeout(() => { message.style.display = 'none'; }, 2000);
 
-
 } else if (prizes[chosenIndex] === '🎯') {
-    // Instant respin — keep overlay visible and start another spin after a small delay
-    setTimeout(() => {
-        spinWheel();
-    }, 300);
-
+    setTimeout(() => { spinWheel(); }, 300);
 } else {
-    // safety: all prizes should be handled explicitly above
     console.error("Unhandled prize:", prizes[chosenIndex]);
-    // close overlay to avoid frozen UI
     wheelOverlay.style.display = 'none';
     mainContent.style.filter = 'none';
 }
+
 
 }
     }

@@ -1149,7 +1149,7 @@ leaderboardOverlay.addEventListener("click", (e) => {
 });
 
 
-//Shop logic
+// --- Shop logic ---
 const shopOverlay = document.getElementById("shopOverlay");
 const shopBtn = document.getElementById("shopBtn");
 
@@ -1165,74 +1165,99 @@ shopOverlay.addEventListener("click", (e) => {
   }
 });
 
-// Handle purchases
+// --- Shop items Array ---
+const shopItems = [
+  { id: "goldenTicket", name: "Golden Ticket", type: "special", price: 100 },
+  { id: "xpBoost", name: "XP Boost", type: "boost", price: 20 },
+  { id: "tapMultiplier", name: "Tap Multiplier", type: "boost", price: 50 },
+
+  ...cosmetics.badges.map(b => ({ ...b, type: "badge", price: 50 })),
+  ...cosmetics.frames.map(f => ({ ...f, type: "frame", price: 75 })),
+  ...cosmetics.backgrounds.map(bg => ({ ...bg, type: "background", price: 60 }))
+];
+
+// --- Handle purchases dynamically ---
 document.querySelectorAll("#shopContent button").forEach(btn => {
   btn.addEventListener("click", () => {
-    const item = btn.getAttribute("data-item");
+    const itemId = btn.getAttribute("data-item");
+    const item = shopItems.find(i => i.id === itemId);
 
-    if (item === "goldenTicket" && player.gems >= 100) {
-      player.gems -= 100;
-      player.goldenTickets++;
-      updateCounters();
-      alert("You bought a Golden Ticket!");
-    } 
-    else if (item === "xpBoost" && player.gems >= 20) {
-      player.gems -= 20;
-      player.xpMultiplierTimeout = Date.now() + 60000; // 60 sec boost
-      updateCounters();
-      alert("XP Boost activated for 60s!");
-    } 
-    else if (item === "tapMultiplier" && player.gems >= 50) {
-      player.gems -= 50;
-      player.tapMultiplierTimeout = Date.now() + 60000; // 60 sec boost
-      updateCounters();
-      alert("Tap Multiplier activated for 60s!");
-    } 
-    else {
+    if (!item) return;
+
+    if (player.gems < item.price) {
       alert("Not enough gems!");
+      return;
     }
+
+    // Deduct cost
+    player.gems -= item.price;
+
+    // Handle special logic
+    if (item.id === "goldenTicket") {
+      player.goldenTickets++;
+      alert("You bought a Golden Ticket!");
+    }
+    else if (item.id === "xpBoost") {
+      player.xpMultiplierTimeout = Date.now() + 60000; // 60s
+      alert("XP Boost activated for 60s!");
+    }
+    else if (item.id === "tapMultiplier") {
+      player.tapMultiplierTimeout = Date.now() + 60000; // 60s
+      alert("Tap Multiplier activated for 60s!");
+    }
+    else {
+      // Cosmetics → put in inventory
+      addInventoryItem(item.name, item.icon);
+      alert(`${item.name} added to your inventory!`);
+    }
+
+    updateCounters();
   });
 });
 
-
-
-// Inventory is now inside player object
-// Add an item
+// --- Inventory is inside player object ---
+// Add an item (with count aggregation)
 function addInventoryItem(name, icon) {
-    player.inventory.push({ name, icon });
-    renderInventory();
+  const existing = player.inventory.find(it => it.name === name);
+  if (existing) {
+    existing.count = (existing.count || 1) + 1;
+  } else {
+    player.inventory.push({ name, icon, count: 1 });
+  }
+  renderInventory();
 }
 
 // Render inventory in hub
 function renderInventory() {
-    const hubInventory = document.getElementById('hubInventory');
-    if (!hubInventory) return;
+  const hubInventory = document.getElementById('hubInventory');
+  if (!hubInventory) return;
 
-    hubInventory.innerHTML = ''; // clear previous items
+  hubInventory.innerHTML = '';
 
-    player.inventory.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'hub-inventory-item';
+  player.inventory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'hub-inventory-item';
 
-        // Icon
-        const iconEl = document.createElement('div');
-        iconEl.textContent = item.icon || '';
-        iconEl.style.fontSize = '24px';
-        div.appendChild(iconEl);
+    // Icon
+    const iconEl = document.createElement('div');
+    iconEl.textContent = item.icon || '';
+    iconEl.style.fontSize = '24px';
+    div.appendChild(iconEl);
 
-        // Counter below icon
-        if (item.count && item.count > 1) {
-            const countEl = document.createElement('div');
-            countEl.textContent = `x${item.count}`;
-            countEl.style.fontSize = '14px';
-            countEl.style.marginTop = '2px';
-            countEl.style.color = '#fff';
-            div.appendChild(countEl);
-        }
+    // Counter if > 1
+    if (item.count > 1) {
+      const countEl = document.createElement('div');
+      countEl.textContent = `x${item.count}`;
+      countEl.style.fontSize = '14px';
+      countEl.style.marginTop = '2px';
+      countEl.style.color = '#fff';
+      div.appendChild(countEl);
+    }
 
-        hubInventory.appendChild(div);
-    });
+    hubInventory.appendChild(div);
+  });
 }
+
 
 
 

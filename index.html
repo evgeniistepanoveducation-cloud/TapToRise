@@ -1162,6 +1162,12 @@ const shopItems = [
   ...cosmetics.backgrounds.map(bg => ({ ...bg, type: "background", price: 60 }))
 ];
 
+function updateCounters() {
+  document.getElementById("gemsCounter").textContent = player.gems;
+  document.getElementById("ticketsCounter").textContent = player.goldenTickets;
+  // add more counters if you display them
+}
+
 
 // --- Render Shop UI ---
 function renderShop() {
@@ -1205,6 +1211,8 @@ function renderShop() {
     shopContent.appendChild(row);
   });
 }
+
+renderShop();
 
 // --- Unified Purchase Handler ---
 function handlePurchase(item) {

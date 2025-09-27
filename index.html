@@ -1176,46 +1176,7 @@ const shopItems = [
   ...cosmetics.backgrounds.map(bg => ({ ...bg, type: "background", price: 60 }))
 ];
 
-// --- Handle purchases dynamically ---
-document.querySelectorAll("#shopContent button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    const itemId = btn.getAttribute("data-item");
-    const item = shopItems.find(i => i.id === itemId);
 
-    if (!item) return;
-
-    if (player.gems < item.price) {
-      alert("Not enough gems!");
-      return;
-    }
-
-    // Deduct cost
-    player.gems -= item.price;
-
-    // Handle special logic
-    if (item.id === "goldenTicket") {
-      player.goldenTickets++;
-      alert("You bought a Golden Ticket!");
-    }
-    else if (item.id === "xpBoost") {
-      player.xpMultiplierTimeout = Date.now() + 60000; // 60s
-      alert("XP Boost activated for 60s!");
-    }
-    else if (item.id === "tapMultiplier") {
-      player.tapMultiplierTimeout = Date.now() + 60000; // 60s
-      alert("Tap Multiplier activated for 60s!");
-    }
-    else {
-      // Cosmetics → put in inventory
-      addInventoryItem(item.name, item.icon);
-      alert(`${item.name} added to your inventory!`);
-    }
-
-    updateCounters();
-  });
-});
-
-// --- Inventory is inside player object ---
 // Add an item (with count aggregation)
 function addInventoryItem(name, icon) {
   const existing = player.inventory.find(it => it.name === name);
@@ -1226,6 +1187,83 @@ function addInventoryItem(name, icon) {
   }
   renderInventory();
 }
+
+// --- Render Shop UI ---
+function renderShop() {
+  const shopContent = document.getElementById("shopContent");
+  shopContent.innerHTML = ""; // clear previous items
+
+  shopItems.forEach(item => {
+    const row = document.createElement("div");
+    row.className = "shop-item";
+
+    // Left side: name + price
+    const info = document.createElement("div");
+    info.style.display = "flex";
+    info.style.flexDirection = "column";
+
+    const nameEl = document.createElement("span");
+    nameEl.textContent = item.name;
+    nameEl.style.fontWeight = "bold";
+
+    const priceEl = document.createElement("span");
+    priceEl.textContent = `${item.price} 💎`; // price in gems
+    priceEl.style.fontSize = "14px";
+    priceEl.style.color = "#444";
+
+    info.appendChild(nameEl);
+    info.appendChild(priceEl);
+
+    // Right side: Buy button
+    const btn = document.createElement("button");
+    btn.textContent = "Buy";
+    btn.setAttribute("data-item", item.id);
+
+    // Hook up purchase logic
+    btn.addEventListener("click", () => {
+      handlePurchase(item);
+    });
+
+    // Build row
+    row.appendChild(info);
+    row.appendChild(btn);
+    shopContent.appendChild(row);
+  });
+}
+
+// --- Unified Purchase Handler ---
+function handlePurchase(item) {
+  if (player.gems < item.price) {
+    alert("Not enough gems!");
+    return;
+  }
+
+  player.gems -= item.price;
+
+  if (item.id === "goldenTicket") {
+    player.goldenTickets++;
+    alert("You bought a Golden Ticket!");
+  } 
+  else if (item.id === "xpBoost") {
+    player.xpMultiplierTimeout = Date.now() + 60000;
+    alert("XP Boost activated for 60s!");
+  } 
+  else if (item.id === "tapMultiplier") {
+    player.tapMultiplierTimeout = Date.now() + 60000;
+    alert("Tap Multiplier activated for 60s!");
+  } 
+  else {
+    addInventoryItem(item.name, item.icon);
+    alert(`${item.name} added to your inventory!`);
+  }
+
+  updateCounters();
+}
+
+// --- Call this once when the game loads ---
+renderShop();
+
+
 
 // Render inventory in hub
 function renderInventory() {

@@ -1253,36 +1253,54 @@ function handlePurchase(item) {
     alert("Tap Multiplier activated for 60s!");
   } 
   else {
-    addInventoryItem(item.name, item.icon);
-    alert(`${item.name} added to your inventory!`);
+    // Cosmetics get stored in player.cosmetics
+    addInventoryItem(item);
+    alert(`${item.name} added to your collection!`);
   }
 
   updateCounters();
 }
 
-// --- Call this once when the game loads ---
-renderShop();
+// --- Add an item (cosmetics handled separately) ---
+function addInventoryItem(item) {
+  if (item.type === "badge" || item.type === "frame" || item.type === "background") {
+    // Store in the proper cosmetics array
+    const arr = player.cosmetics[item.type + "s"]; // badges / frames / backgrounds
+    const exists = arr.find(it => it.id === item.id);
+    if (!exists) {
+      arr.push({ ...item });
+    }
+  } else {
+    // Normal inventory (special items, boosts, etc.)
+    const existing = player.inventory.find(it => it.id === item.id);
+    if (existing) {
+      existing.count = (existing.count || 1) + 1;
+    } else {
+      player.inventory.push({ ...item, count: 1 });
+    }
+  }
 
+  renderInventory();
+}
 
-
-// Render inventory in hub
+// --- Render inventory in hub ---
 function renderInventory() {
   const hubInventory = document.getElementById('hubInventory');
   if (!hubInventory) return;
 
   hubInventory.innerHTML = '';
 
+  // Show normal inventory (non-cosmetics)
   player.inventory.forEach(item => {
     const div = document.createElement('div');
     div.className = 'hub-inventory-item';
 
-    // Icon
+    // Icon or text
     const iconEl = document.createElement('div');
-    iconEl.textContent = item.icon || '';
+    iconEl.textContent = item.icon || item.name[0]; // fallback to first letter
     iconEl.style.fontSize = '24px';
     div.appendChild(iconEl);
 
-    // Counter if > 1
     if (item.count > 1) {
       const countEl = document.createElement('div');
       countEl.textContent = `x${item.count}`;
@@ -1294,7 +1312,19 @@ function renderInventory() {
 
     hubInventory.appendChild(div);
   });
+
+  // (Optional) Show cosmetics preview below
+  // For now just list names
+  ["badges", "frames", "backgrounds"].forEach(type => {
+    player.cosmetics[type].forEach(cos => {
+      const div = document.createElement('div');
+      div.className = 'hub-inventory-item';
+      div.textContent = `${cos.name} (${type})`;
+      hubInventory.appendChild(div);
+    });
+  });
 }
+
 
 
 

@@ -191,7 +191,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 
 <script>
-
 const cosmetics = {
   badges: [
     { id: "legend", name: "Legendary Grinder", rarity: "super-rare", icon: "badge-legend.png" },
@@ -207,7 +206,6 @@ const cosmetics = {
   ]
 };
 
-
 const prizes = ['⚡ x2 XP','✖️','100💎','50💎','10💎','🎨','🏅','🎯','🎟️'];
 
 // Only for debugging:
@@ -220,7 +218,6 @@ const colors = ['#FF5733','#33FF57','#3357FF','#FF33A1','#FFD133','#33FFF5','#A1
 // --- Base XP scaling factors ---
 const k = 1.5;  // for levels 4–11
 const k1 = 1.2; // from level 12 onwards
-
 
 // Default profile picture s
 const hubProfilePic = document.getElementById('hubProfilePic');
@@ -273,7 +270,6 @@ sharedLevels.forEach((name, i) => {
   }
 });
 
-
 //Storing all variables in one Item per user
 let player = {
   username: "YOU",
@@ -309,7 +305,6 @@ let player = {
   referralCode: document.getElementById("referralInput").value
 };
 
-
 console.log("Active Levels (1–10 with XP):", player.activeLevels);
 
 // Function to build path-specific levels only (11–32)
@@ -339,21 +334,17 @@ function buildPathLevels(path) {
   return levels;
 }
 
-
 const careerPathLevels = buildPathLevels("career");
 const businessPathLevels = buildPathLevels("business");
 
 console.log("Career Path Levels:", careerPathLevels);
 console.log("Business Path Levels:", businessPathLevels);
 
-
 // --- Flag to ensure popup appears only once ---
 player.destinyPopupShown = false;
 
 // --- Halfway XP for level 10 ---
 player.halfwayXP10 = player.activeLevels[8].xp + (player.activeLevels[9].xp - player.activeLevels[8].xp) / 2;
-
-
 
 // --- Trigger when reaching halfway of level 10 ---
 function checkLevelForChoice(currentLevel, currentXP) {
@@ -420,7 +411,6 @@ function checkLevelForChoice(currentLevel, currentXP) {
   }
 }
 
-
 // --- Assign selected path array only at full level 10 XP ---
 function assignPathIfReady(currentLevel, currentXP) {
     const level10XP = sharedLevelsXP[9].xp;
@@ -433,8 +423,6 @@ function assignPathIfReady(currentLevel, currentXP) {
     }
 }
 
-
-
 const tapBtn=document.getElementById('tapBtn');
 const xpCounter=document.getElementById('xpCounter');
 const xpBar=document.getElementById('xpBar');
@@ -446,7 +434,6 @@ const ctx=wheelCanvas.getContext('2d');
 const levelOverlay=document.getElementById('levelOverlay');
 const levelSpinBtn=document.getElementById('levelSpinBtn');
 const mainContent=document.getElementById('mainContent');
-
 
 // Create hidden file input
 const fileInput = document.createElement('input');
@@ -472,7 +459,6 @@ fileInput.addEventListener('change', (e) => {
         reader.readAsDataURL(file);
     }
 });
-
 
 const goldenTicketCounter = document.getElementById('goldenTicketCounter');
 
@@ -504,8 +490,6 @@ otherPlayerHub.addEventListener('click', (e) => {
     }
 });
 
-
-
 // Store referral code dynamically in player object
 player.referralCode = document.getElementById("referralInput").value;
 
@@ -525,7 +509,6 @@ document.getElementById("referralInput").addEventListener("input", (e) => {
   player.referralCode = e.target.value;
   console.log("Referral code updated:", player.referralCode);
 });
-
 
 // Helper: choose prize by probability
 function choosePrizeByProbability(){
@@ -796,8 +779,6 @@ levelIndicator.textContent = `Level ${player.level} (${player.activeLevels[playe
 document.getElementById('hubLevelText').textContent = `Level ${player.level}`;
 document.getElementById('hubLevelName').textContent = player.activeLevels[player.level-1].name;
 
-
-
 tapBtn.addEventListener('click', () => {
     // Block taps if overlay is visible
     if (levelOverlay.style.display === 'flex' || wheelOverlay.style.display === 'flex') return;
@@ -870,8 +851,6 @@ tapBtn.addEventListener('click', () => {
         setTimeout(() => xpSign.remove(), 1000);
     }
 });
-
-
 
 // Spin button in level overlay
 levelSpinBtn.addEventListener('click',()=>{
@@ -947,8 +926,6 @@ function calculateBotXP() {
   });
 }
 
-
-
 function updatePlayerXP() {
   player.currentXP = player.xp; // sync for leaderboard logic
 }
@@ -959,7 +936,6 @@ function getTopLeaderboard() {
   combined.sort((a, b) => (b.currentXP || b.xp) - (a.currentXP || a.xp));
   return combined.slice(0, 10);
 }
-
 
 function renderLeaderboard() {
   const container = document.getElementById("leaderboardContainer");
@@ -1030,7 +1006,6 @@ function renderLeaderboard() {
   });
 }
 
-
 // --- Profile functions ---
 function openMyProfile() {
   fillProfile(player);  // fills personal hub from player object
@@ -1039,7 +1014,6 @@ function openMyProfile() {
 function openOtherProfile(user) {
   fillOtherProfile(user);   // fills other player's hub (bots or other users)
 }
-
 
 function fillProfile(playerData) {
   document.getElementById("hubLevelText").textContent = `Level ${playerData.level}`;
@@ -1070,7 +1044,6 @@ function fillProfile(playerData) {
   document.getElementById("personalHub").style.display = "flex";
   mainContent.style.filter = "blur(5px)";
 }
-
 
 function fillOtherProfile(playerData) {
   document.getElementById("hubLevelTextOther").textContent = `Level ${playerData.level}`;
@@ -1103,8 +1076,6 @@ function fillOtherProfile(playerData) {
   mainContent.style.filter = "blur(5px)";
 }
 
-
-
 // --- Init ---
 calculateBotXP();
 updatePlayerXP();
@@ -1133,7 +1104,6 @@ leaderboardOverlay.addEventListener("click", (e) => {
     mainContent.style.filter = "none";
   }
 });
-
 
 // --- Shop logic ---
 const shopOverlay = document.getElementById("shopOverlay");
@@ -1167,7 +1137,6 @@ function updateCounters() {
   document.getElementById("ticketsCounter").textContent = player.goldenTickets;
   // add more counters if you display them
 }
-
 
 // --- Render Shop UI ---
 function renderShop() {
@@ -1307,9 +1276,6 @@ function renderInventory() {
     });
   });
 }
-
-
-
 
 
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});

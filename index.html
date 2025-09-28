@@ -77,6 +77,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 /* #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }*/
 #personalHub, #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }
+#toast { position: fixed; bottom: 140px; /* just above your ad banner */ left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 16px; opacity: 0; transition: opacity 0.3s ease-in-out; z-index: 2000; pointer-events: none; }
 
 </style>
 </head>
@@ -142,7 +143,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
   </div>
 </div>
 
-
+<div id="toast"></div>
 
 <div id="leaderboardOverlay">
     <div id="leaderboardContainer"></div>
@@ -1183,10 +1184,20 @@ function renderShop() {
 
 renderShop();
 
+function showToast(msg) {
+  const toast = document.getElementById("toast");
+  toast.textContent = msg;
+  toast.style.opacity = "1";
+  setTimeout(() => {
+    toast.style.opacity = "0";
+  }, 2000);
+}
+
+
 // --- Unified Purchase Handler ---
 function handlePurchase(item) {
   if (player.gems < item.price) {
-    alert("Not enough gems!");
+    showToast("Not enough gems!");
     return;
   }
 
@@ -1194,23 +1205,21 @@ function handlePurchase(item) {
 
   if (item.id === "goldenTicket") {
     player.goldenTickets++;
-    alert("You bought a Golden Ticket!");
+    showToast("🎟️ Golden Ticket purchased!");
   } 
   else if (item.id === "xpBoost") {
     player.xpMultiplierTimeout = Date.now() + 60000;
-    alert("XP Boost activated for 60s!");
+    showToast("XP Boost activated for 60s!");
   } 
   else if (item.id === "tapMultiplier") {
     player.tapMultiplierTimeout = Date.now() + 60000;
-    alert("Tap Multiplier activated for 60s!");
+    showToast("Tap Multiplier activated for 60s!");
   } 
   else {
     // Cosmetics get stored in player.cosmetics
     addInventoryItem(item);
-    alert(`${item.name} added to your collection!`);
+    showToast(`${item.name} added to your collection!`);
   }
-console.log("Gems left:", player.gems);
-
   updateCounters();
 }
 

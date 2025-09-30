@@ -70,7 +70,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .hub-inventory-item { width: 50px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: default; transition: transform 0.2s; }
 .hub-inventory-item:hover { transform: scale(1.2); }
 
-#shopOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: calc(100% - 120px); background: rgba(0,0,0,0.8); z-index: 200; justify-content: center; align-items: center; padding-bottom: 120px; }
 #shopContent { background: #fff; width: 80%; max-width: 400px; max-height: 80%; overflow-y: auto; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; }
 .shop-item { background: rgba(255,215,0,0.2); border: 2px solid rgba(255,215,0,0.8); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
 .shop-item button { background: rgba(255,215,0,0.8); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #fff; }
@@ -78,8 +77,10 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 /* #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }*/
 #personalHub, #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 40px 20px; overflow-y: auto; }
 #toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(173, 216, 230, 0.95);  color: #000; padding: 20px 40px; border-radius: 12px; font-size: 22px; font-weight: bold; text-align: center; opacity: 0; transition: opacity 0.3s ease-in-out; z-index: 3000; pointer-events: none; }
-.overlay-panel { position: fixed; top: 0; right: -100%; /* hidden off screen */ width: 80%; max-width: 400px; height: 100%; background: #fff; box-shadow: -4px 0 12px rgba(0,0,0,0.4); transition: right 0.4s ease; z-index: 2000; display: flex; /* keep it active, just off screen */ flex-direction: column; padding: 20px; }
+#shopOverlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; } 
+.overlay-panel { position: fixed; top: 0; right: -100%; width: 80%; max-width: 400px; height: 100%; background: #fff; box-shadow: -4px 0 12px rgba(0,0,0,0.4); transition: right 0.4s ease; display: flex; flex-direction: column; padding: 20px; } 
 .overlay-panel.open { right: 0; }
+
 
 
 </style>
@@ -152,10 +153,12 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div id="leaderboardContainer"></div>
 </div>
 
-<div id="shopOverlay" class="overlay-panel">
-  <div id="shopContent"></div>
+<div id="shopOverlay">
+  <!-- Sliding panel -->
+  <div id="shopPanel" class="overlay-panel">
+    <div id="shopContent"></div>
+  </div>
 </div>
-
 
 <div id="mainContent">
     <div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
@@ -1113,16 +1116,23 @@ leaderboardOverlay.addEventListener("click", (e) => {
 // --- Shop logic ---
 const shopOverlay = document.getElementById("shopOverlay");
 const shopBtn = document.getElementById("shopBtn");
+const shopPanel   = document.getElementById("shopPanel");
 
 // Open
 shopBtn.addEventListener("click", () => {
-  shopOverlay.classList.add("open");
+  shopOverlay.style.display = "flex";   // show dark overlay
+  setTimeout(() => {
+    shopPanel.classList.add("open");    // slide panel in
+  }, 10); // small delay ensures transition works
 });
 
-// Close on background click
+// Close when clicking outside the panel
 shopOverlay.addEventListener("click", (e) => {
   if (e.target === shopOverlay) {
-    shopOverlay.classList.remove("open");
+    shopPanel.classList.remove("open");
+    setTimeout(() => {
+      shopOverlay.style.display = "none";
+    }, 400); // wait for slide-out before hiding overlay
   }
 });
 

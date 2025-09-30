@@ -77,11 +77,11 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .overlay-panel { position: fixed; top: 0; right: -100%; width: 100%; height: 100%; background: transparent; box-shadow: none; transition: right 0.4s ease; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; } 
 .overlay-panel.open { right: 0; }
 
-#shopContent { background: #fff; width: 80%; max-width: 400px; max-height: 80%; overflow-y: auto; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; }
+#shopContent { position: relative;  background: #fff; width: 80%; max-width: 400px; max-height: 80%; overflow-y: auto; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 16px; }
 .shop-item { background: rgba(255,215,0,0.2); border: 2px solid rgba(255,215,0,0.8); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
 .shop-item button { background: rgba(255,215,0,0.8); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #fff; }
 
-#shopCloseBtn { position: absolute; top: 20px; left: 20px; width: 40px; height: 40px; background: rgba(255,215,0,0.8); color: #fff; border: none; border-radius: 12px; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 2100; } 
+#shopCloseBtn { position: absolute; top: -20px;  left: -20px; width: 40px; height: 40px; background: rgba(255,215,0,0.8); color: #fff; border: none; border-radius: 12px; font-size: 24px; cursor: pointer; display: flex; justify-content: center; align-items: center; z-index: 2100; }
 #shopCloseBtn:hover { box-shadow: 0 0 10px rgba(255,215,0,0.8); }
 
 </style>
@@ -156,8 +156,9 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 <div id="shopOverlay">
   <div id="shopPanel" class="overlay-panel">
+    <div id="shopContent">
     <button id="shopCloseBtn">⬅️</button>
-    <div id="shopContent"></div>
+    </div>
   </div>
 </div>
 

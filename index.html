@@ -80,7 +80,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .shop-item { background: rgba(255,215,0,0.2); border: 2px solid rgba(255,215,0,0.8); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
 .shop-item button { background: rgba(255,215,0,0.8); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #fff; }
 
-/*
+
 #shopHeader { position: absolute; top: 0; left: 0; width: 100%; height: 60px; border-bottom: 1px solid #ccc; display: flex; align-items: center; padding-left: 50px; box-sizing: border-box; }
 #shopCloseBtn { width: 40px; height: 40px; background: rgba(255,215,0,0.8); border: none; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 #shopCloseBtn::before { content: ""; display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 15px solid #000; }
@@ -96,18 +96,6 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #LeaderboardCloseBtn { width: 40px; height: 40px; background: rgba(255,215,0,0.8); border: none; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 #LeaderboardCloseBtn::before { content: ""; display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 15px solid #000; }
 #LeaderboardHeader { position: absolute; top: 0; left: 0; width: 100%; height: 60px; border-bottom: 1px solid #ccc; display: flex; align-items: center; padding-left: 50px; box-sizing: border-box; }
-*/
-
-/* Common header style */
-.shop-header, .hub-header, .leaderboard-header { position: absolute; top: 0; left: 0; width: 100%; height: 60px; border-bottom: 1px solid #ccc; display: flex; align-items: center; padding-left: 50px; box-sizing: border-box; }
-
-.close-btn { width:40px; height:40px; background:rgba(255,215,0,0.8); border:none; border-radius:12px; display:flex; justify-content:center; align-items:center; cursor:pointer; }
-
-#HubCloseBtn::before, #OtherHubCloseBtn::before, #LeaderboardCloseBtn::before, #shopCloseBtn::before {
-  content:""; display:inline-block; width:0; height:0;
-  border-top:10px solid transparent; border-bottom:10px solid transparent;
-  border-right:15px solid #000;
-}
 
 
 </style>
@@ -120,9 +108,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 <div id="personalHub">
 
   <div id="HubHeader">
-      <!-- <button id="HubCloseBtn"></button> -->
-      <button id="HubCloseBtn" class="close-btn"></button>
-  </div>
+      <button id="HubCloseBtn"></button> 
+      </div>
 
   <div class="hub-top-row">
     <div class="hub-level-text" id="hubLevelText">Level 1 (Learn First Words)</div>
@@ -161,9 +148,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 <div id="otherPlayerHub">
 
   <div id="OtherHubHeader">
-      <!-- <button id="OtherHubCloseBtn"></button> -->
-      <button id="OtherHubCloseBtn" class="close-btn"></button>
-  </div>
+      <button id="OtherHubCloseBtn"></button>
+      </div>
   
   <div class="hub-top-row">
     <div class="hub-level-text" id="hubLevelTextOther">Level 1</div>
@@ -190,18 +176,16 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
 <div id="leaderboardOverlay">
     <div id="LeaderboardHeader">
-      <!-- <button id="LeaderboardCloseBtn"></button> -->
-      <button id="LeaderboardCloseBtn" class="close-btn"></button>
-    </div>
+      <button id="LeaderboardCloseBtn"></button>
+          </div>
     <div id="leaderboardContainer"></div>
 </div>
 
 
   <div id="shopPanel" class="overlay-panel">
     <div id="shopHeader">
-      <!-- <button id="shopCloseBtn"></button> -->
-      <button id="shopCloseBtn" class="close-btn"></button>
-    </div>
+      <button id="shopCloseBtn"></button> 
+        </div>
     <div id="shopContent"></div>
   </div>
 

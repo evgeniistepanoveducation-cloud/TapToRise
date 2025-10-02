@@ -80,8 +80,18 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 .shop-item { background: rgba(255,215,0,0.2); border: 2px solid rgba(255,215,0,0.8); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 18px; }
 .shop-item button { background: rgba(255,215,0,0.8); border: none; border-radius: 8px; padding: 6px 12px; font-size: 16px; cursor: pointer; color: #fff; }
 #shopHeader { position: absolute; top: 0; left: 0; width: 100%; height: 60px; border-bottom: 1px solid #ccc; display: flex; align-items: center; padding-left: 50px; box-sizing: border-box; }
+
 #shopCloseBtn { width: 40px; height: 40px; background: rgba(255,215,0,0.8); border: none; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
 #shopCloseBtn::before { content: ""; display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 15px solid #000; }
+
+#HubCloseBtn { width: 40px; height: 40px; background: rgba(255,215,0,0.8); border: none; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+#HubCloseBtn::before { content: ""; display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 15px solid #000; }
+
+#OtherHubCloseBtn { width: 40px; height: 40px; background: rgba(255,215,0,0.8); border: none; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+#OtherHubCloseBtn::before { content: ""; display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 15px solid #000; }
+
+#LeaderboardCloseBtn { width: 40px; height: 40px; background: rgba(255,215,0,0.8); border: none; border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; }
+#LeaderboardCloseBtn::before { content: ""; display: inline-block; width: 0; height: 0; border-top: 10px solid transparent; border-bottom: 10px solid transparent; border-right: 15px solid #000; }
 
 </style>
 </head>
@@ -96,8 +106,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePic">
   </div>
 
-  <div id="shopHeader">
-      <button id="shopCloseBtn"></button>
+  <div id="HubHeader">
+      <button id="HubCloseBtn"></button>
   </div>
 
   <div class="hub-level-name" id="hubLevelName">test</div>
@@ -134,8 +144,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <img src="profile.jpeg" alt="Profile" class="hub-profile-pic" id="hubProfilePicOther">
   </div>
 
-  <div id="shopHeader">
-      <button id="shopCloseBtn"></button>
+  <div id="OtherHubHeader">
+      <button id="OtherHubCloseBtn"></button>
   </div>
 
   <div class="hub-level-name" id="hubLevelNameOther">DisplayTheActualLevelHere</div>
@@ -157,8 +167,8 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 <div id="toast"></div>
 
 <div id="leaderboardOverlay">
-    <div id="shopHeader">
-      <button id="shopCloseBtn"></button>
+    <div id="LeaderboardHeader">
+      <button id="LeaderboardCloseBtn"></button>
     </div>
     <div id="leaderboardContainer"></div>
 </div>
@@ -485,6 +495,9 @@ const goldenTicketCounter = document.getElementById('goldenTicketCounter');
 const hubBtn = document.getElementById('hubBtn');
 const personalHub = document.getElementById('personalHub');
 const otherPlayerHub = document.getElementById('otherPlayerHub');
+const personalHubCloseBtn = document.getElementById("HubCloseBtn");
+const otherPlayerHubCloseBtn = document.getElementById("OtherHubCloseBtn");
+
 
 // Open personal hub
 hubBtn.addEventListener('click', () => { 
@@ -493,20 +506,16 @@ hubBtn.addEventListener('click', () => {
     // you can reference player data here, e.g., player.username, player.profile.picSrc
 });
 
-// Close personal hub by clicking outside content
-personalHub.addEventListener('click', (e) => { 
-    if (e.target === personalHub) { 
-        personalHub.style.display = 'none'; 
-        mainContent.style.filter = 'none'; 
-    } 
+// Close personal hub
+personalHubCloseBtn.addEventListener("click", () => {
+  personalHub.style.display = "none";
+  mainContent.style.filter = "none";  // restore main content filter if used
 });
 
-// Close other player hub by clicking outside content
-otherPlayerHub.addEventListener('click', (e) => {
-    if (e.target === otherPlayerHub) {
-        otherPlayerHub.style.display = 'none';
-        mainContent.style.filter = 'none';
-    }
+// Close other player hub 
+otherPlayerHubCloseBtn.addEventListener("click", () => {
+  otherPlayerHub.style.display = "none";
+  mainContent.style.filter = "none";
 });
 
 // Store referral code dynamically in player object
@@ -1110,18 +1119,19 @@ setInterval(() => {
 // --- Overlay open/close ---
 const leaderboardBtn = document.getElementById("leaderboardBtn");
 const leaderboardOverlay = document.getElementById("leaderboardOverlay");
+const leaderboardCloseBtn = document.getElementById("LeaderboardCloseBtn");
 
+// Open
 leaderboardBtn.addEventListener("click", () => {
   leaderboardOverlay.style.display = "flex";
   mainContent.style.filter = "blur(5px)";
   renderLeaderboard();
 });
 
-leaderboardOverlay.addEventListener("click", (e) => {
-  if (e.target === leaderboardOverlay) {
-    leaderboardOverlay.style.display = "none";
-    mainContent.style.filter = "none";
-  }
+//Close
+leaderboardCloseBtn.addEventListener("click", () => {
+  leaderboardOverlay.style.display = "none";
+  mainContent.style.filter = "none";
 });
 
 // --- Shop logic ---
@@ -1136,7 +1146,6 @@ shopBtn.addEventListener("click", () => {
 
 // Close
 shopCloseBtn.addEventListener("click", closeShop);
-
 function closeShop() {
   shopPanel.classList.remove("open");  // slide panel out
 }

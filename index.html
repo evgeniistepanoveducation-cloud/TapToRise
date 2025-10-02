@@ -1138,9 +1138,9 @@ const shopItems = [
   { id: "xpBoost", name: "XP Boost", type: "boost", price: 20 },
   { id: "tapMultiplier", name: "Tap Multiplier", type: "boost", price: 50 },
 
-  ...cosmetics.badges.map(b => ({ ...b, type: "badge", price: 50 })),
-  ...cosmetics.frames.map(f => ({ ...f, type: "frame", price: 75 })),
-  ...cosmetics.backgrounds.map(bg => ({ ...bg, type: "background", price: 60 }))
+  ...cosmetics.badges.map(b => ({ ...b, type: "badge", price: 0 })),
+  ...cosmetics.frames.map(f => ({ ...f, type: "frame", price: 0 })),
+  ...cosmetics.backgrounds.map(bg => ({ ...bg, type: "background", price: 0 }))
 ];
 
 function updateCounters() {

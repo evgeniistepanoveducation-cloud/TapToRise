@@ -67,8 +67,11 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 #adBanner { position: fixed; bottom: 0; left: 0; width: 100%; height: 120px; background: #222; color: #aaa; display: flex; justify-content: center; align-items: center; border-radius: 10px; z-index: 1000; }
 
 .hub-section-title { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #fff; }
-.hub-inventory-item { width: 50px; height: 60px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: default; transition: transform 0.2s; }
+.hub-inventory-item { width: 60px; height: 60px; background: rgba(255,255,255,0.2); border-radius: 12px; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: default; transition: transform 0.2s; }
 .hub-inventory-item:hover { transform: scale(1.2); }
+.hub-inventory { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; justify-items: center; margin-top: 8px; }
+.hub-inventory-item-icon { font-size: 28px; }
+.hub-inventory-item-count { font-size: 14px; color: #fff; margin-top: 2px; font-weight: bold; }
 
 #personalHub, #otherPlayerHub { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); color: #fff; z-index: 2000; flex-direction: column; align-items: center; padding: 100px 20px 40px 20px; overflow-y: auto; }
 
@@ -104,7 +107,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 
   <div id="HubHeader">
       <button id="HubCloseBtn"></button> 
-      </div>
+  </div>
 
   <div class="hub-top-row">
     <div class="hub-level-text" id="hubLevelText">Level 1 (Learn First Words)</div>
@@ -137,6 +140,7 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
     <div class="hub-section-title">Inventory</div>
     <div class="hub-inventory" id="hubInventory"></div>
   </div>
+
 </div>
 
 <div id="otherPlayerHub">
@@ -176,12 +180,12 @@ html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font
 </div>
 
 
-  <div id="shopPanel" class="overlay-panel">
+<div id="shopPanel" class="overlay-panel">
     <div id="shopHeader">
       <button id="shopCloseBtn"></button> 
         </div>
     <div id="shopContent"></div>
-  </div>
+</div>
 
 <div id="mainContent">
     <div class="xp-bar-container"><div class="xp-bar" id="xpBar"></div></div>
@@ -662,7 +666,7 @@ function spinWheel(){
 
     
 
-// --- prize handling (inside animate's else) ---
+// --- prize handling
 if (prizes[chosenIndex] === '🎟️') {
     // Golden Ticket
     player.goldenTickets++;
@@ -1284,40 +1288,47 @@ function renderInventory() {
 
   hubInventory.innerHTML = '';
 
-  // Show normal inventory (non-cosmetics)
+  // --- Normal inventory (non-cosmetics) ---
   player.inventory.forEach(item => {
     const div = document.createElement('div');
     div.className = 'hub-inventory-item';
 
     // Icon or text
     const iconEl = document.createElement('div');
+    iconEl.className = 'hub-inventory-item-icon';
     iconEl.textContent = item.icon || item.name[0]; // fallback to first letter
-    iconEl.style.fontSize = '24px';
     div.appendChild(iconEl);
 
-    if (item.count > 1) {
-      const countEl = document.createElement('div');
-      countEl.textContent = `x${item.count}`;
-      countEl.style.fontSize = '14px';
-      countEl.style.marginTop = '2px';
-      countEl.style.color = '#fff';
-      div.appendChild(countEl);
-    }
+    // Count (always show)
+    const countEl = document.createElement('div');
+    countEl.className = 'hub-inventory-item-count';
+    countEl.textContent = `x${item.count || 1}`;
+    div.appendChild(countEl);
 
     hubInventory.appendChild(div);
   });
 
-  // (Optional) Show cosmetics preview below
-  // For now just list names
+  // --- Cosmetics (badges / frames / backgrounds) ---
   ["badges", "frames", "backgrounds"].forEach(type => {
     player.cosmetics[type].forEach(cos => {
       const div = document.createElement('div');
       div.className = 'hub-inventory-item';
-      div.textContent = `${cos.name} (${type})`;
+
+      const iconEl = document.createElement('div');
+      iconEl.className = 'hub-inventory-item-icon';
+      iconEl.textContent = cos.icon || cos.name[0];
+      div.appendChild(iconEl);
+
+      const countEl = document.createElement('div');
+      countEl.className = 'hub-inventory-item-count';
+      countEl.textContent = `x${cos.count || 1}`;
+      div.appendChild(countEl);
+
       hubInventory.appendChild(div);
     });
   });
 }
+
 
 
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});

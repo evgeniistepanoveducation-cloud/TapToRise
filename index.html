@@ -1282,47 +1282,63 @@ function addInventoryItem(item) {
 }
 
 // --- Render inventory in hub ---
+// --- Render inventory in hub ---
 function renderInventory() {
   const hubInventory = document.getElementById('hubInventory');
   if (!hubInventory) return;
 
   hubInventory.innerHTML = '';
 
-  // --- Normal inventory (non-cosmetics) ---
+  // Show normal inventory (non-cosmetics)
   player.inventory.forEach(item => {
     const div = document.createElement('div');
     div.className = 'hub-inventory-item';
 
-    // Icon or text
-    const iconEl = document.createElement('div');
-    iconEl.className = 'hub-inventory-item-icon';
-    iconEl.textContent = item.icon || item.name[0]; // fallback to first letter
-    div.appendChild(iconEl);
+    if (item.icon) {
+      // Always treat as image path (png/jpg/jpeg/svg)
+      const imgEl = document.createElement('img');
+      imgEl.src = item.icon;
+      imgEl.className = "hub-inventory-item-icon";
+      imgEl.style.width = "28px";
+      imgEl.style.height = "28px";
+      imgEl.style.objectFit = "contain"; // keeps proportions
+      div.appendChild(imgEl);
+    } else {
+      // fallback: first letter
+      const iconEl = document.createElement('div');
+      iconEl.textContent = item.name[0] || "?";
+      iconEl.className = "hub-inventory-item-icon";
+      div.appendChild(iconEl);
+    }
 
-    // Count (always show)
-    const countEl = document.createElement('div');
-    countEl.className = 'hub-inventory-item-count';
-    countEl.textContent = `x${item.count || 1}`;
-    div.appendChild(countEl);
+    // Count overlay if >1
+    if (item.count > 1) {
+      const countEl = document.createElement('div');
+      countEl.textContent = `x${item.count}`;
+      countEl.className = "hub-inventory-item-count";
+      div.appendChild(countEl);
+    }
 
     hubInventory.appendChild(div);
   });
 
-  // --- Cosmetics (badges / frames / backgrounds) ---
+  // Cosmetics (list by name for now)
   ["badges", "frames", "backgrounds"].forEach(type => {
     player.cosmetics[type].forEach(cos => {
       const div = document.createElement('div');
       div.className = 'hub-inventory-item';
 
-      const iconEl = document.createElement('div');
-      iconEl.className = 'hub-inventory-item-icon';
-      iconEl.textContent = cos.icon || cos.name[0];
-      div.appendChild(iconEl);
-
-      const countEl = document.createElement('div');
-      countEl.className = 'hub-inventory-item-count';
-      countEl.textContent = `x${cos.count || 1}`;
-      div.appendChild(countEl);
+      if (cos.icon) {
+        const imgEl = document.createElement('img');
+        imgEl.src = cos.icon;
+        imgEl.className = "hub-inventory-item-icon";
+        imgEl.style.width = "28px";
+        imgEl.style.height = "28px";
+        imgEl.style.objectFit = "contain";
+        div.appendChild(imgEl);
+      } else {
+        div.textContent = `${cos.name} (${type})`;
+      }
 
       hubInventory.appendChild(div);
     });

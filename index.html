@@ -1262,26 +1262,31 @@ function handlePurchase(item) {
 // --- Add an item (cosmetics handled separately) ---
 function addInventoryItem(item) {
   if (item.type === "badge" || item.type === "frame" || item.type === "background") {
-    // Store in the proper cosmetics array
-    const arr = player.cosmetics[item.type + "s"]; // badges / frames / backgrounds
+    // Cosmetics arrays (no stacking, they’re unique)
+    const arr = player.cosmetics[item.type + "s"];
     const exists = arr.find(it => it.id === item.id);
     if (!exists) {
-      arr.push({ ...item });
+      arr.push({ id: item.id, name: item.name, icon: item.icon, type: item.type });
     }
   } else {
-    // Normal inventory (special items, boosts, etc.)
+    // Normal inventory with stacking
     const existing = player.inventory.find(it => it.id === item.id);
     if (existing) {
       existing.count = (existing.count || 1) + 1;
     } else {
-      player.inventory.push({ ...item, count: 1 });
+      player.inventory.push({
+        id: item.id,
+        name: item.name,
+        icon: item.icon,
+        type: item.type,
+        count: 1
+      });
     }
   }
 
   renderInventory();
 }
 
-// --- Render inventory in hub ---
 // --- Render inventory in hub ---
 function renderInventory() {
   const hubInventory = document.getElementById('hubInventory');

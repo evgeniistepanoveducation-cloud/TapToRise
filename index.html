@@ -1187,11 +1187,12 @@ function renderShop() {
     const nameEl = document.createElement("span");
     nameEl.textContent = item.name;
     nameEl.style.fontWeight = "bold";
+    nameEl.style.color = "#fff";
 
     const priceEl = document.createElement("span");
-    priceEl.textContent = `${item.price} 💎`; // price in gems
+    priceEl.textContent = `${item.price} 💎`;
     priceEl.style.fontSize = "14px";
-    priceEl.style.color = "#444";
+    priceEl.style.color = "#fff";
 
     info.appendChild(nameEl);
     info.appendChild(priceEl);
